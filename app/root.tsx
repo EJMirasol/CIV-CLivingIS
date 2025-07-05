@@ -1,14 +1,19 @@
 import {
+  data,
   isRouteErrorResponse,
   Links,
   Meta,
   Outlet,
   Scripts,
   ScrollRestoration,
+  useLoaderData,
 } from "react-router";
 
 import type { Route } from "./+types/root";
 import "./app.css";
+import { getToast } from "remix-toast";
+import { useEffect } from "react";
+import { toast as notify, Toaster } from "sonner";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -23,7 +28,23 @@ export const links: Route.LinksFunction = () => [
   },
 ];
 
+export async function loader({ request }: Route.LoaderArgs) {
+  const { toast, headers } = await getToast(request);
+  return data({ toast }, { headers });
+}
+
 export function Layout({ children }: { children: React.ReactNode }) {
+  const { toast } = useLoaderData<typeof loader>();
+
+  useEffect(() => {
+    if (toast?.type === "error") {
+      notify.error(toast.message);
+    }
+    if (toast?.type === "success") {
+      notify.success(toast.message);
+    }
+  }, [toast]);
+
   return (
     <html lang="en">
       <head>
@@ -36,11 +57,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
         {children}
         <ScrollRestoration />
         <Scripts />
+        <Toaster richColors position="top-right" closeButton={true} />
       </body>
     </html>
   );
 }
-
 export default function App() {
   return <Outlet />;
 }

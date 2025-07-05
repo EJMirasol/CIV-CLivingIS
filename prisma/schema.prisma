@@ -14,35 +14,33 @@ datasource db {
 }
 
 model YoungPeople {
-  id                  String         @id @default(uuid())
-  lastName            String
-  firstName           String
-  middleName          String
-  suffix              String
-  dateOfBirth         DateTime
-  age                 Int
-  gender              Gender
-  contactPerson       String
-  contactRelationship String
-  contactNumber       String
-  Registration        Registration[]
-  createdAt           DateTime       @default(now())
-  updatedAt           DateTime       @updatedAt
-  updatedBy           String?
-  image               String?
+  id                     String                  @id @default(uuid())
+  lastName               String
+  firstName              String
+  middleName             String?
+  suffix                 String?
+  dateOfBirth            DateTime
+  age                    Int
+  gender                 Gender
+  Registration           Registration[]
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
+  updatedBy              String?
+  image                  String?
+  ContactPersonEmergency ContactPersonEmergency?
 }
 
 model Registration {
   id                String           @id @default(uuid())
   YoungPeople       YoungPeople      @relation(fields: [youngPeopleId], references: [id])
   youngPeopleId     String
-  dateApplied       DateTime
-  GradeLevel        GradeLevel?      @relation(fields: [gradeLevelId], references: [id])
-  gradeLevelId      String?
+  dateRegistered    DateTime
+  GradeLevel        GradeLevel       @relation(fields: [gradeLevelId], references: [id])
+  gradeLevelId      String
   Hall              Hall?            @relation(fields: [hallId], references: [id])
   hallId            String?
-  Classification    Classification?  @relation(fields: [classificationId], references: [id])
-  classificationId  String?
+  Classification    Classification   @relation(fields: [classificationId], references: [id])
+  classificationId  String
   remarks           String?
   BasicHealthInfo   BasicHealthInfo? @relation(fields: [basicHealthInfoId], references: [id])
   basicHealthInfoId String?
@@ -78,6 +76,17 @@ model BasicHealthInfo {
   healthConditionDescription String?
   healthConditionMedication  String?
   Registration               Registration[]
+}
+
+model ContactPersonEmergency {
+  id            String       @id @default(uuid())
+  name          String?
+  relationship  String?
+  contactNumber String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  youngPeople   YoungPeople? @relation(fields: [youngPersonId], references: [id])
+  youngPersonId String?      @unique
 }
 
 enum Gender {

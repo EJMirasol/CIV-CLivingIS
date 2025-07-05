@@ -10,7 +10,7 @@ import {
 import { RegistrationFormSchema } from "./dto/registration.dto";
 import { parseWithZod } from "@conform-to/zod";
 import { SaveButton } from "~/components/shared/buttons/SaveButton";
-import { Card, CardContent, CardTitle } from "~/components/ui/card";
+import { Card, CardContent } from "~/components/ui/card";
 import { LabelNoGapRequired } from "~/components/labels/LabelNoGap";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
@@ -20,10 +20,10 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "~/components/ui/popover";
-import { format, parseISO } from "date-fns";
+import { format, parseISO, isValid } from "date-fns";
 import { Calendar } from "~/components/ui/calendar";
 import { Textarea } from "~/components/ui/textarea";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { ImageUploader } from "~/components/shared/imageUpload/ImageUploader";
 import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
 
@@ -68,7 +68,6 @@ export function RegistrationForm({
       if (imageInputRef.current) {
         imageInputRef.current.value = base64String;
       }
-      console.log("image cropped");
     };
     reader.readAsDataURL(blob);
   };
@@ -78,9 +77,14 @@ export function RegistrationForm({
       imageInputRef.current.value = "";
     }
   };
+  const [date, setDate] = useState<Date | undefined>(undefined);
+  const [open, setOpen] = useState(false);
 
   const basicHealthField = fields.basicHealthInformation || {};
   const basicHealthFieldList = basicHealthField.getFieldset();
+  const contacPersonEmergencyField = fields.contactPersonEmergency || {};
+  const contacPersonEmergencyFieldList =
+    contacPersonEmergencyField.getFieldset();
 
   // Add state for isAllergies and isHealthCondition
   const [isAllergies, setIsAllergies] = useState(
@@ -94,6 +98,32 @@ export function RegistrationForm({
       : String(basicHealthFieldList.isHealthCondition.value)
   );
 
+  // Utility function to calculate age from date string
+  function calculateAge(dateString: string): string {
+    if (!dateString) return "";
+    const today = new Date();
+    const birthDate = parseISO(dateString);
+    if (!isValid(birthDate)) return "";
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age.toString();
+  }
+
+  // State for age, synced with dateOfBirth
+  const [calculatedAge, setCalculatedAge] = useState(
+    calculateAge(fields.dateOfBirth.value || "")
+  );
+
+  // Sync calculatedAge if form is reset or dateOfBirth changes externally
+  useEffect(() => {
+    const age = calculateAge(fields.dateOfBirth.value || "");
+    setCalculatedAge(age);
+    form.update({ name: "age", value: age });
+  }, [fields.dateOfBirth.value]);
+
   return (
     <div className="bg-gray-50">
       <div className="w-full flex flex-col px-10 lg:px-25 pb-10">
@@ -103,15 +133,13 @@ export function RegistrationForm({
             <div className="rounded-md">
               <ClipboardList className="h-5 w-5" />
             </div>
-            <span className="text-[#15313F] font-[500]">
-              YOUNG PEOPLE CHURCH LIVING REGISTRATION FORM
-            </span>
+            <span className="text-[#15313F] font-[500]">REGISTRATION FORM</span>
           </div>
           <div className="flex items-center gap-2">
             <SaveButton formId={form.id} />
             <Link to="/">
               <Button
-                className="h-8 gap-1 bg-[var(--app-secondary)]"
+                className="h-8 gap-1 bg-[var(--destructive)]"
                 type="button"
               >
                 Cancel
@@ -125,17 +153,16 @@ export function RegistrationForm({
           {...getFormProps(form)}
         >
           <Card className="py-10 px-5 flex flex-col w-full">
-            {/* for application header */}
             <div className="text-xs h-full">
               <p>
                 Please fill out all the required fields marked with{" "}
                 <span className="text-red-500">*</span>, and leave optional
-                fields blank if not applicable "N/A".
+                fields blank.
               </p>
             </div>
 
             <CardContent className="px-0 pt-36 xl:pt-0">
-              {/* Main form content */}
+              {/* Main content */}
               <div className="mt-5">
                 <div className="grid grid-cols-1 xl:grid-cols-4 gap-5 relative">
                   <div>
@@ -202,11 +229,6 @@ export function RegistrationForm({
                       imageError={fields.image?.errors ? true : false}
                       className="w-[145px] h-[145px] md:w-[145px] md:h-[145px] lg:w-[145px] lg:h-[145px] xl:w-[150px] xl:h-[150px]"
                     />
-                    {fields.image?.errors && (
-                      <span className="text-red-500 text-center text-xs block mt-1">
-                        {fields.image.errors}
-                      </span>
-                    )}
                   </div>
                 </div>
 
@@ -233,7 +255,9 @@ export function RegistrationForm({
                   </div>
                   <div>
                     <div className="space-y-1">
-                      <Label htmlFor={fields.gradeLevel.id}>Grade Level</Label>
+                      <LabelNoGapRequired htmlFor={fields.gradeLevel.id}>
+                        Grade Level
+                      </LabelNoGapRequired>
                       <SelectBoxWithSearch
                         {...getInputProps(fields.gradeLevel, { type: "text" })}
                         options={gradeLevelList.map((opt) => ({
@@ -242,9 +266,9 @@ export function RegistrationForm({
                         }))}
                         error={fields.gradeLevel.errors ? true : false}
                       />
-                      {fields.gender.errors && (
+                      {fields.gradeLevel.errors && (
                         <div className="text-red-500 text-xs mt-[1px]">
-                          {fields.gender.errors}
+                          {fields.gradeLevel.errors}
                         </div>
                       )}
                     </div>
@@ -254,51 +278,51 @@ export function RegistrationForm({
                       <LabelNoGapRequired htmlFor={fields.dateOfBirth.id}>
                         Date of Birth
                       </LabelNoGapRequired>
-                      <Popover>
-                        <PopoverTrigger asChild>
+                      <input
+                        {...getInputProps(fields.dateOfBirth, {
+                          type: "hidden",
+                        })}
+                        value={date ? date.toISOString().split("T")[0] : ""}
+                        readOnly
+                      />
+                      <Popover open={open} onOpenChange={setOpen}>
+                        <PopoverTrigger
+                          className={`${
+                            fields.dateOfBirth.errors ? "border-red-500" : ""
+                          }`}
+                          asChild
+                        >
                           <Button
                             variant="outline"
-                            className="w-full justify-start pl-3 text-left"
+                            id="date"
+                            className="w-full justify-between font-normal"
+                            type="button"
                           >
-                            {fields.dateOfBirth.value
-                              ? format(
-                                  parseISO(fields.dateOfBirth.value),
-                                  "MMMM d, yyyy"
-                                )
+                            {date
+                              ? format(date, "MMMM d, yyyy")
                               : "Select date"}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            <CalendarIcon />
                           </Button>
                         </PopoverTrigger>
-                        <PopoverContent align="start" className="p-0 w-auto">
+                        <PopoverContent
+                          className="w-auto overflow-hidden p-0"
+                          align="start"
+                        >
                           <Calendar
                             mode="single"
-                            selected={
-                              fields.dateOfBirth.value
-                                ? parseISO(fields.dateOfBirth.value)
-                                : undefined
-                            }
-                            onSelect={(date) => {
-                              if (date) {
-                                form.update({
-                                  name: "dateOfBirth",
-                                  value: format(date, "yyyy-MM-dd"),
-                                });
-                              }
-                            }}
-                            disabled={() => false}
+                            selected={date}
                             captionLayout="dropdown"
+                            onSelect={(selectedDate) => {
+                              setDate(selectedDate);
+                              setOpen(false);
+                            }}
                           />
                         </PopoverContent>
                       </Popover>
-                      <input
-                        type="hidden"
-                        name="paymentDueDate"
-                        value={fields.dateOfBirth.value || ""}
-                      />
-                      <span className="text-red-500 text-xs">
-                        {fields.dateOfBirth.errors}
-                      </span>
                     </div>
+                    <span className="text-red-500 text-xs">
+                      {fields.dateOfBirth.errors}
+                    </span>
                   </div>
                   <div>
                     <div className="space-y-1">
@@ -309,7 +333,8 @@ export function RegistrationForm({
                         {...getInputProps(fields.age, { type: "text" })}
                         maxLength={3}
                         className="max-w-full xl:max-w-[100px] 2xl:max-w-[130px]"
-                        placeholder="Enter age"
+                        value={calculatedAge}
+                        readOnly
                       />
                       <span className="text-red-500 text-xs">
                         {fields.age.errors}
@@ -355,46 +380,9 @@ export function RegistrationForm({
                     )}
                   </div>
 
-                  <div className="space-y-1">
-                    <LabelNoGapRequired htmlFor={fields.contactPerson.id}>
-                      Contact Person
-                    </LabelNoGapRequired>
-                    <Input
-                      {...getInputProps(fields.contactPerson, { type: "text" })}
-                    />
-                    <span className="text-red-500 text-xs">
-                      {fields.contactPerson.errors}
-                    </span>
-                  </div>
-                  <div className="space-y-1">
-                    <LabelNoGapRequired htmlFor={fields.contactRelationship.id}>
-                      Relationship
-                    </LabelNoGapRequired>
-                    <Input
-                      {...getInputProps(fields.contactRelationship, {
-                        type: "text",
-                      })}
-                    />
-                    <span className="text-red-500 text-xs">
-                      {fields.contactRelationship.errors}
-                    </span>
-                  </div>
-                  <div className="space-y-1">
-                    <LabelNoGapRequired htmlFor={fields.contactNumber.id}>
-                      Contact Number
-                    </LabelNoGapRequired>
-                    <Input
-                      {...getInputProps(fields.contactNumber, { type: "text" })}
-                    />
-                    <span className="text-red-500 text-xs">
-                      {fields.contactNumber.errors}
-                    </span>
-                  </div>
-                  <div className="xl:col-span-3">
+                  <div className="xl:col-span-4">
                     <div className="space-y-1">
-                      <LabelNoGapRequired htmlFor="remarks">
-                        Remarks
-                      </LabelNoGapRequired>
+                      <Label htmlFor="remarks">Remarks</Label>
                       <Textarea
                         className="resize-none"
                         {...getTextareaProps(fields.remarks)}
@@ -418,11 +406,9 @@ export function RegistrationForm({
                     </div>
                     <div className="grid grid-cols-2 xl:grid-cols-5 col-span-2 gap-5">
                       <div className=" space-y-1">
-                        <LabelNoGapRequired
-                          htmlFor={basicHealthFieldList.isAllergies.id}
-                        >
-                          With Allergy
-                        </LabelNoGapRequired>
+                        <Label htmlFor={basicHealthFieldList.isAllergies.id}>
+                          With Allergy?
+                        </Label>
                         <RadioGroup
                           name={basicHealthFieldList.isAllergies.name}
                           className="flex flex-row gap-5"
@@ -454,13 +440,16 @@ export function RegistrationForm({
                             </Label>
                           </div>
                         </RadioGroup>
+                        <span className="text-red-500 text-xs">
+                          {basicHealthFieldList.isAllergies.errors}
+                        </span>
                       </div>
-                      <div className=" space-y-1">
-                        <LabelNoGapRequired
+                      <div className="col-span-3 space-y-1">
+                        <Label
                           htmlFor={basicHealthFieldList.allergyDescription.id}
                         >
                           If yes, please specify:
-                        </LabelNoGapRequired>
+                        </Label>
                         <Input
                           {...getInputProps(
                             basicHealthFieldList.allergyDescription,
@@ -475,11 +464,11 @@ export function RegistrationForm({
                         </span>
                       </div>
                       <div className=" space-y-1">
-                        <LabelNoGapRequired
+                        <Label
                           htmlFor={basicHealthFieldList.allergyMedicine.id}
                         >
                           Medicine
-                        </LabelNoGapRequired>
+                        </Label>
                         <Input
                           {...getInputProps(
                             basicHealthFieldList.allergyMedicine,
@@ -501,11 +490,11 @@ export function RegistrationForm({
                     </p>
                     <div className="grid grid-cols-2 xl:grid-cols-5 col-span-2 gap-5">
                       <div className=" space-y-1">
-                        <LabelNoGapRequired
+                        <Label
                           htmlFor={basicHealthFieldList.isHealthCondition.id}
                         >
                           With Health Condition?
-                        </LabelNoGapRequired>
+                        </Label>
                         <RadioGroup
                           name={basicHealthFieldList.isHealthCondition.name}
                           className="flex flex-row gap-5"
@@ -538,14 +527,14 @@ export function RegistrationForm({
                           </div>
                         </RadioGroup>
                       </div>
-                      <div className=" space-y-1">
-                        <LabelNoGapRequired
+                      <div className="col-span-3 space-y-1">
+                        <Label
                           htmlFor={
                             basicHealthFieldList.healthConditionDescription.id
                           }
                         >
                           If yes, please specify:
-                        </LabelNoGapRequired>
+                        </Label>
                         <Input
                           {...getInputProps(
                             basicHealthFieldList.healthConditionDescription,
@@ -563,13 +552,13 @@ export function RegistrationForm({
                         </span>
                       </div>
                       <div className=" space-y-1">
-                        <LabelNoGapRequired
+                        <Label
                           htmlFor={
                             basicHealthFieldList.healthConditionMedicine.id
                           }
                         >
                           Medicine
-                        </LabelNoGapRequired>
+                        </Label>
                         <Input
                           {...getInputProps(
                             basicHealthFieldList.healthConditionMedicine,
@@ -582,6 +571,60 @@ export function RegistrationForm({
                         <span className="text-red-500 text-xs">
                           {basicHealthFieldList.healthConditionMedicine.errors}
                         </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="xl:col-span-3">
+                    <p className="text-gray-400 font-semibold">
+                      Contact Person in Case of Emergency
+                    </p>
+                    <div className="grid grid-cols-2 xl:grid-cols-3 col-span-2 gap-5">
+                      <div className="space-y-1">
+                        <Label htmlFor={contacPersonEmergencyFieldList.name.id}>
+                          Contact Person
+                        </Label>
+                        <Input
+                          {...getInputProps(
+                            contacPersonEmergencyFieldList.name,
+                            {
+                              type: "text",
+                            }
+                          )}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label
+                          htmlFor={
+                            contacPersonEmergencyFieldList.relationship.id
+                          }
+                        >
+                          Relationship
+                        </Label>
+                        <Input
+                          {...getInputProps(
+                            contacPersonEmergencyFieldList.relationship,
+                            {
+                              type: "text",
+                            }
+                          )}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label
+                          htmlFor={
+                            contacPersonEmergencyFieldList.contactNumber.id
+                          }
+                        >
+                          Contact Number
+                        </Label>
+                        <Input
+                          {...getInputProps(
+                            contacPersonEmergencyFieldList.contactNumber,
+                            {
+                              type: "text",
+                            }
+                          )}
+                        />
                       </div>
                     </div>
                   </div>

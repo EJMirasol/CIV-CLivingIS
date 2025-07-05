@@ -1,6 +1,9 @@
 import { parseWithZod } from "@conform-to/zod";
-import { dataWithError, redirectWithSuccess } from "remix-toast";
-import type { Route } from "../../+types/home";
+import {
+  dataWithError,
+  redirectWithSuccess,
+  redirectWithError,
+} from "remix-toast";
 import { RegistrationForm } from "~/components/forms/modules/registration/RegistrationForm";
 import {
   getAllClassifications,
@@ -10,12 +13,11 @@ import {
   register,
 } from "~/utils/registration.server";
 import { RegistrationFormSchema } from "~/components/forms/modules/registration/dto/registration.dto";
+import type { Route } from "./+types/register";
 
 export async function loader({ request }: Route.LoaderArgs) {
   return {
-    gradeLevelList: await getAllGradeLevels().then((data) =>
-      data.map((grade: any) => ({ label: grade.name, value: grade.id }))
-    ),
+    gradeLevelList: await getAllGradeLevels(),
     genderList: await getAllGenders(),
     hallList: await getAllHalls(),
     classificationList: await getAllClassifications(),
@@ -42,14 +44,11 @@ export async function action({ request }: Route.ActionArgs) {
   }
 
   try {
-    await register(submission.value);
-    return redirectWithSuccess("/", "Successfully created.");
+    const result = await register(submission.value);
+    return redirectWithSuccess("/", result.message);
   } catch (error: any) {
     if (error.message === "Duplicate") {
-      return dataWithError(null, "Applicant ID already exists");
-    }
-    if (error.message === "School year or grade level not found") {
-      return dataWithError(null, "School year or grade level not found");
+      return redirectWithError("/", "Young people already exists");
     }
     console.error(error);
     return { error: "Failed to create application" };
