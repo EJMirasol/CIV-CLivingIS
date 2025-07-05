@@ -1,3 +1,4 @@
+import { id } from "date-fns/locale";
 import { z } from "zod";
 
 const stringToBoolean = z.union([
@@ -13,7 +14,14 @@ export const BasicHealthInformationSchema = z.object({
   healthConditionMedicine: z.string().optional(),
 });
 
+export const ContacPersonEmergencySchema = z.object({
+  name: z.string().optional(),
+  relationship: z.string().optional(),
+  contactNumber:z.string().optional(),
+});
+
 export const RegistrationFormSchema = z.object({
+  id: z.string().optional(),
   lastName: z.string({ message: "This field is required." }),
   firstName: z.string({ message: "This field is required." }),
   middleName: z.string().optional(),
@@ -21,15 +29,13 @@ export const RegistrationFormSchema = z.object({
   gender: z.string({ message: "This field is required." }),
   dateOfBirth: z.string({ message: "This field is required." }),
   age: z.string({ message: "This field is required." }),
-  contactPerson : z.string({ message: "This field is required." }),
-  contactRelationship: z.string({ message: "This field is required." }),
-  contactNumber: z.string({ message: "This field is required." }),
-  image: z.string({ message: "Please upload a photo." }),
+  image: z.string().optional(),
   hall: z.string({ message: "This field is required." }),
   classification: z.string({ message: "This field is required." }),
   gradeLevel: z.string({ message: "This field is required." }),
   remarks: z.string().optional(),
   basicHealthInformation: BasicHealthInformationSchema.optional(),
+  contactPersonEmergency: ContacPersonEmergencySchema.optional(),
   });
   
 

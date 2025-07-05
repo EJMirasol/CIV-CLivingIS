@@ -1,79 +1,96 @@
-
 import type { RegistrationFormDTO } from "~/components/forms/modules/registration/dto/registration.dto";
 import { prisma } from "~/lib/prisma";
 
 
+
 export async function register(data: RegistrationFormDTO) {
-  const applicant = await prisma.registration.findUnique({
+  // Check for duplicate by name + date of birth instead of ID
+  const existingApplicant = await prisma.youngPeople.findFirst({
     where: {
-      Id: true
+      firstName: data.firstName.trim(),
+      lastName: data.lastName.trim(),
+      dateOfBirth: new Date(data.dateOfBirth),
     },
   });
 
-  if (applicant) {
+  if (existingApplicant) {
     throw new Error("Duplicate");
   }
-  const youngpeople = await prisma.youngpeople.create({
+
+  // Create BasicHealthInfo first (if provided)
+  let basicHealthInfoId;
+  if (data.basicHealthInformation) {
+    const healthInfo = await prisma.basicHealthInfo.create({
+      data: {
+        isAllergy: data.basicHealthInformation.isAllergies,
+        allergyDescription: data.basicHealthInformation.allergyDescription,
+        allergyMedicine: data.basicHealthInformation.allergyMedicine,
+        isHealthCondition: data.basicHealthInformation.isHealthCondition,
+        healthConditionDescription:
+          data.basicHealthInformation.healthConditionDescription,
+        healthConditionMedication:
+          data.basicHealthInformation.healthConditionMedicine,
+      },
+    });
+    basicHealthInfoId = healthInfo.id;
+  }
+
+  // Create YoungPeople with emergency contact
+  const youngpeople = await prisma.youngPeople.create({
     data: {
       lastName: data.lastName.trim(),
       firstName: data.firstName.trim(),
-      middleName: data.middleName?.trim() || "",
-      suffix: data.suffix?.trim() || "",
-      dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : null,
-      age: data.age.trim(),
-      gender: data.gender === "brother" ? "brother" : "sister",
-      contactPerson: data.contactPerson.trim(),
-      contactRelationship: data.contactRelationship.trim(),
-      contactNumber: data.contactNumber.trim(),
-      image: data.image.trim(),
-    },
-  });
-
-
-  const gradeLevel = await prisma.gradeLevel.findFirst({
-    orderBy: { id: "asc" },
-  });
-
-  if (!gradeLevel) {
-    throw new Error("School year or grade level not found");
-  }
-
-  await prisma.registration.create({
-    data: {
-      gradeLevelId: gradeLevel.id,
-      youngPeopleId: youngpeople.id,
-      hallId: data.hall,
-      classification: data.classification,
-      remarks: data.remarks?.trim() || "",
-      basicHealthInformation: data.basicHealthInformation
+      middleName: data.middleName?.trim() || null,
+      suffix: data.suffix?.trim() || null,
+      dateOfBirth: new Date(data.dateOfBirth),
+      age: parseInt(data.age, 10),
+      gender: data.gender as "brother" | "sister", // Ensure enum match
+      image: data.image?.trim() || null,
+      ContactPersonEmergency: data.contactPersonEmergency
         ? {
-            allergies: data.basicHealthInformation.allergies.trim(),
-            allergyDescription: data.basicHealthInformation.allergyDescription?.trim() || "",
-            allergyMedicine: data.basicHealthInformation.allergyMedicine?.trim() || "",
-            healthConditions: data.basicHealthInformation.healthConditions.trim(),
-            healthConditionDescription: data.basicHealthInformation.healthConditionDescription?.trim() || "",
-            healthConditionMedicine: data.basicHealthInformation.healthConditionMedicine?.trim() || "",
+            create: {
+              name: data.contactPersonEmergency.name?.trim() || "",
+              relationship:
+                data.contactPersonEmergency.relationship?.trim() || "",
+              contactNumber:
+                data.contactPersonEmergency.contactNumber?.trim() || "",
+            },
           }
         : undefined,
     },
   });
 
+  // Create Registration record
+  await prisma.registration.create({
+    data: {
+      youngPeopleId: youngpeople.id,
+      gradeLevelId: data.gradeLevel, // Use provided gradeLevel ID
+      hallId: data.hall,
+      classificationId: data.classification,
+      remarks: data.remarks?.trim() || "",
+      basicHealthInfoId: basicHealthInfoId,
+      dateRegistered: new Date(), // Add missing required field
+    },
+  });
+
+  // Return a value to indicate success for the toaster
+  return { success: true, message: "Registration successful." };
 }
 
 export async function getAllGradeLevels() {
   const gradeLevels = await prisma.gradeLevel.findMany({
-    orderBy: { id: "asc" },
+    orderBy: { name: "asc" },
   });
 
   return gradeLevels.map((level: any) => ({
-    label: level.label || "",
-    value: level.value || "",
+    label: level.name || "",
+    value: level.id || "",
   }));
 }
 
 export async function getAllHalls() {
   const halls = await prisma.hall.findMany({
-    orderBy: { id: "asc" },
+    orderBy: { name: "asc"  },
   });
 
   return halls.map((hall: any) => ({
@@ -92,7 +109,7 @@ export async function getAllGenders() {
 export async function getAllClassifications() {
  const classifications = await prisma.classification.findMany({
 
-    orderBy: { id: "asc" },
+    orderBy: { name: "asc" },
   });
 
   return classifications.map((classification: any) => ({
