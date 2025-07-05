@@ -4,3 +4,10 @@
 # React Router
 /.react-router/
 /build/
+
+package-lock.json
+yarn.lock
+.env
+/generated/
+
+/generated/prisma
