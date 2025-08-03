@@ -1,6 +1,5 @@
 import { parseWithZod } from "@conform-to/zod";
 import {
-  dataWithError,
   redirectWithSuccess,
   redirectWithError,
 } from "remix-toast";
@@ -45,10 +44,10 @@ export async function action({ request }: Route.ActionArgs) {
 
   try {
     const result = await register(submission.value);
-    return redirectWithSuccess("/", result.message);
+    return redirectWithSuccess("/conference-meetings/ypcl/register/", result.message);
   } catch (error: any) {
     if (error.message === "Duplicate") {
-      return redirectWithError("/", "Young people already exists");
+      return redirectWithError("/conference-meetings/ypcl/register/", "Young people already exists");
     }
     console.error(error);
     return { error: "Failed to create application" };
