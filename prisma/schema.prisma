@@ -90,6 +90,6 @@ model ContactPersonEmergency {
 }
 
 enum Gender {
-  brother
-  sister
+  Brother
+  Sister
 }

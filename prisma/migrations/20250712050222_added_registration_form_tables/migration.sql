@@ -1,19 +1,16 @@
 -- CreateEnum
-CREATE TYPE "Gender" AS ENUM ('brother', 'sister');
+CREATE TYPE "Gender" AS ENUM ('Brother', 'Sister');
 
 -- CreateTable
 CREATE TABLE "YoungPeople" (
     "id" TEXT NOT NULL,
     "lastName" TEXT NOT NULL,
     "firstName" TEXT NOT NULL,
-    "middleName" TEXT NOT NULL,
-    "suffix" TEXT NOT NULL,
+    "middleName" TEXT,
+    "suffix" TEXT,
     "dateOfBirth" TIMESTAMP(3) NOT NULL,
     "age" INTEGER NOT NULL,
     "gender" "Gender" NOT NULL,
-    "contactPerson" TEXT NOT NULL,
-    "contactRelationship" TEXT NOT NULL,
-    "contactNumber" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "updatedBy" TEXT,
@@ -26,10 +23,10 @@ CREATE TABLE "YoungPeople" (
 CREATE TABLE "Registration" (
     "id" TEXT NOT NULL,
     "youngPeopleId" TEXT NOT NULL,
-    "dateApplied" TIMESTAMP(3) NOT NULL,
-    "gradeLevelId" TEXT,
+    "dateRegistered" TIMESTAMP(3) NOT NULL,
+    "gradeLevelId" TEXT NOT NULL,
     "hallId" TEXT,
-    "classificationId" TEXT,
+    "classificationId" TEXT NOT NULL,
     "remarks" TEXT,
     "basicHealthInfoId" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -76,17 +73,36 @@ CREATE TABLE "BasicHealthInfo" (
     CONSTRAINT "BasicHealthInfo_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "ContactPersonEmergency" (
+    "id" TEXT NOT NULL,
+    "name" TEXT,
+    "relationship" TEXT,
+    "contactNumber" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "youngPersonId" TEXT,
+
+    CONSTRAINT "ContactPersonEmergency_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "ContactPersonEmergency_youngPersonId_key" ON "ContactPersonEmergency"("youngPersonId");
+
 -- AddForeignKey
 ALTER TABLE "Registration" ADD CONSTRAINT "Registration_youngPeopleId_fkey" FOREIGN KEY ("youngPeopleId") REFERENCES "YoungPeople"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Registration" ADD CONSTRAINT "Registration_gradeLevelId_fkey" FOREIGN KEY ("gradeLevelId") REFERENCES "GradeLevel"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Registration" ADD CONSTRAINT "Registration_gradeLevelId_fkey" FOREIGN KEY ("gradeLevelId") REFERENCES "GradeLevel"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Registration" ADD CONSTRAINT "Registration_hallId_fkey" FOREIGN KEY ("hallId") REFERENCES "Hall"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Registration" ADD CONSTRAINT "Registration_classificationId_fkey" FOREIGN KEY ("classificationId") REFERENCES "Classification"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Registration" ADD CONSTRAINT "Registration_classificationId_fkey" FOREIGN KEY ("classificationId") REFERENCES "Classification"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Registration" ADD CONSTRAINT "Registration_basicHealthInfoId_fkey" FOREIGN KEY ("basicHealthInfoId") REFERENCES "BasicHealthInfo"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ContactPersonEmergency" ADD CONSTRAINT "ContactPersonEmergency_youngPersonId_fkey" FOREIGN KEY ("youngPersonId") REFERENCES "YoungPeople"("id") ON DELETE SET NULL ON UPDATE CASCADE;

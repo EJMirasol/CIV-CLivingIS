@@ -24,8 +24,10 @@ import { format, parseISO, isValid } from "date-fns";
 import { Calendar } from "~/components/ui/calendar";
 import { Textarea } from "~/components/ui/textarea";
 import { useRef, useState, useEffect } from "react";
+import type { ChangeEvent } from "react";
 import { ImageUploader } from "~/components/shared/imageUpload/ImageUploader";
 import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
+import { DeleteConfirmationDialog } from "~/components/shared/dialogs/DeleteConfirmationDialog";
 
 interface RegistrationFormProps {
   gradeLevelList: {
@@ -117,6 +119,16 @@ export function RegistrationForm({
     calculateAge(fields.dateOfBirth.value || "")
   );
 
+  // Initialize date from fields.dateOfBirth.value if it exists
+  useEffect(() => {
+    if (fields.dateOfBirth.value) {
+      const parsedDate = parseISO(fields.dateOfBirth.value);
+      if (isValid(parsedDate)) {
+        setDate(parsedDate);
+      }
+    }
+  }, []);
+
   // Sync calculatedAge if form is reset or dateOfBirth changes externally
   useEffect(() => {
     const age = calculateAge(fields.dateOfBirth.value || "");
@@ -124,9 +136,22 @@ export function RegistrationForm({
     form.update({ name: "age", value: age });
   }, [fields.dateOfBirth.value]);
 
+  // Update date state when a date is selected from the calendar
+  useEffect(() => {
+    if (date) {
+      const dateString = date.toISOString().split("T")[0];
+      form.update({ name: "dateOfBirth", value: dateString });
+    }
+  }, [date]);
+
+  // Function to transform input to uppercase
+  const transformToUppercase = (e: ChangeEvent<HTMLInputElement>) => {
+    e.target.value = e.target.value.toUpperCase();
+  };
+
   return (
     <div className="bg-gray-50">
-      <div className="w-full flex flex-col px-10 lg:px-25 pb-10">
+      <div className="w-full flex flex-col">
         {/* header of the Application Form */}
         <div className="ml-4 py-5 flex justify-between flex-row items-center">
           <div className="flex items-center">
@@ -137,14 +162,7 @@ export function RegistrationForm({
           </div>
           <div className="flex items-center gap-2">
             <SaveButton formId={form.id} />
-            <Link to="/">
-              <Button
-                className="h-8 gap-1 bg-[var(--destructive)]"
-                type="button"
-              >
-                Cancel
-              </Button>
-            </Link>
+            <DeleteConfirmationDialog redirectPath="/" />
           </div>
         </div>
         <Form
@@ -152,7 +170,7 @@ export function RegistrationForm({
           method="post"
           {...getFormProps(form)}
         >
-          <Card className="py-10 px-5 flex flex-col w-full">
+          <Card className="px-5 flex flex-col w-full">
             <div className="text-xs h-full">
               <p>
                 Please fill out all the required fields marked with{" "}
@@ -161,7 +179,7 @@ export function RegistrationForm({
               </p>
             </div>
 
-            <CardContent className="px-0 pt-36 xl:pt-0">
+            <CardContent className="px-0 pt-44 xl:pt-0">
               {/* Main content */}
               <div className="mt-5">
                 <div className="grid grid-cols-1 xl:grid-cols-4 gap-5 relative">
@@ -173,6 +191,7 @@ export function RegistrationForm({
                       <Input
                         {...getInputProps(fields.lastName, { type: "text" })}
                         maxLength={50}
+                        onInput={transformToUppercase}
                       />
                     </div>
                     <span className="text-red-500 text-xs">
@@ -188,6 +207,7 @@ export function RegistrationForm({
                       <Input
                         {...getInputProps(fields.firstName, { type: "text" })}
                         maxLength={50}
+                        onInput={transformToUppercase}
                       />
                     </div>
                     <span className="text-red-500 text-xs">
@@ -201,6 +221,7 @@ export function RegistrationForm({
                       <Input
                         {...getInputProps(fields.middleName, { type: "text" })}
                         maxLength={50}
+                        onInput={transformToUppercase}
                       />
                     </div>
                   </div>
@@ -211,6 +232,7 @@ export function RegistrationForm({
                       className="max-w-full xl:max-w-[100px] 2xl:max-w-[130px]"
                       {...getInputProps(fields.suffix, { type: "text" })}
                       maxLength={20}
+                      onInput={transformToUppercase}
                     />
                   </div>
 
@@ -389,6 +411,10 @@ export function RegistrationForm({
                         maxLength={50}
                         placeholder="Type your remarks here."
                         id="remarks"
+                        onInput={(e) => {
+                          const target = e.target as HTMLTextAreaElement;
+                          target.value = target.value.toUpperCase();
+                        }}
                       />
                     </div>
                     <span className="text-red-500 text-xs">
@@ -458,6 +484,7 @@ export function RegistrationForm({
                             }
                           )}
                           disabled={isAllergies === "false"}
+                          onInput={transformToUppercase}
                         />
                         <span className="text-red-500 text-xs">
                           {basicHealthFieldList.allergyDescription.errors}
@@ -477,6 +504,7 @@ export function RegistrationForm({
                             }
                           )}
                           disabled={isAllergies === "false"}
+                          onInput={transformToUppercase}
                         />
                         <span className="text-red-500 text-xs">
                           {basicHealthFieldList.allergyMedicine.errors}
@@ -543,6 +571,7 @@ export function RegistrationForm({
                             }
                           )}
                           disabled={isHealthCondition === "false"}
+                          onInput={transformToUppercase}
                         />
                         <span className="text-red-500 text-xs">
                           {
@@ -567,6 +596,7 @@ export function RegistrationForm({
                             }
                           )}
                           disabled={isHealthCondition === "false"}
+                          onInput={transformToUppercase}
                         />
                         <span className="text-red-500 text-xs">
                           {basicHealthFieldList.healthConditionMedicine.errors}
@@ -590,6 +620,7 @@ export function RegistrationForm({
                               type: "text",
                             }
                           )}
+                          onInput={transformToUppercase}
                         />
                       </div>
                       <div className="space-y-1">
@@ -607,6 +638,7 @@ export function RegistrationForm({
                               type: "text",
                             }
                           )}
+                          onInput={transformToUppercase}
                         />
                       </div>
                       <div className="space-y-1">
@@ -624,6 +656,7 @@ export function RegistrationForm({
                               type: "text",
                             }
                           )}
+                          onInput={transformToUppercase}
                         />
                       </div>
                     </div>
