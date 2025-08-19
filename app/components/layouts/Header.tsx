@@ -1,10 +1,17 @@
-import {  Menu } from "lucide-react";
+import { Menu } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "~/components/ui/sheet";
-import { useEffect, useState, type JSX } from "react";
+import { useEffect, useRef, useState, type JSX } from "react";
 import { MobileMenu } from "./MobileMenu";
-import {  useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 import Logo from "~/src/CIV.png";
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+}
+
 interface HeaderProps {
   sidebarItems: {
     icon: JSX.Element;
@@ -17,10 +24,11 @@ interface HeaderProps {
       route: string;
     }[];
   }[];
+  user: User;
   setOpen: (open: boolean) => void;
 }
 
-export function Header({ sidebarItems, setOpen }: HeaderProps) {
+export function Header({ sidebarItems, user, setOpen }: HeaderProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSideBarOpen, setIsSideBarOpen] = useState(true);
   useEffect(() => {
@@ -33,7 +41,11 @@ export function Header({ sidebarItems, setOpen }: HeaderProps) {
           {/* Mobile menu button */}
           <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="sm" className="lg:hidden text-white hover:bg-[#2c4f48] hover:text-white">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="lg:hidden text-white hover:bg-[#2c4f48] hover:text-white"
+              >
                 <Menu className="w-5 h-5" />
               </Button>
             </SheetTrigger>
@@ -66,15 +78,17 @@ export function Header({ sidebarItems, setOpen }: HeaderProps) {
           />
 
           <h1 className="text-sm lg:text-lg font-semibold text-white truncate">
-            <span className="hidden sm:inline">THE CHURCH IN VALENZUELA CITY</span>
+            <span className="hidden sm:inline">
+              THE CHURCH IN VALENZUELA CITY
+            </span>
             <span className="sm:hidden">CIV</span>
           </h1>
         </div>
         <div className="flex items-center space-x-2 text-xs lg:text-sm text-gray-600 relative">
-          <span className="font-medium text-white">CIV</span>
+          <span className="font-medium text-white">{user.name}</span>
           <span className="hidden sm:inline text-white">|</span>
           <div className="relative">
-            <MenuDropdown />
+            <MenuDropdown user={user} />
           </div>
         </div>
       </div>
@@ -82,12 +96,36 @@ export function Header({ sidebarItems, setOpen }: HeaderProps) {
   );
 }
 
-
-function MenuDropdown() {
+function MenuDropdown({ user }: { user: User }) {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return; // Only add listener when dropdown is open
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [open]); // Add 'open' to dependency array
+
+  const handleLogout = () => {
+    setOpen(false);
+    navigate("/sign-out");
+  };
+
   return (
-    <div className="relative">
+    <div className="relative" ref={dropdownRef}>
       <Button
         variant="ghost"
         size="sm"
@@ -101,18 +139,19 @@ function MenuDropdown() {
           stroke="currentColor"
           viewBox="0 0 24 24"
         >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M19 9l-7 7-7-7"
+          />
         </svg>
       </Button>
       {open && (
         <div className="absolute right-0 mt-2 w-32 bg-white border rounded shadow-lg z-50">
           <button
             className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
-            onClick={() => {
-              setOpen(false);
-              navigate("/sign-out")
-              // Add your logout logic here
-            }}
+            onClick={handleLogout}
           >
             Logout
           </button>

@@ -10,4 +10,6 @@ yarn.lock
 .env
 /generated/
 
-/generated/prisma
+# Kiro files
+.kiro/
+.vscode/

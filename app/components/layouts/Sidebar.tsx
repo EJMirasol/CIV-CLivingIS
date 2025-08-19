@@ -94,7 +94,7 @@ export function Sidebar({ sidebarItems, isSideBarOpen }: SidebarProps) {
                   className="w-full space-y-2"
                 >
                   <CollapsibleTrigger asChild className="cursor-pointer">
-                    <li className="flex items-center gap-3 rounded-lg px-4 py-3 hover:text-white">
+                    <div className="flex items-center gap-3 rounded-lg px-4 py-3 hover:text-white">
                       {icon}
                       {label}
                       {isOpenDropDown.find((x) => x.label === label)?.status ? (
@@ -102,7 +102,7 @@ export function Sidebar({ sidebarItems, isSideBarOpen }: SidebarProps) {
                       ) : (
                         <ChevronRight className="p-0 ml-auto flex h-3 w-3 shrink-0 items-center justify-center" />
                       )}
-                    </li>
+                    </div>
                   </CollapsibleTrigger>
                   <CollapsibleContent className="space-y-0.5 font-normal text-sm text-white mx-2">
                     {subModules.map(
@@ -132,10 +132,10 @@ export function Sidebar({ sidebarItems, isSideBarOpen }: SidebarProps) {
                   isActive ? activeModule : notActiveModule
                 }
               >
-                <li className="flex items-center gap-3 px-4 py-3">
+                <div className="flex items-center gap-3 px-4 py-3">
                   {icon}
                   {label}
-                </li>
+                </div>
               </NavLink>
             )
         )}
