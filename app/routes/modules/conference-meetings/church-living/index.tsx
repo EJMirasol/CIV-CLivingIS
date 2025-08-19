@@ -1,4 +1,4 @@
-import { Form, Link, useLoaderData, useNavigate } from "react-router";
+import { Form, Link, redirect, useLoaderData, useNavigate } from "react-router";
 import {
   ArrowDownToLine,
   ClipboardList,
@@ -24,10 +24,28 @@ import {
   getYPCLLists,
 } from "~/utils/registration.server";
 import { getYear } from "date-fns";
+import { auth } from "~/lib/auth.server";
 
 export async function loader({ request }: Route.LoaderArgs) {
+  const session = await auth.api.getSession({
+    headers: request.headers,
+  });
+  if (!session) {
+    throw redirect("/sign-in");
+  }
   const url = new URL(request.url);
-  const args = Object.fromEntries(url.searchParams.entries());
+  const searchParams = Object.fromEntries(url.searchParams.entries());
+
+  // Type-safe search parameters with defaults
+  const args = {
+    hall: searchParams.hall || "",
+    ypfirstName: searchParams.ypfirstName || "",
+    gender: searchParams.gender || "",
+    classification: searchParams.classification || "",
+    gradeLevel: searchParams.gradeLevel || "",
+    page: searchParams.page || "1",
+    limit: searchParams.limit || "10",
+  };
 
   const { data, pagination } = await getYPCLLists(args);
   return {
@@ -177,7 +195,7 @@ export default () => {
             <Input
               name="ypfirstName"
               type="text"
-              defaultValue={searchFilter.firstName}
+              defaultValue={searchFilter.ypfirstName}
             />
           </div>
 
@@ -214,7 +232,7 @@ export default () => {
                 id: value,
                 name: label,
               }))}
-              defaultValue={searchFilter.applicationStatus}
+              defaultValue={searchFilter.classification}
             />
           </div>
           <div className="col-start-6 row-start-1 row-span-2 flex ml-20 justify-center items-center gap-2">
@@ -231,7 +249,7 @@ export default () => {
               variant="default"
               className="border-none bg-[var(--app-secondary)] text-white"
               onClick={() => {
-                navigate("/ypcl/");
+                navigate("/conference-meetings/ypcl/");
               }}
             >
               <RefreshCcw className="h-5 w-auto" />

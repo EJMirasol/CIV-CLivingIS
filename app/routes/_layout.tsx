@@ -1,115 +1,46 @@
-import { IoMdSettings } from "react-icons/io";
 import type { Route } from "./+types/_layout";
-import { BookHeart, Handshake, Users } from "lucide-react";
+import { BookHeart, Handshake } from "lucide-react";
+import { MdSpaceDashboard } from "react-icons/md";
 import { useState } from "react";
 import { Header } from "~/components/layouts/Header";
 import { Sidebar } from "~/components/layouts/Sidebar";
-import { Outlet } from "react-router";
-import { MdSpaceDashboard } from "react-icons/md";
+import { Outlet, redirect, useLoaderData } from "react-router";
+import { auth } from "~/lib/auth.server";
 
 export async function loader({ request }: Route.LoaderArgs) {
-  // const auth = serverAuth();
-  // const session = await auth.api.getSession({
-  //   headers: request.headers,
-  // });
+  const session = await auth.api.getSession({
+    headers: request.headers,
+  });
+  if (!session) {
+    throw redirect("/sign-in");
+  }
 
-  // if (!session) {
-  //   throw redirect("/sign-in");
-  // }
-
-  // const user = await prisma.user.findUnique({
-  //   where: {
-  //     id: session.user.id,
-  //   },
-  //   select: {
-  //     firstLogin: true,
-  //   },
-  // });
-
-  // if (!user?.firstLogin) {
-  //   throw redirect("/change-password");
-  // }
-
-  // const usersPermission = await getModuleAccessByModuleName(request, "Users");
-  // const rolesPermission = await getModuleAccessByModuleName(request, "Roles");
-  // const orInvoicePermission = await getModuleAccessByModuleName(
-  //   request,
-  //   "OR/Invoice Assignment"
-  // );
-  // const admissionsPermission = await getModuleAccessByModuleName(
-  //   request,
-  //   "Admissions"
-  // );
-  // const chartOfAccountsPermission = await getModuleAccessByModuleName(
-  //   request,
-  //   "Chart of Accounts"
-  // );
-  // const paymentTermsPermission = await getModuleAccessByModuleName(
-  //   request,
-  //   "Payment Terms"
-  // );
-  // //billing-settings items
-  // const tuitionPermission = await getModuleAccessByModuleName(
-  //   request,
-  //   "Tuition Fees"
-  // );
-  // const otherFeesPermission = await getModuleAccessByModuleName(
-  //   request,
-  //   "Other Fees"
-  // );
-  // const miscFeesPermission = await getModuleAccessByModuleName(
-  //   request,
-  //   "Miscellaneous Fees"
-  // );
-  // const discountsPermission = await getModuleAccessByModuleName(
-  //   request,
-  //   "Scholarship/Discounts"
-  // );
-
-  // const hasBillingAccess = [
-  //   tuitionPermission?.includes("view"),
-  //   discountsPermission?.includes("view"),
-  //   otherFeesPermission?.includes("view"),
-  //   miscFeesPermission?.includes("view"),
-  // ].some(Boolean);
-
-  // return data({
-  //   session,
-  //   permissions: {
-  //     users: usersPermission,
-  //     billingSettings: hasBillingAccess,
-  //     chartOfAccounts: chartOfAccountsPermission,
-  //     paymentTerms: paymentTermsPermission,
-  //     roles: rolesPermission,
-  //     invoice: orInvoicePermission,
-  //     admissions: admissionsPermission,
-  //   },
-  // });
+  return {
+    user: session.user,
+  };
 }
 
 export default function DashboardLayout() {
-  // const { permissions } = useLoaderData<typeof loader>();
+  const { user } = useLoaderData<typeof loader>();
   const sidebarItems = [
-    // {
-    //   icon: <MdSpaceDashboard className="h-4 w-4" />,
-    //   label: "Dashboard",
-    //   route: "/dashboard",
-    //   key: "dashboard",
-    //   subModules: [],
-    // },
-
+    {
+      icon: <MdSpaceDashboard className="h-4 w-4" />,
+      label: "Dashboard",
+      route: "/dashboard",
+      key: "dashboard",
+      subModules: [],
+    },
     {
       icon: <Handshake className="h-4 w-4" />,
       label: "Meetings & Conferences",
       route: "",
       key: "conference-meetings",
-      subModules: [ 
-         {
+      subModules: [
+        {
           icon: <BookHeart className="h-4 w-4" />,
           label: "YP Church Living",
           route: "conference-meetings/ypcl",
         },
-      
       ].filter(Boolean),
     },
   ];
@@ -118,6 +49,7 @@ export default function DashboardLayout() {
     <div className="min-h-screen bg-gray-50">
       <Header
         sidebarItems={sidebarItems}
+        user={user}
         setOpen={(val) => {
           setIsSideBarOpen(val);
         }}

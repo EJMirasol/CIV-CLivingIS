@@ -1,13 +1,13 @@
+import { redirect } from "react-router";
 import type { Route } from "./+types/home";
-import Login from "./modules/login/login";
+import Login from "./modules/auth/sign-in";
 
 export function meta({}: Route.MetaArgs) {
-  return [
-    { title: "New React Router App" },
-    { name: "description", content: "Welcome to React Router!" },
-  ];
+  return [{ title: "CIV-IS" }];
 }
-
+export async function loader() {
+  return redirect("/sign-in");
+}
 export default function Home() {
   return <Login />;
 }

@@ -1,8 +1,6 @@
 import { parseWithZod } from "@conform-to/zod";
-import {
-  redirectWithSuccess,
-  redirectWithError,
-} from "remix-toast";
+import { redirect } from "react-router";
+import { redirectWithSuccess, redirectWithError } from "remix-toast";
 import { RegistrationForm } from "~/components/forms/modules/registration/RegistrationForm";
 import {
   getAllClassifications,
@@ -12,9 +10,18 @@ import {
   register,
 } from "~/utils/registration.server";
 import { RegistrationFormSchema } from "~/components/forms/modules/registration/dto/registration.dto";
-import type { Route } from "./+types/register";
+import { auth } from "~/lib/auth.server";
+import type { Route } from "./+types";
 
 export async function loader({ request }: Route.LoaderArgs) {
+  // Add authentication check like in the index route
+  const session = await auth.api.getSession({
+    headers: request.headers,
+  });
+  if (!session) {
+    throw redirect("/sign-in");
+  }
+
   return {
     gradeLevelList: await getAllGradeLevels(),
     genderList: await getAllGenders(),
@@ -44,10 +51,16 @@ export async function action({ request }: Route.ActionArgs) {
 
   try {
     const result = await register(submission.value);
-    return redirectWithSuccess("/conference-meetings/ypcl/register/", result.message);
+    return redirectWithSuccess(
+      "/conference-meetings/ypcl/register/",
+      result.message
+    );
   } catch (error: any) {
     if (error.message === "Duplicate") {
-      return redirectWithError("/conference-meetings/ypcl/register/", "Young people already exists");
+      return redirectWithError(
+        "/conference-meetings/ypcl/register/",
+        "Young people already exists"
+      );
     }
     console.error(error);
     return { error: "Failed to create application" };
