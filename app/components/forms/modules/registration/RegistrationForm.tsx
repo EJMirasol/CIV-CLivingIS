@@ -162,7 +162,7 @@ export function RegistrationForm({
           </div>
           <div className="flex items-center gap-2">
             <SaveButton formId={form.id} />
-            <DeleteConfirmationDialog redirectPath="/" />
+            <DeleteConfirmationDialog redirectPath="/conference-meetings/ypcl" />
           </div>
         </div>
         <Form

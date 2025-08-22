@@ -52,7 +52,7 @@ export async function action({ request }: Route.ActionArgs) {
   try {
     const result = await register(submission.value);
     return redirectWithSuccess(
-      "/conference-meetings/ypcl/register/",
+      "/conference-meetings/ypcl/",
       result.message
     );
   } catch (error: any) {
