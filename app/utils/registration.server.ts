@@ -130,7 +130,7 @@ export async function getYPCLLists({
     data: register.map((x) => {
       return {
         id: x.id,
-        ypfirstName: x.YoungPeople.firstName,
+        ypfirstName: x.YoungPeople.firstName.toUpperCase(),
         gender: x.YoungPeople.gender,
         gradeLevel: x.GradeLevel.name,
         classification: x.Classification.name,
@@ -369,10 +369,10 @@ export async function exportYPCLData(searchParams: {
     console.log("✅ Database query successful, found", registrations.length, "registrations");
 
     const mappedData = registrations.map((registration) => ({
-      "First Name": registration.YoungPeople.firstName,
-      "Last Name": registration.YoungPeople.lastName,
-      "Middle Name": registration.YoungPeople.middleName || "",
-      "Suffix": registration.YoungPeople.suffix || "",
+      "First Name": registration.YoungPeople.firstName.toUpperCase(),
+      "Last Name": registration.YoungPeople.lastName.toUpperCase(),
+      "Middle Name": registration.YoungPeople.middleName?.toUpperCase() || "",
+      "Suffix": registration.YoungPeople.suffix?.toUpperCase() || "",
       "Date of Birth": registration.YoungPeople.dateOfBirth.toLocaleDateString(),
       "Age": registration.YoungPeople.age,
       "Gender": registration.YoungPeople.gender,
@@ -541,7 +541,7 @@ export async function getDashboardStatistics() {
       },
       recentRegistrations: recentRegistrations.map(reg => ({
         id: reg.id,
-        name: `${reg.YoungPeople.firstName} ${reg.YoungPeople.lastName}`,
+        name: `${reg.YoungPeople.firstName.toUpperCase()} ${reg.YoungPeople.lastName.toUpperCase()}`,
         gender: reg.YoungPeople.gender,
         classification: reg.Classification.name,
         dateRegistered: reg.dateRegistered
