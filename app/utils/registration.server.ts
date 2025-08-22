@@ -553,6 +553,201 @@ export async function getDashboardStatistics() {
   }
 }
 
+export async function getRegistrationById(registrationId: string) {
+  try {
+    const registration = await prisma.registration.findUnique({
+      where: { id: registrationId },
+      include: {
+        YoungPeople: {
+          include: {
+            ContactPersonEmergency: true,
+          },
+        },
+        Hall: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        GradeLevel: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        Classification: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        BasicHealthInfo: true,
+      },
+    });
+
+    if (!registration) {
+      throw new Error("Registration not found");
+    }
+
+    return {
+      id: registration.id,
+      lastName: registration.YoungPeople.lastName,
+      firstName: registration.YoungPeople.firstName,
+      middleName: registration.YoungPeople.middleName || "",
+      suffix: registration.YoungPeople.suffix || "",
+      gender: registration.YoungPeople.gender.toLowerCase(),
+      dateOfBirth: registration.YoungPeople.dateOfBirth.toISOString().split('T')[0],
+      age: registration.YoungPeople.age.toString(),
+      image: registration.YoungPeople.image || "",
+      hall: registration.Hall?.id || "",
+      classification: registration.Classification.id,
+      gradeLevel: registration.GradeLevel.id,
+      remarks: registration.remarks || "",
+      basicHealthInformation: registration.BasicHealthInfo ? {
+        isAllergies: registration.BasicHealthInfo.isAllergy || false,
+        allergyDescription: registration.BasicHealthInfo.allergyDescription || "",
+        allergyMedicine: registration.BasicHealthInfo.allergyMedicine || "",
+        isHealthCondition: registration.BasicHealthInfo.isHealthCondition || false,
+        healthConditionDescription: registration.BasicHealthInfo.healthConditionDescription || "",
+        healthConditionMedicine: registration.BasicHealthInfo.healthConditionMedication || "",
+      } : undefined,
+      contactPersonEmergency: registration.YoungPeople.ContactPersonEmergency ? {
+        name: registration.YoungPeople.ContactPersonEmergency.name || "",
+        relationship: registration.YoungPeople.ContactPersonEmergency.relationship || "",
+        contactNumber: registration.YoungPeople.ContactPersonEmergency.contactNumber || "",
+      } : undefined,
+    };
+  } catch (error) {
+    console.error("Error getting registration:", error);
+    throw new Error("Failed to get registration");
+  }
+}
+
+export async function updateRegistration(registrationId: string, data: RegistrationFormDTO) {
+  try {
+    // Get the existing registration
+    const existingRegistration = await prisma.registration.findUnique({
+      where: { id: registrationId },
+      include: {
+        YoungPeople: {
+          include: {
+            ContactPersonEmergency: true,
+          },
+        },
+        BasicHealthInfo: true,
+      },
+    });
+
+    if (!existingRegistration) {
+      throw new Error("Registration not found");
+    }
+
+    // Check for duplicate by name + date of birth (excluding current record)
+    const duplicateCheck = await prisma.youngPeople.findFirst({
+      where: {
+        firstName: data.firstName.trim().toLowerCase(),
+        lastName: data.lastName.trim().toLowerCase(),
+        dateOfBirth: new Date(data.dateOfBirth),
+        NOT: {
+          id: existingRegistration.youngPeopleId,
+        },
+      },
+    });
+
+    if (duplicateCheck) {
+      throw new Error("Duplicate");
+    }
+
+    // Update or create BasicHealthInfo if provided
+    let basicHealthInfoId = existingRegistration.basicHealthInfoId;
+    if (data.basicHealthInformation) {
+      if (basicHealthInfoId) {
+        await prisma.basicHealthInfo.update({
+          where: { id: basicHealthInfoId },
+          data: {
+            isAllergy: data.basicHealthInformation.isAllergies,
+            allergyDescription: data.basicHealthInformation.allergyDescription?.trim().toLowerCase() || null,
+            allergyMedicine: data.basicHealthInformation.allergyMedicine?.trim().toLowerCase() || null,
+            isHealthCondition: data.basicHealthInformation.isHealthCondition,
+            healthConditionDescription: data.basicHealthInformation.healthConditionDescription?.trim().toLowerCase() || null,
+            healthConditionMedication: data.basicHealthInformation.healthConditionMedicine?.trim().toLowerCase() || null,
+          },
+        });
+      } else {
+        const healthInfo = await prisma.basicHealthInfo.create({
+          data: {
+            isAllergy: data.basicHealthInformation.isAllergies,
+            allergyDescription: data.basicHealthInformation.allergyDescription?.trim().toLowerCase() || null,
+            allergyMedicine: data.basicHealthInformation.allergyMedicine?.trim().toLowerCase() || null,
+            isHealthCondition: data.basicHealthInformation.isHealthCondition,
+            healthConditionDescription: data.basicHealthInformation.healthConditionDescription?.trim().toLowerCase() || null,
+            healthConditionMedication: data.basicHealthInformation.healthConditionMedicine?.trim().toLowerCase() || null,
+          },
+        });
+        basicHealthInfoId = healthInfo.id;
+      }
+    }
+
+    // Update or create ContactPersonEmergency
+    if (data.contactPersonEmergency) {
+      if (existingRegistration.YoungPeople.ContactPersonEmergency) {
+        await prisma.contactPersonEmergency.update({
+          where: { id: existingRegistration.YoungPeople.ContactPersonEmergency.id },
+          data: {
+            name: data.contactPersonEmergency.name?.trim().toLowerCase() || "",
+            relationship: data.contactPersonEmergency.relationship?.trim().toLowerCase() || "",
+            contactNumber: data.contactPersonEmergency.contactNumber?.trim() || "",
+          },
+        });
+      } else {
+        await prisma.contactPersonEmergency.create({
+          data: {
+            name: data.contactPersonEmergency.name?.trim().toLowerCase() || "",
+            relationship: data.contactPersonEmergency.relationship?.trim().toLowerCase() || "",
+            contactNumber: data.contactPersonEmergency.contactNumber?.trim() || "",
+            youngPersonId: existingRegistration.youngPeopleId,
+          },
+        });
+      }
+    }
+
+    // Update YoungPeople
+    await prisma.youngPeople.update({
+      where: { id: existingRegistration.youngPeopleId },
+      data: {
+        lastName: data.lastName.trim().toLowerCase(),
+        firstName: data.firstName.trim().toLowerCase(),
+        middleName: data.middleName?.trim().toLowerCase() || null,
+        suffix: data.suffix?.trim().toLowerCase() || null,
+        dateOfBirth: new Date(data.dateOfBirth),
+        age: parseInt(data.age, 10),
+        gender: data.gender === "brother" ? "Brother" : "Sister",
+        image: data.image?.trim() || null,
+      },
+    });
+
+    // Update Registration
+    await prisma.registration.update({
+      where: { id: registrationId },
+      data: {
+        gradeLevelId: data.gradeLevel,
+        hallId: data.hall,
+        classificationId: data.classification,
+        remarks: data.remarks?.trim().toLowerCase() || "",
+        basicHealthInfoId: basicHealthInfoId,
+      },
+    });
+
+    return { success: true, message: "Registration updated successfully." };
+  } catch (error) {
+    console.error("Error updating registration:", error);
+    if (error instanceof Error && error.message === "Duplicate") {
+      throw error;
+    }
+    throw new Error("Failed to update registration");
+  }
+}
+
 export async function deleteRegistration(registrationId: string) {
   try {
     // Get the registration to find the young person and health info
