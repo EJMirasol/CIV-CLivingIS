@@ -8,7 +8,8 @@
       "WebFetch(domain:github.com)",
       "Bash(npm run deploy:*)",
       "Bash(git commit:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "WebFetch(domain:ejmirasol.github.io)"
     ],
     "deny": [],
     "ask": []

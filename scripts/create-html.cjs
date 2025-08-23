@@ -28,12 +28,12 @@ const indexHtml = `<!DOCTYPE html>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CIV Church Living IS</title>
-    <link rel="icon" type="image/x-icon" href="/CIV-CLivingIS/favicon.ico">
-    <link rel="stylesheet" href="/CIV-CLivingIS/${cssFile}">
+    <link rel="icon" type="image/x-icon" href="./favicon.ico">
+    <link rel="stylesheet" href="./${cssFile}">
 </head>
 <body>
     <div id="root"></div>
-    <script type="module" src="/CIV-CLivingIS/${entryClientFile}"></script>
+    <script type="module" src="./${entryClientFile}"></script>
 </body>
 </html>`;
 
@@ -43,17 +43,17 @@ const notFoundHtml = `<!DOCTYPE html>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CIV Church Living IS</title>
-    <link rel="icon" type="image/x-icon" href="/CIV-CLivingIS/favicon.ico">
-    <link rel="stylesheet" href="/CIV-CLivingIS/${cssFile}">
+    <link rel="icon" type="image/x-icon" href="./favicon.ico">
+    <link rel="stylesheet" href="./${cssFile}">
     <script>
       // GitHub Pages SPA redirect
       sessionStorage.redirect = location.href;
     </script>
-    <meta http-equiv="refresh" content="0;URL='/CIV-CLivingIS/'">
+    <meta http-equiv="refresh" content="0;URL='./'">
 </head>
 <body>
     <div id="root"></div>
-    <script type="module" src="/CIV-CLivingIS/${entryClientFile}"></script>
+    <script type="module" src="./${entryClientFile}"></script>
 </body>
 </html>`;
 
