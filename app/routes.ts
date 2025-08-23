@@ -22,7 +22,7 @@ export default [
         // Dashboard sub-route - requires authentication
         route(
           "/dashboard",
-          "./routes/modules/conference-meetings/church-living/dashboard.tsx"
+          "./routes/modules/conference-meetings/church-living/dashboard/index.tsx"
         ),
         // Registration form - requires authentication
         route(
@@ -42,26 +42,26 @@ export default [
         // Check-in status - requires authentication
         route(
           "/status",
-          "./routes/modules/conference-meetings/church-living/status.tsx"
+          "./routes/modules/conference-meetings/church-living/status/index.tsx"
         ),
         // Groups management - requires authentication
         ...prefix("groups", [
-          index("./routes/modules/conference-meetings/church-living/groups.index.tsx"),
+          index("./routes/modules/conference-meetings/church-living/groups/index.tsx"),
           route(
             "/create",
-            "./routes/modules/conference-meetings/church-living/groups.create.tsx"
+            "./routes/modules/conference-meetings/church-living/groups/create.tsx"
           ),
           route(
             ":id",
-            "./routes/modules/conference-meetings/church-living/groups.$id.tsx"
+            "./routes/modules/conference-meetings/church-living/groups/$id.tsx"
           ),
           route(
             ":id/edit",
-            "./routes/modules/conference-meetings/church-living/groups.$id.edit.tsx"
+            "./routes/modules/conference-meetings/church-living/groups/$id.edit.tsx"
           ),
           route(
             ":id/assign",
-            "./routes/modules/conference-meetings/church-living/groups.$id.assign.tsx"
+            "./routes/modules/conference-meetings/church-living/groups/$id.assign.tsx"
           ),
         ]),
       ]),

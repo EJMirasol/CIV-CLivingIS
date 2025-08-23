@@ -119,6 +119,7 @@ export function Sidebar({ sidebarItems, isSideBarOpen }: SidebarProps) {
           <NavLink
             key={`sub-module-${level}-${index}`}
             to={`/${subModule.route}`}
+            end={subModule.route === "conference-meetings/ypcl"}
             className={({ isActive }) =>
               `flex items-center gap-2 py-2 px-2 transition-all ${
                 isActive 

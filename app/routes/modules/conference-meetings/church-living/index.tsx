@@ -44,6 +44,7 @@ import {
   getAllClassifications,
   getAllGenders,
   getAllGradeLevels,
+  getAllHalls,
   getYPCLLists,
   deleteRegistration,
   getDashboardStatistics,
@@ -81,6 +82,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     genderList: await getAllGenders(),
     gradeLevelList: await getAllGradeLevels(),
     classificationList: await getAllClassifications(),
+    hallList: await getAllHalls(),
     data,
     pagination,
     searchFilter: args,
@@ -122,55 +124,60 @@ export default () => {
     genderList,
     gradeLevelList,
     classificationList,
+    hallList,
     searchFilter,
     statistics,
   } = useLoaderData<typeof loader>();
   const submit = useSubmit();
   const navigation = useNavigation();
   const [isExporting, setIsExporting] = useState(false);
-  
+
   const [selectedFormat, setSelectedFormat] = useState<string>("csv");
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
-  
+
   const handleExport = async () => {
     setIsExporting(true);
     setIsExportDialogOpen(false);
-    
+
     try {
       const url = new URL(window.location.href);
       const searchParams = url.searchParams;
-      
+
       // Build the export URL with current search parameters and format
-      const exportUrl = new URL("/conference-meetings/ypcl/export", window.location.origin);
+      const exportUrl = new URL(
+        "/conference-meetings/ypcl/export",
+        window.location.origin
+      );
       searchParams.forEach((value, key) => {
         exportUrl.searchParams.set(key, value);
       });
       exportUrl.searchParams.set("format", selectedFormat);
-      
+
       // Fetch the file as a blob
       const response = await fetch(exportUrl.toString());
-      
+
       if (!response.ok) {
         throw new Error(`Export failed: ${response.statusText}`);
       }
-      
+
       const blob = await response.blob();
       const downloadUrl = window.URL.createObjectURL(blob);
-      
+
       // Create and trigger download
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = downloadUrl;
-      link.download = `YPCL_Export_${new Date().toISOString().split('T')[0]}.${selectedFormat === 'xlsx' ? 'xlsx' : 'csv'}`;
+      link.download = `YPCL_Export_${new Date().toISOString().split("T")[0]}.${
+        selectedFormat === "xlsx" ? "xlsx" : "csv"
+      }`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      
+
       // Clean up the blob URL
       window.URL.revokeObjectURL(downloadUrl);
-      
     } catch (error) {
-      console.error('Export error:', error);
-      alert('Export failed. Please try again.');
+      console.error("Export error:", error);
+      alert("Export failed. Please try again.");
     } finally {
       setIsExporting(false);
     }
@@ -250,6 +257,26 @@ export default () => {
           <div className="flex items-center gap-2 pl-2">
             <span className="text-sm font-medium">
               {row.original.classification}
+            </span>
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "hall",
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          className="pl-2"
+          title="Hall"
+          column={column}
+          columnKey="hall"
+        />
+      ),
+      cell: ({ row }) => {
+        return (
+          <div className="flex items-center gap-2 pl-2">
+            <span className="text-sm font-medium">
+              {row.original.hall}
             </span>
           </div>
         );
@@ -347,6 +374,18 @@ export default () => {
               defaultValue={searchFilter.ypfirstName}
             />
           </div>
+          <div className="space-y-1">
+            <Label className="">Hall</Label>
+            <SelectBoxWithSearch
+              id="hall"
+              name="hall"
+              options={hallList.map(({ label, value }) => ({
+                id: value,
+                name: label,
+              }))}
+              defaultValue={searchFilter.hall}
+            />
+          </div>
 
           <div className="space-y-1">
             <Label className="">Gender</Label>
@@ -415,7 +454,10 @@ export default () => {
             </Button>
           </Link>
 
-          <Dialog open={isExportDialogOpen} onOpenChange={setIsExportDialogOpen}>
+          <Dialog
+            open={isExportDialogOpen}
+            onOpenChange={setIsExportDialogOpen}
+          >
             <DialogTrigger asChild>
               <Button
                 className="bg-[var(--chart-2)] text-white"
@@ -433,18 +475,21 @@ export default () => {
                   Export Data
                 </DialogTitle>
                 <DialogDescription>
-                  Choose the format for exporting church living registration data.
+                  Choose the format for exporting church living registration
+                  data.
                   {data.length > 0 && (
                     <span className="block mt-1 text-sm font-medium text-foreground">
-                      {data.length} record{data.length !== 1 ? 's' : ''} found
+                      {data.length} record{data.length !== 1 ? "s" : ""} found
                     </span>
                   )}
                 </DialogDescription>
               </DialogHeader>
-              
+
               {data.length === 0 ? (
                 <div className="py-6 text-center">
-                  <p className="text-muted-foreground">No data available to export.</p>
+                  <p className="text-muted-foreground">
+                    No data available to export.
+                  </p>
                   <p className="text-sm text-muted-foreground mt-1">
                     Try adjusting your search filters.
                   </p>
@@ -452,16 +497,25 @@ export default () => {
               ) : (
                 <div className="space-y-6">
                   <div className="space-y-4">
-                    <Label className="text-base font-semibold">Export Format</Label>
-                    <RadioGroup 
-                      value={selectedFormat} 
+                    <Label className="text-base font-semibold">
+                      Export Format
+                    </Label>
+                    <RadioGroup
+                      value={selectedFormat}
                       onValueChange={setSelectedFormat}
                       className="space-y-3"
                     >
                       <div className="flex items-start space-x-3 p-3 border rounded-lg hover:bg-muted/50 transition-colors">
-                        <RadioGroupItem value="csv" id="csv" className="mt-0.5" />
+                        <RadioGroupItem
+                          value="csv"
+                          id="csv"
+                          className="mt-0.5"
+                        />
                         <div className="flex-1">
-                          <Label htmlFor="csv" className="cursor-pointer font-medium">
+                          <Label
+                            htmlFor="csv"
+                            className="cursor-pointer font-medium"
+                          >
                             CSV (Comma Separated Values)
                           </Label>
                           <p className="text-sm text-muted-foreground mt-1">
@@ -469,11 +523,18 @@ export default () => {
                           </p>
                         </div>
                       </div>
-                      
+
                       <div className="flex items-start space-x-3 p-3 border rounded-lg hover:bg-muted/50 transition-colors">
-                        <RadioGroupItem value="excel-csv" id="excel-csv" className="mt-0.5" />
+                        <RadioGroupItem
+                          value="excel-csv"
+                          id="excel-csv"
+                          className="mt-0.5"
+                        />
                         <div className="flex-1">
-                          <Label htmlFor="excel-csv" className="cursor-pointer font-medium">
+                          <Label
+                            htmlFor="excel-csv"
+                            className="cursor-pointer font-medium"
+                          >
                             Excel Compatible CSV
                           </Label>
                           <p className="text-sm text-muted-foreground mt-1">
@@ -481,11 +542,18 @@ export default () => {
                           </p>
                         </div>
                       </div>
-                      
+
                       <div className="flex items-start space-x-3 p-3 border rounded-lg hover:bg-muted/50 transition-colors">
-                        <RadioGroupItem value="xlsx" id="xlsx" className="mt-0.5" />
+                        <RadioGroupItem
+                          value="xlsx"
+                          id="xlsx"
+                          className="mt-0.5"
+                        />
                         <div className="flex-1">
-                          <Label htmlFor="xlsx" className="cursor-pointer font-medium">
+                          <Label
+                            htmlFor="xlsx"
+                            className="cursor-pointer font-medium"
+                          >
                             Excel Workbook (.xlsx)
                           </Label>
                           <p className="text-sm text-muted-foreground mt-1">
@@ -500,7 +568,11 @@ export default () => {
 
               <DialogFooter className="flex-col sm:flex-row gap-2">
                 <DialogClose asChild>
-                  <Button type="button" variant="outline" className="w-full sm:w-auto">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full sm:w-auto"
+                  >
                     Cancel
                   </Button>
                 </DialogClose>
@@ -519,7 +591,10 @@ export default () => {
                     ) : (
                       <>
                         <ArrowDownToLine className="h-4 w-4 mr-2" />
-                        Export {selectedFormat === "excel-csv" ? "Excel CSV" : selectedFormat.toUpperCase()}
+                        Export{" "}
+                        {selectedFormat === "excel-csv"
+                          ? "Excel CSV"
+                          : selectedFormat.toUpperCase()}
                       </>
                     )}
                   </Button>
