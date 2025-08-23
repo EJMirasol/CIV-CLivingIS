@@ -9,7 +9,8 @@
       "Bash(npm run deploy:*)",
       "Bash(git commit:*)",
       "Bash(git push:*)",
-      "WebFetch(domain:ejmirasol.github.io)"
+      "WebFetch(domain:ejmirasol.github.io)",
+      "Bash(npm uninstall:*)"
     ],
     "deny": [],
     "ask": []
