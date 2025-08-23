@@ -13,3 +13,6 @@ yarn.lock
 # Kiro files
 .kiro/
 .vscode/
+
+# claude
+.claude/
