@@ -14,6 +14,7 @@ import {
   RefreshCcw,
   Search,
   Trash2,
+  Users,
 } from "lucide-react";
 import { DataTableColumnHeader } from "~/components/data-tables/header";
 import type { ColumnDef } from "@tanstack/react-table";
@@ -68,8 +69,10 @@ export async function loader({ request }: Route.LoaderArgs) {
     gender: searchParams.gender || "",
     classification: searchParams.classification || "",
     gradeLevel: searchParams.gradeLevel || "",
-    page: searchParams.page || "1",
-    limit: searchParams.limit || "10",
+    pageNumber: parseInt(searchParams.pageNumber || "1"),
+    pageSize: parseInt(searchParams.pageSize || "10"),
+    sortBy: searchParams.sortBy,
+    sortOrder: searchParams.sortOrder || "asc",
   };
 
   const { data, pagination } = await getYPCLLists(args);
@@ -330,11 +333,6 @@ export default () => {
           YP CHURCH LIVING {`${getYear(new Date())}`}
         </h1>
       </div>
-      
-      {/* Dashboard Statistics */}
-      <div className="mb-6">
-        <DashboardStats statistics={statistics} />
-      </div>
       <Card className="w-full p-5">
         <Form
           className="grid grid-cols-3 gap-x-6 gap-y-4"
@@ -406,6 +404,11 @@ export default () => {
       </Card>
       <div className="flex justify-end items-center">
         <div className="flex gap-2">
+          <Link to="/conference-meetings/ypcl/groups">
+            <Button className="bg-[#213b36] hover:bg-[#1a2f29]" variant="view">
+              <Users className="h-4 w-4" /> Groups
+            </Button>
+          </Link>
           <Link to="/conference-meetings/ypcl/register/">
             <Button className="bg-[#213b36] " variant="view">
               <IoMdCheckboxOutline /> Register
@@ -533,6 +536,8 @@ export default () => {
             data={data}
             pagination={pagination}
             pageSizeOption={[10, 20, 50, 100]}
+            sortBy={searchFilter.sortBy}
+            sortOrder={searchFilter.sortOrder}
           />
         </CardContent>
       </Card>

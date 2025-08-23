@@ -103,7 +103,7 @@ export function DataTablePagination<TData>({
             variant="outline"
             className="h-8 w-8 p-0"
             onClick={() => {
-              table.nextPage(0);
+              table.nextPage();
               const query = setSearchParamsString(searchParams, {
                 pageNumber: (pagination?.pageNumber ?? 1) + 1,
               });
@@ -121,10 +121,10 @@ export function DataTablePagination<TData>({
             variant="outline"
             className="hidden h-8 w-8 p-0 lg:flex"
             onClick={() => {
-              table.setPageIndex(table.getPageCount() - 1);
-              table.nextPage(0);
+              const lastPage = Math.ceil((pagination?.totalCount ?? 0) / (pagination?.pageSize ?? 10));
+              table.setPageIndex(lastPage - 1);
               const query = setSearchParamsString(searchParams, {
-                pageNumber: table.getPageCount(),
+                pageNumber: lastPage,
               });
               navigate(`?${query}`);
             }}

@@ -7,7 +7,10 @@ import {
   getInputProps,
   getTextareaProps,
 } from "@conform-to/react";
-import { RegistrationFormSchema, type RegistrationFormDTO } from "./dto/registration.dto";
+import {
+  RegistrationFormSchema,
+  type RegistrationFormDTO,
+} from "./dto/registration.dto";
 import { parseWithZod } from "@conform-to/zod";
 import { SaveButton } from "~/components/shared/buttons/SaveButton";
 import { Card, CardContent } from "~/components/ui/card";
@@ -28,6 +31,8 @@ import type { ChangeEvent } from "react";
 import { ImageUploader } from "~/components/shared/imageUpload/ImageUploader";
 import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
 import { DeleteConfirmationDialog } from "~/components/shared/dialogs/DeleteConfirmationDialog";
+import { BackButton } from "~/components/shared/buttons/BackButton";
+import { Separator } from "~/components/ui/separator";
 
 interface RegistrationViewEditFormProps {
   registrationData: RegistrationFormDTO;
@@ -76,11 +81,17 @@ export function RegistrationViewEditForm({
       gradeLevel: registrationData.gradeLevel,
       remarks: registrationData.remarks?.toUpperCase() || "",
       basicHealthInformation: registrationData.basicHealthInformation,
-      contactPersonEmergency: registrationData.contactPersonEmergency ? {
-        name: registrationData.contactPersonEmergency.name?.toUpperCase() || "",
-        relationship: registrationData.contactPersonEmergency.relationship?.toUpperCase() || "",
-        contactNumber: registrationData.contactPersonEmergency.contactNumber || "",
-      } : undefined,
+      contactPersonEmergency: registrationData.contactPersonEmergency
+        ? {
+            name:
+              registrationData.contactPersonEmergency.name?.toUpperCase() || "",
+            relationship:
+              registrationData.contactPersonEmergency.relationship?.toUpperCase() ||
+              "",
+            contactNumber:
+              registrationData.contactPersonEmergency.contactNumber || "",
+          }
+        : undefined,
     },
   });
 
@@ -104,7 +115,9 @@ export function RegistrationViewEditForm({
   };
 
   const [date, setDate] = useState<Date | undefined>(
-    registrationData.dateOfBirth ? parseISO(registrationData.dateOfBirth) : undefined
+    registrationData.dateOfBirth
+      ? parseISO(registrationData.dateOfBirth)
+      : undefined
   );
   const [open, setOpen] = useState(false);
 
@@ -142,7 +155,7 @@ export function RegistrationViewEditForm({
 
   // State for age, synced with dateOfBirth
   const [calculatedAge, setCalculatedAge] = useState(
-    calculateAge(fields.dateOfBirth.value || registrationData.dateOfBirth)
+    calculateAge(fields.dateOfBirth.value || registrationData.dateOfBirth || "")
   );
 
   // Initialize date from defaultValue if it exists
@@ -157,10 +170,11 @@ export function RegistrationViewEditForm({
 
   // Sync calculatedAge if form is reset or dateOfBirth changes externally
   useEffect(() => {
-    const age = calculateAge(fields.dateOfBirth.value || registrationData.dateOfBirth);
+    const age = calculateAge(
+      fields.dateOfBirth.value || registrationData.dateOfBirth || ""
+    );
     setCalculatedAge(age);
-    form.update({ name: "age", value: age });
-  }, [fields.dateOfBirth.value, registrationData.dateOfBirth, form]);
+  }, [fields.dateOfBirth.value, registrationData.dateOfBirth]);
 
   // Update date state when a date is selected from the calendar
   useEffect(() => {
@@ -168,7 +182,7 @@ export function RegistrationViewEditForm({
       const dateString = date.toISOString().split("T")[0];
       form.update({ name: "dateOfBirth", value: dateString });
     }
-  }, [date, form]);
+  }, [date]);
 
   // Function to transform input to uppercase
   const transformToUppercase = (e: ChangeEvent<HTMLInputElement>) => {
@@ -184,14 +198,11 @@ export function RegistrationViewEditForm({
             <div className="rounded-md">
               <ClipboardList className="h-5 w-5" />
             </div>
-            <span className="text-[#15313F] font-[500]">VIEW / EDIT REGISTRATION</span>
+            <span className="text-[#15313F] font-[500]">REGISTRATION FORM</span>
+            <Separator orientation="vertical" className="mx-2 h-6" />
+            <BackButton />
           </div>
           <div className="flex items-center gap-2">
-            <Link to="/conference-meetings/ypcl/">
-              <Button variant="outline">
-                Back to List
-              </Button>
-            </Link>
             <SaveButton formId={form.id} />
             <DeleteConfirmationDialog redirectPath="/conference-meetings/ypcl" />
           </div>
@@ -203,11 +214,14 @@ export function RegistrationViewEditForm({
         >
           {/* Hidden ID field for update */}
           <input type="hidden" name="id" value={registrationData.id} />
-          
+          {/* Hidden age field to sync with form */}
+          <input type="hidden" name="age" value={calculatedAge} />
+
           <Card className="px-5 flex flex-col w-full">
             <div className="text-xs h-full">
               <p>
-                You can view and edit the registration details below. Update any field and click Save to apply changes.
+                You can view and edit the registration details below. Update any
+                field and click Save to apply changes.
               </p>
             </div>
 
@@ -330,9 +344,9 @@ export function RegistrationViewEditForm({
                   </div>
                   <div>
                     <div className="space-y-1">
-                      <LabelNoGapRequired htmlFor={fields.dateOfBirth.id}>
+                      <Label htmlFor={fields.dateOfBirth.id}>
                         Date of Birth
-                      </LabelNoGapRequired>
+                      </Label>
                       <input
                         {...getInputProps(fields.dateOfBirth, {
                           type: "hidden",
@@ -341,12 +355,7 @@ export function RegistrationViewEditForm({
                         readOnly
                       />
                       <Popover open={open} onOpenChange={setOpen}>
-                        <PopoverTrigger
-                          className={`${
-                            fields.dateOfBirth.errors ? "border-red-500" : ""
-                          }`}
-                          asChild
-                        >
+                        <PopoverTrigger asChild>
                           <Button
                             variant="outline"
                             id="date"
@@ -375,15 +384,10 @@ export function RegistrationViewEditForm({
                         </PopoverContent>
                       </Popover>
                     </div>
-                    <span className="text-red-500 text-xs">
-                      {fields.dateOfBirth.errors}
-                    </span>
                   </div>
                   <div>
                     <div className="space-y-1">
-                      <LabelNoGapRequired htmlFor={fields.age.id}>
-                        Age
-                      </LabelNoGapRequired>
+                      <Label htmlFor={fields.age.id}>Age</Label>
                       <Input
                         {...getInputProps(fields.age, { type: "text" })}
                         maxLength={3}
@@ -391,9 +395,6 @@ export function RegistrationViewEditForm({
                         value={calculatedAge}
                         readOnly
                       />
-                      <span className="text-red-500 text-xs">
-                        {fields.age.errors}
-                      </span>
                     </div>
                   </div>
                   <div className="space-y-1">
@@ -639,7 +640,9 @@ export function RegistrationViewEditForm({
                     </p>
                     <div className="grid grid-cols-2 xl:grid-cols-3 col-span-2 gap-5">
                       <div className="space-y-1">
-                        <Label htmlFor={contacPersonEmergencyFieldList.name?.id}>
+                        <Label
+                          htmlFor={contacPersonEmergencyFieldList.name?.id}
+                        >
                           Contact Person
                         </Label>
                         <Input

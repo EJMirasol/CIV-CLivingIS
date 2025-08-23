@@ -1,5 +1,5 @@
 import type { Route } from "./+types/_layout";
-import { BookHeart, Handshake } from "lucide-react";
+import { BookHeart, Handshake, BarChart3, Users } from "lucide-react";
 import { MdSpaceDashboard } from "react-icons/md";
 import { useState } from "react";
 import { Header } from "~/components/layouts/Header";
@@ -37,9 +37,19 @@ export default function DashboardLayout() {
       key: "conference-meetings",
       subModules: [
         {
+          icon: <BarChart3 className="h-4 w-4" />,
+          label: "Dashboard",
+          route: "conference-meetings/ypcl/dashboard",
+        },
+        {
           icon: <BookHeart className="h-4 w-4" />,
           label: "YP Church Living",
           route: "conference-meetings/ypcl",
+        },
+        {
+          icon: <Users className="h-4 w-4" />,
+          label: "Groups",
+          route: "conference-meetings/ypcl/groups",
         },
       ].filter(Boolean),
     },

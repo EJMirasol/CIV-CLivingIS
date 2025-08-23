@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "YoungPeople" ALTER COLUMN "dateOfBirth" DROP NOT NULL,
+ALTER COLUMN "age" DROP NOT NULL;

@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { Users, UserCheck, Heart, Clock, TrendingUp, MapPin, GraduationCap, Tag } from "lucide-react";
+import { Users, UserCheck, Heart, Clock, TrendingUp, MapPin, GraduationCap, Tag, Layers } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
+import { Link } from "react-router";
 
 interface DashboardStatsProps {
   statistics: {
@@ -10,6 +11,19 @@ interface DashboardStatsProps {
     classificationDistribution: { name: string; count: number }[];
     hallDistribution: { name: string; count: number }[];
     healthInfo: { allergies: number; healthConditions: number };
+    groupInfo: {
+      totalGroups: number;
+      totalAssignedMembers: number;
+      totalUnassignedMembers: number;
+      assignmentPercentage: number;
+      topGroups: {
+        id: string;
+        name: string;
+        currentMembers: number;
+        maxMembers: number | null;
+        utilizationPercentage: number | null;
+      }[];
+    };
     recentRegistrations: {
       id: string;
       name: string;
@@ -28,6 +42,7 @@ export function DashboardStats({ statistics }: DashboardStatsProps) {
     classificationDistribution,
     hallDistribution,
     healthInfo,
+    groupInfo,
     recentRegistrations,
   } = statistics;
 
@@ -89,6 +104,65 @@ export function DashboardStats({ statistics }: DashboardStatsProps) {
             <p className="text-xs text-muted-foreground">
               {healthInfo.allergies} allergies, {healthInfo.healthConditions} conditions
             </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Group Overview Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Groups</CardTitle>
+            <Layers className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{groupInfo.totalGroups}</div>
+            <p className="text-xs text-muted-foreground">
+              Active groups created
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Assigned Members</CardTitle>
+            <Users className="h-4 w-4 text-green-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">{groupInfo.totalAssignedMembers}</div>
+            <p className="text-xs text-muted-foreground">
+              {groupInfo.assignmentPercentage}% assignment rate
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Unassigned Members</CardTitle>
+            <Users className="h-4 w-4 text-orange-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-orange-600">{groupInfo.totalUnassignedMembers}</div>
+            <p className="text-xs text-muted-foreground">
+              Awaiting group assignment
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Group Management</CardTitle>
+            <Layers className="h-4 w-4 text-[#213b36]" />
+          </CardHeader>
+          <CardContent>
+            <Link to="/conference-meetings/ypcl/groups" className="block">
+              <div className="text-sm font-medium text-[#213b36] hover:text-[#1a2f29]">
+                Manage Groups →
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                View and manage all groups
+              </p>
+            </Link>
           </CardContent>
         </Card>
       </div>
@@ -232,6 +306,73 @@ export function DashboardStats({ statistics }: DashboardStatsProps) {
           </CardContent>
         </Card>
       </div>
+
+      {/* Top Groups */}
+      {groupInfo.topGroups.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Layers className="h-5 w-5" />
+              Top Groups by Membership
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {groupInfo.topGroups.map((group, index) => (
+                <Link 
+                  key={group.id} 
+                  to={`/conference-meetings/ypcl/groups/${group.id}`}
+                  className="block hover:bg-muted/50 rounded-lg transition-colors"
+                >
+                  <div className="flex items-center justify-between p-3">
+                    <div className="flex items-center gap-3">
+                      <div 
+                        className="w-3 h-3 rounded-full" 
+                        style={{ 
+                          backgroundColor: `hsl(${index * 50 + 120}, 70%, 60%)` 
+                        }}
+                      />
+                      <div>
+                        <span className="font-medium">{group.name}</span>
+                        {group.utilizationPercentage !== null && (
+                          <div className="w-20 bg-gray-200 rounded-full h-1.5 mt-1">
+                            <div
+                              className={`h-1.5 rounded-full ${
+                                group.utilizationPercentage >= 100
+                                  ? "bg-red-500"
+                                  : group.utilizationPercentage >= 80
+                                  ? "bg-yellow-500"
+                                  : "bg-green-500"
+                              }`}
+                              style={{ width: `${Math.min(group.utilizationPercentage, 100)}%` }}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground">
+                        {group.currentMembers}
+                        {group.maxMembers && ` / ${group.maxMembers}`}
+                      </span>
+                      {group.utilizationPercentage !== null && (
+                        <Badge variant="secondary">
+                          {group.utilizationPercentage}%
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+            <div className="mt-4 pt-3 border-t">
+              <Link to="/conference-meetings/ypcl/groups" className="text-sm text-[#213b36] hover:text-[#1a2f29] font-medium">
+                View All Groups →
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Health Information Summary */}
       {(healthInfo.allergies > 0 || healthInfo.healthConditions > 0) && (

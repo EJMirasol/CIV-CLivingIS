@@ -53,6 +53,7 @@ export async function getYPCLLists({
           gender: sortOrder,
         },
       };
+      break;
     case "classification":
       orderByDir = {
         Classification: {
@@ -79,7 +80,7 @@ export async function getYPCLLists({
       ypfirstName && ypfirstName !== "" && ypfirstName !== "none"
         ? {
             firstName: {
-              equals: ypfirstName.toLowerCase().trim(),
+              contains: ypfirstName.toLowerCase().trim(),
               mode: "insensitive",
             },
           }
@@ -151,7 +152,7 @@ export async function register(data: RegistrationFormDTO) {
     where: {
       firstName: data.firstName.trim().toLowerCase(),
       lastName: data.lastName.trim().toLowerCase(),
-      dateOfBirth: new Date(data.dateOfBirth),
+      dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : undefined,
     },
   });
 
@@ -193,8 +194,8 @@ export async function register(data: RegistrationFormDTO) {
       firstName: data.firstName.trim().toLowerCase(),
       middleName: data.middleName?.trim().toLowerCase() || null,
       suffix: data.suffix?.trim().toLowerCase() || null,
-      dateOfBirth: new Date(data.dateOfBirth),
-      age: parseInt(data.age, 10),
+      dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : null,
+      age: data.age ? parseInt(data.age, 10) : null,
       gender: data.gender === "brother" ? "Brother" : "Sister", // Match the enum case
       image: data.image?.trim() || null,
       ContactPersonEmergency: data.contactPersonEmergency
@@ -373,7 +374,7 @@ export async function exportYPCLData(searchParams: {
       "Last Name": registration.YoungPeople.lastName.toUpperCase(),
       "Middle Name": registration.YoungPeople.middleName?.toUpperCase() || "",
       "Suffix": registration.YoungPeople.suffix?.toUpperCase() || "",
-      "Date of Birth": registration.YoungPeople.dateOfBirth.toLocaleDateString(),
+      "Date of Birth": registration.YoungPeople.dateOfBirth?.toLocaleDateString() || "",
       "Age": registration.YoungPeople.age,
       "Gender": registration.YoungPeople.gender,
       "Grade Level": registration.GradeLevel.name,
@@ -526,6 +527,76 @@ export async function getDashboardStatistics() {
       }
     });
 
+    // Group statistics - wrap in try-catch to handle cases where group table doesn't exist yet
+    let groupInfo;
+    try {
+      const totalGroups = await prisma.group.count({
+        where: { isActive: true }
+      });
+
+      const totalAssignedMembers = await prisma.registration.count({
+        where: {
+          groupId: {
+            not: null
+          }
+        }
+      });
+
+      const totalUnassignedMembers = await prisma.registration.count({
+        where: {
+          groupId: null
+        }
+      });
+
+      const topGroups = await prisma.group.findMany({
+        where: { isActive: true },
+        select: {
+          id: true,
+          name: true,
+          maxMembers: true,
+          _count: {
+            select: {
+              registrations: true
+            }
+          }
+        },
+        orderBy: {
+          registrations: {
+            _count: 'desc'
+          }
+        },
+        take: 5
+      });
+
+      groupInfo = {
+        totalGroups,
+        totalAssignedMembers,
+        totalUnassignedMembers,
+        assignmentPercentage: totalRegistrations > 0 
+          ? Math.round((totalAssignedMembers / totalRegistrations) * 100) 
+          : 0,
+        topGroups: topGroups.map(group => ({
+          id: group.id,
+          name: group.name,
+          currentMembers: group._count.registrations,
+          maxMembers: group.maxMembers,
+          utilizationPercentage: group.maxMembers 
+            ? Math.round((group._count.registrations / group.maxMembers) * 100)
+            : null
+        }))
+      };
+    } catch (error) {
+      console.log("Group statistics not available:", error);
+      // Fallback group info if group table doesn't exist or has issues
+      groupInfo = {
+        totalGroups: 0,
+        totalAssignedMembers: 0,
+        totalUnassignedMembers: totalRegistrations,
+        assignmentPercentage: 0,
+        topGroups: []
+      };
+    }
+
     return {
       totalRegistrations,
       genderDistribution: actualGenderStats.map(stat => ({
@@ -539,6 +610,7 @@ export async function getDashboardStatistics() {
         allergies: allergiesCount,
         healthConditions: healthConditionsCount
       },
+      groupInfo,
       recentRegistrations: recentRegistrations.map(reg => ({
         id: reg.id,
         name: `${reg.YoungPeople.firstName.toUpperCase()} ${reg.YoungPeople.lastName.toUpperCase()}`,
@@ -596,8 +668,8 @@ export async function getRegistrationById(registrationId: string) {
       middleName: registration.YoungPeople.middleName || "",
       suffix: registration.YoungPeople.suffix || "",
       gender: registration.YoungPeople.gender.toLowerCase(),
-      dateOfBirth: registration.YoungPeople.dateOfBirth.toISOString().split('T')[0],
-      age: registration.YoungPeople.age.toString(),
+      dateOfBirth: registration.YoungPeople?.dateOfBirth ? registration.YoungPeople.dateOfBirth.toISOString().split('T')[0] : "",
+      age: registration.YoungPeople?.age?.toString() || null,
       image: registration.YoungPeople.image || "",
       hall: registration.Hall?.id || "",
       classification: registration.Classification.id,
@@ -647,7 +719,7 @@ export async function updateRegistration(registrationId: string, data: Registrat
       where: {
         firstName: data.firstName.trim().toLowerCase(),
         lastName: data.lastName.trim().toLowerCase(),
-        dateOfBirth: new Date(data.dateOfBirth),
+        dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : undefined,
         NOT: {
           id: existingRegistration.youngPeopleId,
         },
@@ -719,8 +791,8 @@ export async function updateRegistration(registrationId: string, data: Registrat
         firstName: data.firstName.trim().toLowerCase(),
         middleName: data.middleName?.trim().toLowerCase() || null,
         suffix: data.suffix?.trim().toLowerCase() || null,
-        dateOfBirth: new Date(data.dateOfBirth),
-        age: parseInt(data.age, 10),
+        dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : null,
+        age: data.age ? parseInt(data.age, 10) : null,
         gender: data.gender === "brother" ? "Brother" : "Sister",
         image: data.image?.trim() || null,
       },

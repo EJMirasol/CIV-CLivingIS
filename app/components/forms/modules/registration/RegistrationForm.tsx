@@ -28,6 +28,8 @@ import type { ChangeEvent } from "react";
 import { ImageUploader } from "~/components/shared/imageUpload/ImageUploader";
 import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
 import { DeleteConfirmationDialog } from "~/components/shared/dialogs/DeleteConfirmationDialog";
+import { BackButton } from "~/components/shared/buttons/BackButton";
+import { Separator } from "~/components/ui/separator";
 
 interface RegistrationFormProps {
   gradeLevelList: {
@@ -159,6 +161,8 @@ export function RegistrationForm({
               <ClipboardList className="h-5 w-5" />
             </div>
             <span className="text-[#15313F] font-[500]">REGISTRATION FORM</span>
+            <Separator orientation="vertical" className="mx-2 h-6" />
+            <BackButton />
           </div>
           <div className="flex items-center gap-2">
             <SaveButton formId={form.id} />
@@ -297,9 +301,9 @@ export function RegistrationForm({
                   </div>
                   <div>
                     <div className="space-y-1">
-                      <LabelNoGapRequired htmlFor={fields.dateOfBirth.id}>
+                      <Label htmlFor={fields.dateOfBirth.id}>
                         Date of Birth
-                      </LabelNoGapRequired>
+                      </Label>
                       <input
                         {...getInputProps(fields.dateOfBirth, {
                           type: "hidden",
@@ -308,12 +312,7 @@ export function RegistrationForm({
                         readOnly
                       />
                       <Popover open={open} onOpenChange={setOpen}>
-                        <PopoverTrigger
-                          className={`${
-                            fields.dateOfBirth.errors ? "border-red-500" : ""
-                          }`}
-                          asChild
-                        >
+                        <PopoverTrigger asChild>
                           <Button
                             variant="outline"
                             id="date"
@@ -342,15 +341,10 @@ export function RegistrationForm({
                         </PopoverContent>
                       </Popover>
                     </div>
-                    <span className="text-red-500 text-xs">
-                      {fields.dateOfBirth.errors}
-                    </span>
                   </div>
                   <div>
                     <div className="space-y-1">
-                      <LabelNoGapRequired htmlFor={fields.age.id}>
-                        Age
-                      </LabelNoGapRequired>
+                      <Label htmlFor={fields.age.id}>Age</Label>
                       <Input
                         {...getInputProps(fields.age, { type: "text" })}
                         maxLength={3}
@@ -358,9 +352,6 @@ export function RegistrationForm({
                         value={calculatedAge}
                         readOnly
                       />
-                      <span className="text-red-500 text-xs">
-                        {fields.age.errors}
-                      </span>
                     </div>
                   </div>
                   <div className="space-y-1">
