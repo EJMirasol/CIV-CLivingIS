@@ -10,7 +10,7 @@ import {
 import {
   RegistrationFormSchema,
   type RegistrationFormDTO,
-} from "./dto/registration.dto";
+} from "~/types/registration.dto";
 import { parseWithZod } from "@conform-to/zod";
 import { SaveButton } from "~/components/shared/buttons/SaveButton";
 import { Card, CardContent } from "~/components/ui/card";

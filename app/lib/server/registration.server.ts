@@ -1,5 +1,5 @@
 import type { Prisma } from "@prisma/client";
-import type { RegistrationFormDTO } from "~/components/forms/modules/registration/dto/registration.dto";
+import type { RegistrationFormDTO } from "~/types/registration.dto";
 import type { pagination } from "~/lib/pagination";
 import { prisma } from "~/lib/prisma";
 
@@ -405,6 +405,9 @@ export async function exportYPCLData(searchParams: {
 export async function getDashboardStatistics() {
   try {
     const totalRegistrations = await prisma.registration.count();
+    const totalCheckedIn = await prisma.registration.count({
+      where: { isCheckedIn: true }
+    });
 
     const genderStats = await prisma.registration.groupBy({
       by: ['youngPeopleId'],
@@ -599,6 +602,7 @@ export async function getDashboardStatistics() {
 
     return {
       totalRegistrations,
+      totalCheckedIn,
       genderDistribution: actualGenderStats.map(stat => ({
         gender: stat.gender,
         count: stat._count.gender
@@ -868,4 +872,173 @@ export async function deleteRegistration(registrationId: string) {
     console.error("Error deleting registration:", error);
     throw new Error("Failed to delete registration");
   }
+}
+
+export async function toggleCheckInStatus(registrationId: string) {
+  try {
+    const registration = await prisma.registration.findUnique({
+      where: { id: registrationId },
+      select: { isCheckedIn: true }
+    });
+
+    if (!registration) {
+      throw new Error("Registration not found");
+    }
+
+    const updatedRegistration = await prisma.registration.update({
+      where: { id: registrationId },
+      data: {
+        isCheckedIn: !registration.isCheckedIn,
+        checkedInAt: !registration.isCheckedIn ? new Date() : null,
+      },
+    });
+
+    return { 
+      success: true, 
+      message: updatedRegistration.isCheckedIn ? "Checked in successfully." : "Checked out successfully.",
+      isCheckedIn: updatedRegistration.isCheckedIn
+    };
+  } catch (error) {
+    console.error("Error toggling check-in status:", error);
+    throw new Error("Failed to update check-in status");
+  }
+}
+
+export async function getRegistrationList({
+  hall,
+  ypfirstName,
+  gender,
+  classification,
+  gradeLevel,
+  pageNumber = 1,
+  pageSize = 10,
+  sortBy,
+  sortOrder = "asc",
+}: ChurchLivingSearch) {
+  let orderByDir: Prisma.RegistrationOrderByWithRelationInput = {
+    createdAt: "asc",
+  };
+  switch (sortBy) {
+    case "gradeLevel":
+      orderByDir = {
+        GradeLevel: {
+          name: sortOrder,
+        },
+      };
+      break;
+    case "ypfirstName":
+      orderByDir = {
+        YoungPeople: {
+          firstName: sortOrder,
+        },
+      };
+      break;
+    case "hall":
+      orderByDir = {
+        Hall: {
+          name: sortOrder,
+        },
+      };
+      break;
+    case "gender":
+      orderByDir = {
+        YoungPeople: {
+          gender: sortOrder,
+        },
+      };
+      break;
+    case "classification":
+      orderByDir = {
+        Classification: {
+          name: sortOrder,
+        },
+      };
+      break;
+    default:
+      orderByDir = {
+        createdAt: "asc",
+      };
+      break;
+  }
+  const where: Prisma.RegistrationWhereInput = {
+    gradeLevelId:
+      gradeLevel && gradeLevel !== "" && gradeLevel !== "none"
+        ? gradeLevel
+        : undefined,
+    classificationId:
+      classification && classification !== "" && classification !== "none"
+        ? classification
+        : undefined,
+    YoungPeople:
+      ypfirstName && ypfirstName !== "" && ypfirstName !== "none"
+        ? {
+            firstName: {
+              contains: ypfirstName.toLowerCase().trim(),
+              mode: "insensitive",
+            },
+          }
+        : gender && gender !== "" && gender !== "none"
+        ? {
+            gender: {
+              equals: gender === "brother" ? "Brother" : "Sister",
+            },
+          }
+        : undefined,
+    hallId: hall && hall !== "" && hall !== "none" ? hall : undefined,
+  };
+  const register = await prisma.registration.findMany({
+    where,
+    include: {
+      YoungPeople: {
+        select: {
+          firstName: true,
+          lastName: true,
+          gender: true,
+        },
+      },
+      Hall: {
+        select: {
+          name: true,
+        },
+      },
+      GradeLevel: {
+        select: {
+          name: true,
+        },
+      },
+      Classification: {
+        select: {
+          name: true,
+        },
+      },
+    },
+    skip: (Number(pageNumber) - 1) * Number(pageSize),
+    take: Number(pageSize),
+    orderBy: orderByDir,
+  });
+
+  const totalCount = await prisma.registration.count({
+    where,
+  });
+
+  return {
+    data: register.map((x) => {
+      return {
+        id: x.id,
+        ypfirstName: x.YoungPeople.firstName.toUpperCase(),
+        yplastName: x.YoungPeople.lastName.toUpperCase(),
+        gender: x.YoungPeople.gender,
+        gradeLevel: x.GradeLevel.name,
+        classification: x.Classification.name,
+        hall: x.Hall?.name,
+        isCheckedIn: x.isCheckedIn,
+        checkedInAt: x.checkedInAt,
+      };
+    }),
+    pagination: {
+      pageNumber: Number(pageNumber),
+      pageSize: Number(pageSize),
+      totalCount,
+    },
+  };
 }

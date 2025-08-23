@@ -7,17 +7,20 @@ import { ChevronDown, ChevronRight } from "lucide-react";
 import { useCallback, useEffect, useState, type JSX } from "react";
 import { NavLink, useLocation } from "react-router";
 
+interface SubModule {
+  icon: JSX.Element;
+  label: string;
+  route: string;
+  subModules?: SubModule[];
+}
+
 interface MobileMenuProps {
   sidebarItems: {
     icon: JSX.Element;
     label: string;
     route: string;
     key: string;
-    subModules: {
-      icon: JSX.Element;
-      label: string;
-      route: string;
-    }[];
+    subModules: SubModule[];
   }[];
   onClose: () => void;
 }

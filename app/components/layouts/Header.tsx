@@ -4,12 +4,19 @@ import { Sheet, SheetContent, SheetTrigger } from "~/components/ui/sheet";
 import { useEffect, useRef, useState, type JSX } from "react";
 import { MobileMenu } from "./MobileMenu";
 import { useNavigate } from "react-router";
-import Logo from "~/src/CIV.png";
+import Logo from "/assets/CIV.png";
 
 interface User {
   id: string;
   name: string;
   email: string;
+}
+
+interface SubModule {
+  icon: JSX.Element;
+  label: string;
+  route: string;
+  subModules?: SubModule[];
 }
 
 interface HeaderProps {
@@ -18,11 +25,7 @@ interface HeaderProps {
     label: string;
     route: string;
     key: string;
-    subModules: {
-      icon: JSX.Element;
-      label: string;
-      route: string;
-    }[];
+    subModules: SubModule[];
   }[];
   user: User;
   setOpen: (open: boolean) => void;

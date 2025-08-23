@@ -16,7 +16,7 @@ import {
   getGroupById,
   getAvailableRegistrations,
   assignToGroup,
-} from "~/utils/groups.server";
+} from "~/lib/server/groups.server";
 import { auth } from "~/lib/auth.server";
 import { redirectWithSuccess } from "remix-toast";
 import type { Route } from "./+types/groups.$id.assign";

@@ -7,67 +7,139 @@ import { ChevronDown, ChevronRight } from "lucide-react";
 import { useCallback, useEffect, useState, type JSX } from "react";
 import { NavLink, useLocation } from "react-router";
 
+interface SubModule {
+  icon: JSX.Element;
+  label: string;
+  route: string;
+  subModules?: SubModule[];
+}
+
 interface SidebarProps {
   sidebarItems: {
     icon: JSX.Element;
     label: string;
     route: string;
     key: string;
-    subModules: {
-      icon: JSX.Element;
-      label: string;
-      route: string;
-    }[];
+    subModules: SubModule[];
   }[];
   isSideBarOpen: boolean;
 }
 
 export function Sidebar({ sidebarItems, isSideBarOpen }: SidebarProps) {
   const location = useLocation();
-  const [isOpenDropDown, setOpenDropDown] = useState(
-    sidebarItems
-      .filter((x) => x.subModules.length > 0)
-      .map((y) => ({
-        label: y.label,
-        status: y.key === location.pathname.split("/")[1].toLowerCase(),
-      }))
-  );
+  const [openModules, setOpenModules] = useState<Set<string>>(new Set());
+
+  // Auto-open modules based on current route
   useEffect(() => {
-    setOpenDropDown(
-      sidebarItems
-        .filter((x) => x.subModules.length > 0)
-        .map((y) => ({
-          label: y.label,
-          status: y.key === location.pathname.split("/")[1].toLowerCase(),
-        }))
-    );
-  }, [location.pathname, isSideBarOpen]);
-  const openDropDown = useCallback(
-    (status: boolean, label: string) => {
-      return [
-        ...sidebarItems
-          .filter((x) => x.subModules.length > 0 && x.label !== label)
-          .map((y) => ({
-            label: y.label,
-            status: false,
-          })),
-        {
-          label,
-          status,
-        },
-      ];
-    },
-    [isOpenDropDown]
-  );
+    const currentPath = location.pathname;
+    const newOpenModules = new Set<string>();
+    
+    sidebarItems.forEach(item => {
+      if (item.subModules.length > 0) {
+        const hasActiveSubModule = checkActiveSubModule(item.subModules, currentPath);
+        if (hasActiveSubModule) {
+          newOpenModules.add(item.label);
+          // Also open nested sub-modules if needed
+          addOpenNestedModules(item.subModules, currentPath, newOpenModules);
+        }
+      }
+    });
+    
+    setOpenModules(newOpenModules);
+  }, [location.pathname, sidebarItems]);
+
+  const checkActiveSubModule = (subModules: SubModule[], currentPath: string): boolean => {
+    return subModules.some(sub => {
+      if (currentPath.startsWith(`/${sub.route}`)) return true;
+      if (sub.subModules && sub.subModules.length > 0) {
+        return checkActiveSubModule(sub.subModules, currentPath);
+      }
+      return false;
+    });
+  };
+
+  const addOpenNestedModules = (subModules: SubModule[], currentPath: string, openSet: Set<string>) => {
+    subModules.forEach(sub => {
+      if (sub.subModules && sub.subModules.length > 0) {
+        const hasActiveChild = checkActiveSubModule(sub.subModules, currentPath);
+        if (hasActiveChild) {
+          openSet.add(sub.label);
+          addOpenNestedModules(sub.subModules, currentPath, openSet);
+        }
+      }
+    });
+  };
+
+  const toggleModule = (label: string) => {
+    const newOpenModules = new Set(openModules);
+    if (newOpenModules.has(label)) {
+      newOpenModules.delete(label);
+    } else {
+      newOpenModules.add(label);
+    }
+    setOpenModules(newOpenModules);
+  };
+
+  const renderSubModules = (subModules: SubModule[], level: number = 1): JSX.Element[] => {
+    return subModules.map((subModule, index) => {
+      const isOpen = openModules.has(subModule.label);
+      const hasSubModules = subModule.subModules && subModule.subModules.length > 0;
+      const paddingLeft = `${(level + 1) * 16}px`;
+      
+      if (hasSubModules) {
+        return (
+          <div key={`sub-module-${level}-${index}`} className="space-y-1">
+            <Collapsible
+              open={isOpen}
+              onOpenChange={() => toggleModule(subModule.label)}
+              className="w-full"
+            >
+              <CollapsibleTrigger asChild className="cursor-pointer w-full">
+                <div 
+                  className="flex items-center gap-2 py-2 px-2 text-gray-300 hover:text-white hover:bg-[#374d47] transition-all"
+                  style={{ paddingLeft }}
+                >
+                  {subModule.icon}
+                  <span className="flex-1 text-left">{subModule.label}</span>
+                  {isOpen ? (
+                    <ChevronDown className="h-3 w-3 shrink-0" />
+                  ) : (
+                    <ChevronRight className="h-3 w-3 shrink-0" />
+                  )}
+                </div>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="space-y-0.5">
+                {renderSubModules(subModule.subModules!, level + 1)}
+              </CollapsibleContent>
+            </Collapsible>
+          </div>
+        );
+      } else {
+        return (
+          <NavLink
+            key={`sub-module-${level}-${index}`}
+            to={`/${subModule.route}`}
+            className={({ isActive }) =>
+              `flex items-center gap-2 py-2 px-2 transition-all ${
+                isActive 
+                  ? 'text-white bg-[#2d4a43] font-medium' 
+                  : 'text-gray-400 hover:text-white hover:bg-[#374d47]'
+              }`
+            }
+            style={{ paddingLeft }}
+          >
+            {subModule.icon}
+            {subModule.label}
+          </NavLink>
+        );
+      }
+    });
+  };
 
   const activeModule =
     "flex items-center transition-all hover:font-medium text-white hover:bg-opacity-80";
   const notActiveModule =
     "flex items-center transition-all hover:text-white hover:font-medium text-gray-300";
-  const activeSubModule =
-    "flex items-center transition-all text-white hover:font-medium hover:bg-opacity-80";
-  const notActiveSubmodule =
-    "flex items-center transition-all hover:text-white hover:font-medium text-gray-400";
   return (
     <aside
       className={`hidden ${
@@ -79,115 +151,60 @@ export function Sidebar({ sidebarItems, isSideBarOpen }: SidebarProps) {
       }}
     >
       <nav className="p-4 space-y-1">
-        {sidebarItems.map(
-          ({ subModules, icon, label, route: groupRoute }, index) =>
-            subModules.length > 0 ? (
-              <div
-                key={`layout-sidebar-${index}`}
-                className={
-                  isOpenDropDown.find((x) => x.label === label)?.status
-                    ? "text-white pb-1"
-                    : "hover:text-white hover:font-medium text-gray-300"
-                }
-                style={{
-                  backgroundColor: isOpenDropDown.find((x) => x.label === label)?.status 
-                    ? '#2d4a43' 
-                    : 'transparent'
-                }}
-                onMouseEnter={(e) => {
-                  if (!isOpenDropDown.find((x) => x.label === label)?.status) {
-                    e.currentTarget.style.backgroundColor = '#2d4a43';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!isOpenDropDown.find((x) => x.label === label)?.status) {
-                    e.currentTarget.style.backgroundColor = 'transparent';
-                  }
-                }}
-              >
+        {sidebarItems.map((item, index) => {
+          const isOpen = openModules.has(item.label);
+          const hasSubModules = item.subModules.length > 0;
+          
+          if (hasSubModules) {
+            return (
+              <div key={`layout-sidebar-${index}`} className="space-y-1">
                 <Collapsible
-                  open={isOpenDropDown.find((x) => x.label === label)?.status}
-                  onOpenChange={(open) => {
-                    setOpenDropDown(openDropDown(open, label));
-                  }}
-                  className="w-full space-y-2"
+                  open={isOpen}
+                  onOpenChange={() => toggleModule(item.label)}
+                  className="w-full"
                 >
-                  <CollapsibleTrigger asChild className="cursor-pointer">
-                    <div className="flex items-center gap-3 rounded-lg px-4 py-3 hover:text-white">
-                      {icon}
-                      {label}
-                      {isOpenDropDown.find((x) => x.label === label)?.status ? (
-                        <ChevronDown className="p-0 ml-auto flex h-3 w-3 shrink-0 items-center justify-center" />
+                  <CollapsibleTrigger asChild className="cursor-pointer w-full">
+                    <div 
+                      className={`flex items-center gap-3 px-4 py-3 transition-all ${
+                        isOpen 
+                          ? 'text-white bg-[#2d4a43]' 
+                          : 'text-gray-300 hover:text-white hover:bg-[#2d4a43]'
+                      }`}
+                    >
+                      {item.icon}
+                      <span className="flex-1">{item.label}</span>
+                      {isOpen ? (
+                        <ChevronDown className="h-3 w-3 shrink-0" />
                       ) : (
-                        <ChevronRight className="p-0 ml-auto flex h-3 w-3 shrink-0 items-center justify-center" />
+                        <ChevronRight className="h-3 w-3 shrink-0" />
                       )}
                     </div>
                   </CollapsibleTrigger>
-                  <CollapsibleContent className="space-y-0.5 font-normal text-sm text-gray-300 mx-2">
-                    {subModules.map(
-                      ({ label: subLabel, icon: subIcon, route }, index) => (
-                        <NavLink
-                          to={route}
-                          key={`layout-sidebar-subModule-${index}`}
-                          className={({ isActive }) =>
-                            isActive ? activeSubModule : notActiveSubmodule
-                          }
-                          style={({ isActive }) => ({
-                            backgroundColor: isActive ? '#2d4a43' : 'transparent'
-                          })}
-                          onMouseEnter={(e) => {
-                            const isActive = e.currentTarget.getAttribute('aria-current') === 'page';
-                            if (!isActive) {
-                              e.currentTarget.style.backgroundColor = '#374d47';
-                            }
-                          }}
-                          onMouseLeave={(e) => {
-                            const isActive = e.currentTarget.getAttribute('aria-current') === 'page';
-                            if (!isActive) {
-                              e.currentTarget.style.backgroundColor = 'transparent';
-                            }
-                          }}
-                        >
-                          <div className="flex items-center gap-2 px-2 py-2">
-                            {subIcon}
-                            {subLabel}
-                          </div>
-                        </NavLink>
-                      )
-                    )}
+                  <CollapsibleContent className="space-y-0.5 font-normal text-sm">
+                    {renderSubModules(item.subModules)}
                   </CollapsibleContent>
                 </Collapsible>
               </div>
-            ) : (
+            );
+          } else {
+            return (
               <NavLink
                 key={`dashboard-sidebar-${index}`}
-                to={groupRoute}
+                to={item.route}
                 className={({ isActive }) =>
-                  isActive ? activeModule : notActiveModule
+                  `flex items-center gap-3 px-4 py-3 transition-all ${
+                    isActive 
+                      ? 'text-white bg-[#2d4a43] font-medium' 
+                      : 'text-gray-300 hover:text-white hover:bg-[#2d4a43]'
+                  }`
                 }
-                style={({ isActive }) => ({
-                  backgroundColor: isActive ? '#2d4a43' : 'transparent'
-                })}
-                onMouseEnter={(e) => {
-                  const isActive = e.currentTarget.getAttribute('aria-current') === 'page';
-                  if (!isActive) {
-                    e.currentTarget.style.backgroundColor = '#2d4a43';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  const isActive = e.currentTarget.getAttribute('aria-current') === 'page';
-                  if (!isActive) {
-                    e.currentTarget.style.backgroundColor = 'transparent';
-                  }
-                }}
               >
-                <div className="flex items-center gap-3 px-4 py-3">
-                  {icon}
-                  {label}
-                </div>
+                {item.icon}
+                {item.label}
               </NavLink>
-            )
-        )}
+            );
+          }
+        })}
       </nav>
     </aside>
   );

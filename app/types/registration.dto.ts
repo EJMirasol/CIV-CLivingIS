@@ -34,6 +34,8 @@ export const RegistrationFormSchema = z.object({
   classification: z.string({ message: "This field is required." }),
   gradeLevel: z.string({ message: "This field is required." }),
   remarks: z.string().optional(),
+  isCheckedIn: z.boolean().optional(),
+  checkedInAt: z.string().optional(),
   basicHealthInformation: BasicHealthInformationSchema.optional(),
   contactPersonEmergency: ContacPersonEmergencySchema.optional(),
 });

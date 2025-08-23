@@ -2,7 +2,7 @@ import type { Route } from "./+types/export";
 import { redirect } from "react-router";
 import { auth } from "~/lib/auth.server";
 import { redirectWithError } from "remix-toast";
-import { exportYPCLData } from "~/utils/registration.server";
+import { exportYPCLData } from "~/lib/server/registration.server";
 import * as XLSX from "xlsx";
 
 async function handleExport(request: Request) {

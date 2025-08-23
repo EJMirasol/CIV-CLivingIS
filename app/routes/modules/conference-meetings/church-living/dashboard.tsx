@@ -3,7 +3,7 @@ import { BarChart3, Users, UserCheck, AlertCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { DashboardStats } from "~/components/dashboard/DashboardStats";
 import type { Route } from "./+types/dashboard";
-import { getDashboardStatistics } from "~/utils/registration.server";
+import { getDashboardStatistics } from "~/lib/server/registration.server";
 import { getYear } from "date-fns";
 import { auth } from "~/lib/auth.server";
 

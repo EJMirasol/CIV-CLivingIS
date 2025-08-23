@@ -39,6 +39,11 @@ export default [
           "/export",
           "./routes/modules/conference-meetings/church-living/export.tsx"
         ),
+        // Check-in status - requires authentication
+        route(
+          "/status",
+          "./routes/modules/conference-meetings/church-living/status.tsx"
+        ),
         // Groups management - requires authentication
         ...prefix("groups", [
           index("./routes/modules/conference-meetings/church-living/groups.index.tsx"),

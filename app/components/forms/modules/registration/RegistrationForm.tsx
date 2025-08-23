@@ -7,7 +7,7 @@ import {
   getInputProps,
   getTextareaProps,
 } from "@conform-to/react";
-import { RegistrationFormSchema } from "./dto/registration.dto";
+import { RegistrationFormSchema } from "~/types/registration.dto";
 import { parseWithZod } from "@conform-to/zod";
 import { SaveButton } from "~/components/shared/buttons/SaveButton";
 import { Card, CardContent } from "~/components/ui/card";

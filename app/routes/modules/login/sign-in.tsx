@@ -17,7 +17,7 @@ import { signInSchema } from "~/lib/validations/auth";
 import { useState } from "react";
 import { useIsPending } from "~/hooks/use-is-pending";
 import { prisma } from "~/lib/prisma";
-import Logo from "~/src/CIV.png";
+import Logo from "/assets/CIV.png";
 import { auth } from "~/lib/auth.server";
 import type { Route } from "../auth/+types/sign-in";
 

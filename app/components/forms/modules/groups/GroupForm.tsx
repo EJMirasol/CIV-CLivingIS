@@ -7,7 +7,7 @@ import {
   getInputProps,
   getTextareaProps,
 } from "@conform-to/react";
-import { GroupFormSchema } from "./dto/group.dto";
+import { GroupFormSchema } from "~/types/group.dto";
 import { parseWithZod } from "@conform-to/zod";
 import { SaveButton } from "~/components/shared/buttons/SaveButton";
 import { Card, CardContent } from "~/components/ui/card";

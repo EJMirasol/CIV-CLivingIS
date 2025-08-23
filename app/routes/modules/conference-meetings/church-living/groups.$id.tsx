@@ -3,7 +3,7 @@ import { Users, UserMinus, Edit, Calendar, Hash, User } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { getGroupById, removeFromGroup } from "~/utils/groups.server";
+import { getGroupById, removeFromGroup } from "~/lib/server/groups.server";
 import { auth } from "~/lib/auth.server";
 import { redirectWithSuccess } from "remix-toast";
 import type { Route } from "./+types/groups.$id";

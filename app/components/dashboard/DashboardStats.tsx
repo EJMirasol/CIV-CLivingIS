@@ -6,6 +6,7 @@ import { Link } from "react-router";
 interface DashboardStatsProps {
   statistics: {
     totalRegistrations: number;
+    totalCheckedIn: number;
     genderDistribution: { gender: string; count: number }[];
     gradeLevelDistribution: { name: string; count: number }[];
     classificationDistribution: { name: string; count: number }[];
@@ -37,6 +38,7 @@ interface DashboardStatsProps {
 export function DashboardStats({ statistics }: DashboardStatsProps) {
   const {
     totalRegistrations,
+    totalCheckedIn,
     genderDistribution,
     gradeLevelDistribution,
     classificationDistribution,
@@ -94,15 +96,13 @@ export function DashboardStats({ statistics }: DashboardStatsProps) {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Health Alerts</CardTitle>
-            <Heart className="h-4 w-4 text-red-500" />
+            <CardTitle className="text-sm font-medium">Checked In</CardTitle>
+            <UserCheck className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">
-              {healthInfo.allergies + healthInfo.healthConditions}
-            </div>
+            <div className="text-2xl font-bold text-green-600">{totalCheckedIn}</div>
             <p className="text-xs text-muted-foreground">
-              {healthInfo.allergies} allergies, {healthInfo.healthConditions} conditions
+              {totalRegistrations > 0 ? Math.round((totalCheckedIn / totalRegistrations) * 100) : 0}% of registrations
             </p>
           </CardContent>
         </Card>

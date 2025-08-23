@@ -46,6 +46,8 @@ model Registration {
   basicHealthInfoId String?
   Group             Group?           @relation(fields: [groupId], references: [id])
   groupId           String?
+  isCheckedIn       Boolean          @default(false)
+  checkedInAt       DateTime?
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
   updatedBy         String?

@@ -1,8 +1,8 @@
 import { redirect } from "react-router";
 import { parseWithZod } from "@conform-to/zod";
-import { GroupFormSchema } from "~/components/forms/modules/groups/dto/group.dto";
+import { GroupFormSchema } from "~/types/group.dto";
 import { GroupForm } from "~/components/forms/modules/groups/GroupForm";
-import { createGroup } from "~/utils/groups.server";
+import { createGroup } from "~/lib/server/groups.server";
 import { auth } from "~/lib/auth.server";
 import { redirectWithSuccess } from "remix-toast";
 import type { Route } from "./+types/groups.create";

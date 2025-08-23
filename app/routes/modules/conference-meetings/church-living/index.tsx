@@ -47,7 +47,7 @@ import {
   getYPCLLists,
   deleteRegistration,
   getDashboardStatistics,
-} from "~/utils/registration.server";
+} from "~/lib/server/registration.server";
 import { getYear } from "date-fns";
 import { auth } from "~/lib/auth.server";
 import { redirectWithSuccess } from "remix-toast";

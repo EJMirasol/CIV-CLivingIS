@@ -39,7 +39,7 @@ import type { Route } from "./+types/groups.index";
 import {
   getGroups,
   deleteGroup,
-} from "~/utils/groups.server";
+} from "~/lib/server/groups.server";
 import { getYear } from "date-fns";
 import { auth } from "~/lib/auth.server";
 import { redirectWithSuccess } from "remix-toast";

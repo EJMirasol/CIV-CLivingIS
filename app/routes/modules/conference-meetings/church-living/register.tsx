@@ -8,8 +8,8 @@ import {
   getAllGradeLevels,
   getAllHalls,
   register,
-} from "~/utils/registration.server";
-import { RegistrationFormSchema } from "~/components/forms/modules/registration/dto/registration.dto";
+} from "~/lib/server/registration.server";
+import { RegistrationFormSchema } from "~/types/registration.dto";
 import { auth } from "~/lib/auth.server";
 import type { Route } from "./+types";
 
