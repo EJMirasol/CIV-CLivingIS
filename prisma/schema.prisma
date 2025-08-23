@@ -19,8 +19,8 @@ model YoungPeople {
   firstName              String
   middleName             String?
   suffix                 String?
-  dateOfBirth            DateTime
-  age                    Int
+  dateOfBirth            DateTime?
+  age                    Int?
   gender                 Gender
   Registration           Registration[]
   createdAt              DateTime                @default(now())
@@ -44,6 +44,8 @@ model Registration {
   remarks           String?
   BasicHealthInfo   BasicHealthInfo? @relation(fields: [basicHealthInfoId], references: [id])
   basicHealthInfoId String?
+  Group             Group?           @relation(fields: [groupId], references: [id])
+  groupId           String?
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
   updatedBy         String?
@@ -87,6 +89,19 @@ model ContactPersonEmergency {
   updatedAt     DateTime     @updatedAt
   youngPeople   YoungPeople? @relation(fields: [youngPersonId], references: [id])
   youngPersonId String?      @unique
+}
+
+model Group {
+  id             String         @id @default(uuid())
+  name           String         @unique
+  description    String?
+  maxMembers     Int?
+  currentMembers Int            @default(0)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  createdBy      String?
+  isActive       Boolean        @default(true)
+  registrations  Registration[]
 }
 
 enum Gender {

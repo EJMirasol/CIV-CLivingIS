@@ -61,18 +61,22 @@ export function Sidebar({ sidebarItems, isSideBarOpen }: SidebarProps) {
   );
 
   const activeModule =
-    "flex items-center transition-all bg-(--app-secondary) hover:font-medium text-white hover:bg-(--app-secondary-hover)";
+    "flex items-center transition-all hover:font-medium text-white hover:bg-opacity-80";
   const notActiveModule =
-    "flex items-center transition-all hover:text-white hover:bg-(--app-secondary-hover) hover:font-medium";
+    "flex items-center transition-all hover:text-white hover:font-medium text-gray-300";
   const activeSubModule =
-    "flex items-center transition-all text-white bg-(--app-primary) hover:bg-(--app-secondary-hover) hover:font-medium";
+    "flex items-center transition-all text-white hover:font-medium hover:bg-opacity-80";
   const notActiveSubmodule =
-    "flex items-center transition-all hover:text-white hover:bg-(--app-secondary-hover) hover:font-medium";
+    "flex items-center transition-all hover:text-white hover:font-medium text-gray-400";
   return (
     <aside
       className={`hidden ${
         isSideBarOpen ? "lg:block" : ""
-      } w-64 max-w-64 min-w-64 bg-white border-r border-gray-200 min-h-screen`}
+      } w-64 max-w-64 min-w-64 min-h-screen border-r`}
+      style={{ 
+        backgroundColor: '#213b36',
+        borderColor: '#1a2e29'
+      }}
     >
       <nav className="p-4 space-y-1">
         {sidebarItems.map(
@@ -82,9 +86,24 @@ export function Sidebar({ sidebarItems, isSideBarOpen }: SidebarProps) {
                 key={`layout-sidebar-${index}`}
                 className={
                   isOpenDropDown.find((x) => x.label === label)?.status
-                    ? "bg-(--app-secondary) text-white pb-1"
-                    : "hover:text-white hover:bg-(--app-secondary-hover) hover:font-medium"
+                    ? "text-white pb-1"
+                    : "hover:text-white hover:font-medium text-gray-300"
                 }
+                style={{
+                  backgroundColor: isOpenDropDown.find((x) => x.label === label)?.status 
+                    ? '#2d4a43' 
+                    : 'transparent'
+                }}
+                onMouseEnter={(e) => {
+                  if (!isOpenDropDown.find((x) => x.label === label)?.status) {
+                    e.currentTarget.style.backgroundColor = '#2d4a43';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isOpenDropDown.find((x) => x.label === label)?.status) {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                  }
+                }}
               >
                 <Collapsible
                   open={isOpenDropDown.find((x) => x.label === label)?.status}
@@ -104,7 +123,7 @@ export function Sidebar({ sidebarItems, isSideBarOpen }: SidebarProps) {
                       )}
                     </div>
                   </CollapsibleTrigger>
-                  <CollapsibleContent className="space-y-0.5 font-normal text-sm text-white mx-2">
+                  <CollapsibleContent className="space-y-0.5 font-normal text-sm text-gray-300 mx-2">
                     {subModules.map(
                       ({ label: subLabel, icon: subIcon, route }, index) => (
                         <NavLink
@@ -113,6 +132,21 @@ export function Sidebar({ sidebarItems, isSideBarOpen }: SidebarProps) {
                           className={({ isActive }) =>
                             isActive ? activeSubModule : notActiveSubmodule
                           }
+                          style={({ isActive }) => ({
+                            backgroundColor: isActive ? '#2d4a43' : 'transparent'
+                          })}
+                          onMouseEnter={(e) => {
+                            const isActive = e.currentTarget.getAttribute('aria-current') === 'page';
+                            if (!isActive) {
+                              e.currentTarget.style.backgroundColor = '#374d47';
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            const isActive = e.currentTarget.getAttribute('aria-current') === 'page';
+                            if (!isActive) {
+                              e.currentTarget.style.backgroundColor = 'transparent';
+                            }
+                          }}
                         >
                           <div className="flex items-center gap-2 px-2 py-2">
                             {subIcon}
@@ -131,6 +165,21 @@ export function Sidebar({ sidebarItems, isSideBarOpen }: SidebarProps) {
                 className={({ isActive }) =>
                   isActive ? activeModule : notActiveModule
                 }
+                style={({ isActive }) => ({
+                  backgroundColor: isActive ? '#2d4a43' : 'transparent'
+                })}
+                onMouseEnter={(e) => {
+                  const isActive = e.currentTarget.getAttribute('aria-current') === 'page';
+                  if (!isActive) {
+                    e.currentTarget.style.backgroundColor = '#2d4a43';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  const isActive = e.currentTarget.getAttribute('aria-current') === 'page';
+                  if (!isActive) {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                  }
+                }}
               >
                 <div className="flex items-center gap-3 px-4 py-3">
                   {icon}

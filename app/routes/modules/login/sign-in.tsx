@@ -19,7 +19,8 @@ import { useIsPending } from "~/hooks/use-is-pending";
 import { prisma } from "~/lib/prisma";
 import Logo from "~/src/CIV.png";
 import { auth } from "~/lib/auth.server";
-import type { Route } from "../login/+types/sign-in";
+import type { Route } from "../auth/+types/sign-in";
+
 
 export async function loader({ request }: Route.LoaderArgs) {
   const session = await auth.api.getSession({

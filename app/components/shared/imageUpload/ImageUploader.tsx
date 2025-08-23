@@ -45,6 +45,7 @@ interface ImageUploaderProps {
   className?: string;
   placeholder?: string;
   imageError?: boolean;
+  defaultImageSrc?: string;
   onImageCropped?: (blob: Blob) => void;
   onImageRemoved?: () => void;
 }
@@ -56,6 +57,7 @@ export function ImageUploader({
   className,
   placeholder = "Drag and drop or click to upload an image",
   imageError,
+  defaultImageSrc,
   onImageCropped,
   onImageRemoved,
 }: ImageUploaderProps) {
@@ -64,7 +66,7 @@ export function ImageUploader({
   const [crop, setCrop] = useState<Point>({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [error, setError] = useState<string | null>(null);
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [previewImage, setPreviewImage] = useState<string | null>(defaultImageSrc || null);
   const [isCropDialogOpen, setIsCropDialogOpen] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);

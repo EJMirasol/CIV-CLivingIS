@@ -17,7 +17,7 @@ export const BasicHealthInformationSchema = z.object({
 export const ContacPersonEmergencySchema = z.object({
   name: z.string().optional(),
   relationship: z.string().optional(),
-  contactNumber:z.string().optional(),
+  contactNumber: z.string().optional(),
 });
 
 export const RegistrationFormSchema = z.object({
@@ -27,8 +27,8 @@ export const RegistrationFormSchema = z.object({
   middleName: z.string().optional(),
   suffix: z.string().optional(),
   gender: z.string({ message: "This field is required." }),
-  dateOfBirth: z.string({ message: "This field is required." }),
-  age: z.string({ message: "This field is required." }),
+  dateOfBirth: z.string().optional(),
+  age: z.string().optional(),
   image: z.string().optional(),
   hall: z.string({ message: "This field is required." }),
   classification: z.string({ message: "This field is required." }),
@@ -36,7 +36,6 @@ export const RegistrationFormSchema = z.object({
   remarks: z.string().optional(),
   basicHealthInformation: BasicHealthInformationSchema.optional(),
   contactPersonEmergency: ContacPersonEmergencySchema.optional(),
-  });
-  
+});
 
-  export type RegistrationFormDTO = z.infer<typeof RegistrationFormSchema>;
+export type RegistrationFormDTO = z.infer<typeof RegistrationFormSchema>;

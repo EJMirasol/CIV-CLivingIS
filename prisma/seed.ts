@@ -80,7 +80,7 @@ async function main() {
           password: "Password123!",
         },
       });
-      console.log("Test user created: admin@example.com / password123");
+      console.log("Test user created");
     } catch (error) {
       console.log("Error creating user:", error);
     }

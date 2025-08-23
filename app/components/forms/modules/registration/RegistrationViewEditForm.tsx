@@ -7,7 +7,10 @@ import {
   getInputProps,
   getTextareaProps,
 } from "@conform-to/react";
-import { RegistrationFormSchema } from "./dto/registration.dto";
+import {
+  RegistrationFormSchema,
+  type RegistrationFormDTO,
+} from "./dto/registration.dto";
 import { parseWithZod } from "@conform-to/zod";
 import { SaveButton } from "~/components/shared/buttons/SaveButton";
 import { Card, CardContent } from "~/components/ui/card";
@@ -31,7 +34,8 @@ import { DeleteConfirmationDialog } from "~/components/shared/dialogs/DeleteConf
 import { BackButton } from "~/components/shared/buttons/BackButton";
 import { Separator } from "~/components/ui/separator";
 
-interface RegistrationFormProps {
+interface RegistrationViewEditFormProps {
+  registrationData: RegistrationFormDTO;
   gradeLevelList: {
     value: string;
     label: string;
@@ -49,18 +53,46 @@ interface RegistrationFormProps {
     label: string;
   }[];
 }
-export function RegistrationForm({
+
+export function RegistrationViewEditForm({
+  registrationData,
   gradeLevelList,
   genderList,
   hallList,
   classificationList,
-}: RegistrationFormProps) {
+}: RegistrationViewEditFormProps) {
   const [form, fields] = useForm({
     onValidate({ formData }) {
       return parseWithZod(formData, { schema: RegistrationFormSchema });
     },
     shouldValidate: "onSubmit",
-    defaultValue: {},
+    defaultValue: {
+      id: registrationData.id,
+      lastName: registrationData.lastName.toUpperCase(),
+      firstName: registrationData.firstName.toUpperCase(),
+      middleName: registrationData.middleName?.toUpperCase() || "",
+      suffix: registrationData.suffix?.toUpperCase() || "",
+      gender: registrationData.gender,
+      dateOfBirth: registrationData.dateOfBirth,
+      age: registrationData.age,
+      image: registrationData.image,
+      hall: registrationData.hall,
+      classification: registrationData.classification,
+      gradeLevel: registrationData.gradeLevel,
+      remarks: registrationData.remarks?.toUpperCase() || "",
+      basicHealthInformation: registrationData.basicHealthInformation,
+      contactPersonEmergency: registrationData.contactPersonEmergency
+        ? {
+            name:
+              registrationData.contactPersonEmergency.name?.toUpperCase() || "",
+            relationship:
+              registrationData.contactPersonEmergency.relationship?.toUpperCase() ||
+              "",
+            contactNumber:
+              registrationData.contactPersonEmergency.contactNumber || "",
+          }
+        : undefined,
+    },
   });
 
   const imageInputRef = useRef<HTMLInputElement>(null);
@@ -81,7 +113,12 @@ export function RegistrationForm({
       imageInputRef.current.value = "";
     }
   };
-  const [date, setDate] = useState<Date | undefined>(undefined);
+
+  const [date, setDate] = useState<Date | undefined>(
+    registrationData.dateOfBirth
+      ? parseISO(registrationData.dateOfBirth)
+      : undefined
+  );
   const [open, setOpen] = useState(false);
 
   const basicHealthField = fields.basicHealthInformation || {};
@@ -92,14 +129,14 @@ export function RegistrationForm({
 
   // Add state for isAllergies and isHealthCondition
   const [isAllergies, setIsAllergies] = useState(
-    basicHealthFieldList.isAllergies.value === undefined
-      ? undefined
-      : String(basicHealthFieldList.isAllergies.value)
+    registrationData.basicHealthInformation?.isAllergies !== undefined
+      ? String(registrationData.basicHealthInformation.isAllergies)
+      : undefined
   );
   const [isHealthCondition, setIsHealthCondition] = useState(
-    basicHealthFieldList.isHealthCondition.value === undefined
-      ? undefined
-      : String(basicHealthFieldList.isHealthCondition.value)
+    registrationData.basicHealthInformation?.isHealthCondition !== undefined
+      ? String(registrationData.basicHealthInformation.isHealthCondition)
+      : undefined
   );
 
   // Utility function to calculate age from date string
@@ -118,25 +155,26 @@ export function RegistrationForm({
 
   // State for age, synced with dateOfBirth
   const [calculatedAge, setCalculatedAge] = useState(
-    calculateAge(fields.dateOfBirth.value || "")
+    calculateAge(fields.dateOfBirth.value || registrationData.dateOfBirth || "")
   );
 
-  // Initialize date from fields.dateOfBirth.value if it exists
+  // Initialize date from defaultValue if it exists
   useEffect(() => {
-    if (fields.dateOfBirth.value) {
-      const parsedDate = parseISO(fields.dateOfBirth.value);
+    if (registrationData.dateOfBirth) {
+      const parsedDate = parseISO(registrationData.dateOfBirth);
       if (isValid(parsedDate)) {
         setDate(parsedDate);
       }
     }
-  }, []);
+  }, [registrationData.dateOfBirth]);
 
   // Sync calculatedAge if form is reset or dateOfBirth changes externally
   useEffect(() => {
-    const age = calculateAge(fields.dateOfBirth.value || "");
+    const age = calculateAge(
+      fields.dateOfBirth.value || registrationData.dateOfBirth || ""
+    );
     setCalculatedAge(age);
-    form.update({ name: "age", value: age });
-  }, [fields.dateOfBirth.value]);
+  }, [fields.dateOfBirth.value, registrationData.dateOfBirth]);
 
   // Update date state when a date is selected from the calendar
   useEffect(() => {
@@ -174,12 +212,16 @@ export function RegistrationForm({
           method="post"
           {...getFormProps(form)}
         >
+          {/* Hidden ID field for update */}
+          <input type="hidden" name="id" value={registrationData.id} />
+          {/* Hidden age field to sync with form */}
+          <input type="hidden" name="age" value={calculatedAge} />
+
           <Card className="px-5 flex flex-col w-full">
             <div className="text-xs h-full">
               <p>
-                Please fill out all the required fields marked with{" "}
-                <span className="text-red-500">*</span>, and leave optional
-                fields blank.
+                You can view and edit the registration details below. Update any
+                field and click Save to apply changes.
               </p>
             </div>
 
@@ -254,6 +296,7 @@ export function RegistrationForm({
                       onImageRemoved={handleImageRemoved}
                       imageError={fields.image?.errors ? true : false}
                       className="w-[145px] h-[145px] md:w-[145px] md:h-[145px] lg:w-[145px] lg:h-[145px] xl:w-[150px] xl:h-[150px]"
+                      defaultImageSrc={registrationData.image}
                     />
                   </div>
                 </div>
@@ -423,24 +466,22 @@ export function RegistrationForm({
                     </div>
                     <div className="grid grid-cols-2 xl:grid-cols-5 col-span-2 gap-5">
                       <div className=" space-y-1">
-                        <Label htmlFor={basicHealthFieldList.isAllergies.id}>
+                        <Label htmlFor={basicHealthFieldList.isAllergies?.id}>
                           With Allergy?
                         </Label>
                         <RadioGroup
-                          name={basicHealthFieldList.isAllergies.name}
+                          name={basicHealthFieldList.isAllergies?.name}
                           className="flex flex-row gap-5"
-                          defaultValue={String(
-                            basicHealthFieldList.isAllergies.value || ""
-                          )}
+                          defaultValue={isAllergies || ""}
                           onValueChange={(value) => setIsAllergies(value)}
                         >
                           <div className="flex items-center space-x-2">
                             <RadioGroupItem
                               value="true"
-                              id={`${basicHealthFieldList.isAllergies.id}-yes`}
+                              id={`${basicHealthFieldList.isAllergies?.id}-yes`}
                             />
                             <Label
-                              htmlFor={`${basicHealthFieldList.isAllergies.id}-yes`}
+                              htmlFor={`${basicHealthFieldList.isAllergies?.id}-yes`}
                             >
                               Yes
                             </Label>
@@ -448,22 +489,22 @@ export function RegistrationForm({
                           <div className="flex items-center space-x-2">
                             <RadioGroupItem
                               value="false"
-                              id={`${basicHealthFieldList.isAllergies.id}-no`}
+                              id={`${basicHealthFieldList.isAllergies?.id}-no`}
                             />
                             <Label
-                              htmlFor={`${basicHealthFieldList.isAllergies.id}-no`}
+                              htmlFor={`${basicHealthFieldList.isAllergies?.id}-no`}
                             >
                               No
                             </Label>
                           </div>
                         </RadioGroup>
                         <span className="text-red-500 text-xs">
-                          {basicHealthFieldList.isAllergies.errors}
+                          {basicHealthFieldList.isAllergies?.errors}
                         </span>
                       </div>
                       <div className="col-span-3 space-y-1">
                         <Label
-                          htmlFor={basicHealthFieldList.allergyDescription.id}
+                          htmlFor={basicHealthFieldList.allergyDescription?.id}
                         >
                           If yes, please specify:
                         </Label>
@@ -478,12 +519,12 @@ export function RegistrationForm({
                           onInput={transformToUppercase}
                         />
                         <span className="text-red-500 text-xs">
-                          {basicHealthFieldList.allergyDescription.errors}
+                          {basicHealthFieldList.allergyDescription?.errors}
                         </span>
                       </div>
                       <div className=" space-y-1">
                         <Label
-                          htmlFor={basicHealthFieldList.allergyMedicine.id}
+                          htmlFor={basicHealthFieldList.allergyMedicine?.id}
                         >
                           Medicine
                         </Label>
@@ -498,7 +539,7 @@ export function RegistrationForm({
                           onInput={transformToUppercase}
                         />
                         <span className="text-red-500 text-xs">
-                          {basicHealthFieldList.allergyMedicine.errors}
+                          {basicHealthFieldList.allergyMedicine?.errors}
                         </span>
                       </div>
                     </div>
@@ -510,25 +551,23 @@ export function RegistrationForm({
                     <div className="grid grid-cols-2 xl:grid-cols-5 col-span-2 gap-5">
                       <div className=" space-y-1">
                         <Label
-                          htmlFor={basicHealthFieldList.isHealthCondition.id}
+                          htmlFor={basicHealthFieldList.isHealthCondition?.id}
                         >
                           With Health Condition?
                         </Label>
                         <RadioGroup
-                          name={basicHealthFieldList.isHealthCondition.name}
+                          name={basicHealthFieldList.isHealthCondition?.name}
                           className="flex flex-row gap-5"
-                          defaultValue={String(
-                            basicHealthFieldList.isHealthCondition.value || ""
-                          )}
+                          defaultValue={isHealthCondition || ""}
                           onValueChange={(value) => setIsHealthCondition(value)}
                         >
                           <div className="flex items-center space-x-2">
                             <RadioGroupItem
                               value="true"
-                              id={`${basicHealthFieldList.isHealthCondition.id}-yes`}
+                              id={`${basicHealthFieldList.isHealthCondition?.id}-yes`}
                             />
                             <Label
-                              htmlFor={`${basicHealthFieldList.isHealthCondition.id}-yes`}
+                              htmlFor={`${basicHealthFieldList.isHealthCondition?.id}-yes`}
                             >
                               Yes
                             </Label>
@@ -536,10 +575,10 @@ export function RegistrationForm({
                           <div className="flex items-center space-x-2">
                             <RadioGroupItem
                               value="false"
-                              id={`${basicHealthFieldList.isHealthCondition.id}-no`}
+                              id={`${basicHealthFieldList.isHealthCondition?.id}-no`}
                             />
                             <Label
-                              htmlFor={`${basicHealthFieldList.isHealthCondition.id}-no`}
+                              htmlFor={`${basicHealthFieldList.isHealthCondition?.id}-no`}
                             >
                               No
                             </Label>
@@ -549,7 +588,7 @@ export function RegistrationForm({
                       <div className="col-span-3 space-y-1">
                         <Label
                           htmlFor={
-                            basicHealthFieldList.healthConditionDescription.id
+                            basicHealthFieldList.healthConditionDescription?.id
                           }
                         >
                           If yes, please specify:
@@ -567,14 +606,14 @@ export function RegistrationForm({
                         <span className="text-red-500 text-xs">
                           {
                             basicHealthFieldList.healthConditionDescription
-                              .errors
+                              ?.errors
                           }
                         </span>
                       </div>
                       <div className=" space-y-1">
                         <Label
                           htmlFor={
-                            basicHealthFieldList.healthConditionMedicine.id
+                            basicHealthFieldList.healthConditionMedicine?.id
                           }
                         >
                           Medicine
@@ -590,7 +629,7 @@ export function RegistrationForm({
                           onInput={transformToUppercase}
                         />
                         <span className="text-red-500 text-xs">
-                          {basicHealthFieldList.healthConditionMedicine.errors}
+                          {basicHealthFieldList.healthConditionMedicine?.errors}
                         </span>
                       </div>
                     </div>
@@ -601,7 +640,9 @@ export function RegistrationForm({
                     </p>
                     <div className="grid grid-cols-2 xl:grid-cols-3 col-span-2 gap-5">
                       <div className="space-y-1">
-                        <Label htmlFor={contacPersonEmergencyFieldList.name.id}>
+                        <Label
+                          htmlFor={contacPersonEmergencyFieldList.name?.id}
+                        >
                           Contact Person
                         </Label>
                         <Input
@@ -617,7 +658,7 @@ export function RegistrationForm({
                       <div className="space-y-1">
                         <Label
                           htmlFor={
-                            contacPersonEmergencyFieldList.relationship.id
+                            contacPersonEmergencyFieldList.relationship?.id
                           }
                         >
                           Relationship
@@ -635,7 +676,7 @@ export function RegistrationForm({
                       <div className="space-y-1">
                         <Label
                           htmlFor={
-                            contacPersonEmergencyFieldList.contactNumber.id
+                            contacPersonEmergencyFieldList.contactNumber?.id
                           }
                         >
                           Contact Number
