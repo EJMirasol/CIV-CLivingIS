@@ -6,7 +6,8 @@ import { prisma } from "~/lib/prisma";
 interface ChurchLivingSearch extends pagination {
   hall: string;
   ypfirstName: string;
-  gender: string;
+  group: string;
+  bedNumber: string;
   classification: string;
   gradeLevel?: string;
 }
@@ -14,7 +15,8 @@ interface ChurchLivingSearch extends pagination {
 export async function getYPCLLists({
   hall,
   ypfirstName,
-  gender,
+  group,
+  bedNumber,
   classification,
   gradeLevel,
   pageNumber = 1,
@@ -47,10 +49,17 @@ export async function getYPCLLists({
         },
       };
       break;
-    case "gender":
+    case "group":
       orderByDir = {
-        YoungPeople: {
-          gender: sortOrder,
+        Group: {
+          name: sortOrder,
+        },
+      };
+      break;
+    case "bedNumber":
+      orderByDir = {
+        accommodationAssignment: {
+          bedNumber: sortOrder,
         },
       };
       break;
@@ -84,11 +93,12 @@ export async function getYPCLLists({
               mode: "insensitive",
             },
           }
-        : gender && gender !== "" && gender !== "none"
+        : undefined,
+    groupId: group && group !== "" && group !== "none" ? group : undefined,
+    accommodationAssignment:
+      bedNumber && bedNumber !== "" && bedNumber !== "none"
         ? {
-            gender: {
-              equals: gender === "brother" ? "Brother" : "Sister",
-            },
+            bedNumber: parseInt(bedNumber),
           }
         : undefined,
     hallId: hall && hall !== "" && hall !== "none" ? hall : undefined,
@@ -99,7 +109,6 @@ export async function getYPCLLists({
       YoungPeople: {
         select: {
           firstName: true,
-          gender: true,
         },
       },
       Hall: {
@@ -117,6 +126,21 @@ export async function getYPCLLists({
           name: true,
         },
       },
+      Group: {
+        select: {
+          name: true,
+        },
+      },
+      accommodationAssignment: {
+        select: {
+          bedNumber: true,
+          Room: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      },
     },
     skip: (Number(pageNumber) - 1) * Number(pageSize),
     take: Number(pageSize),
@@ -131,11 +155,16 @@ export async function getYPCLLists({
     data: register.map((x) => {
       return {
         id: x.id,
-        ypfirstName: x.YoungPeople.firstName.toUpperCase(),
-        gender: x.YoungPeople.gender,
+        ypfirstName: x.YoungPeople.firstName?.toUpperCase() || "",
+        yplastName: x.YoungPeople.lastName?.toUpperCase() || "",
         gradeLevel: x.GradeLevel.name,
         classification: x.Classification.name,
         hall: x.Hall?.name,
+        group: x.Group?.name,
+        room: x.accommodationAssignment?.Room?.name,
+        bedNumber: x.accommodationAssignment?.bedNumber,
+        isCheckedIn: x.isCheckedIn,
+        checkedInAt: x.checkedInAt,
       };
     }),
     pagination: {
@@ -259,6 +288,52 @@ export async function getAllGenders() {
     { label: "Brother", value: "brother" },
     { label: "Sister", value: "sister" },
   ];
+}
+
+export async function getAllGroups() {
+  const groups = await prisma.group.findMany({
+    where: { isActive: true },
+    orderBy: { name: "asc" },
+  });
+
+  return groups.map((group: any) => ({
+    label: group.name || "",
+    value: group.id || "",
+  }));
+}
+
+export async function getAllRooms() {
+  const rooms = await prisma.room.findMany({
+    where: { isActive: true },
+    orderBy: { name: "asc" },
+  });
+
+  return rooms.map((room: any) => ({
+    label: room.name || "",
+    value: room.id || "",
+  }));
+}
+
+export async function getAllBedNumbers() {
+  const assignments = await prisma.accommodationAssignment.findMany({
+    where: {
+      bedNumber: {
+        not: null,
+      },
+    },
+    select: {
+      bedNumber: true,
+    },
+    distinct: ['bedNumber'],
+    orderBy: { bedNumber: 'asc' },
+  });
+
+  return assignments
+    .filter((assignment) => assignment.bedNumber !== null)
+    .map((assignment) => ({
+      label: `Bed #${assignment.bedNumber}`,
+      value: assignment.bedNumber!.toString(),
+    }));
 }
 
 export async function getAllClassifications() {
@@ -907,7 +982,8 @@ export async function toggleCheckInStatus(registrationId: string) {
 export async function getRegistrationList({
   hall,
   ypfirstName,
-  gender,
+  group,
+  bedNumber,
   classification,
   gradeLevel,
   pageNumber = 1,
@@ -940,10 +1016,17 @@ export async function getRegistrationList({
         },
       };
       break;
-    case "gender":
+    case "group":
       orderByDir = {
-        YoungPeople: {
-          gender: sortOrder,
+        Group: {
+          name: sortOrder,
+        },
+      };
+      break;
+    case "bedNumber":
+      orderByDir = {
+        accommodationAssignment: {
+          bedNumber: sortOrder,
         },
       };
       break;
@@ -952,6 +1035,16 @@ export async function getRegistrationList({
         Classification: {
           name: sortOrder,
         },
+      };
+      break;
+    case "isCheckedIn":
+      orderByDir = {
+        isCheckedIn: sortOrder,
+      };
+      break;
+    case "checkedInAt":
+      orderByDir = {
+        checkedInAt: sortOrder,
       };
       break;
     default:
@@ -977,11 +1070,12 @@ export async function getRegistrationList({
               mode: "insensitive",
             },
           }
-        : gender && gender !== "" && gender !== "none"
+        : undefined,
+    groupId: group && group !== "" && group !== "none" ? group : undefined,
+    accommodationAssignment:
+      bedNumber && bedNumber !== "" && bedNumber !== "none"
         ? {
-            gender: {
-              equals: gender === "brother" ? "Brother" : "Sister",
-            },
+            bedNumber: parseInt(bedNumber),
           }
         : undefined,
     hallId: hall && hall !== "" && hall !== "none" ? hall : undefined,
@@ -1025,8 +1119,8 @@ export async function getRegistrationList({
     data: register.map((x) => {
       return {
         id: x.id,
-        ypfirstName: x.YoungPeople.firstName.toUpperCase(),
-        yplastName: x.YoungPeople.lastName.toUpperCase(),
+        ypfirstName: x.YoungPeople.firstName?.toUpperCase() || "",
+        yplastName: x.YoungPeople.lastName?.toUpperCase() || "",
         gender: x.YoungPeople.gender,
         gradeLevel: x.GradeLevel.name,
         classification: x.Classification.name,

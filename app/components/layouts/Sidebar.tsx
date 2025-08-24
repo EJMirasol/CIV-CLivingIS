@@ -50,7 +50,13 @@ export function Sidebar({ sidebarItems, isSideBarOpen }: SidebarProps) {
 
   const checkActiveSubModule = (subModules: SubModule[], currentPath: string): boolean => {
     return subModules.some(sub => {
-      if (currentPath.startsWith(`/${sub.route}`)) return true;
+      const routePattern = `/${sub.route}`;
+      // Exact match or match with trailing segments (but not just substring)
+      const isExactMatch = currentPath === routePattern || 
+                          currentPath === routePattern + '/' ||
+                          currentPath.startsWith(routePattern + '/');
+      
+      if (isExactMatch) return true;
       if (sub.subModules && sub.subModules.length > 0) {
         return checkActiveSubModule(sub.subModules, currentPath);
       }
@@ -108,7 +114,7 @@ export function Sidebar({ sidebarItems, isSideBarOpen }: SidebarProps) {
                   )}
                 </div>
               </CollapsibleTrigger>
-              <CollapsibleContent className="space-y-0.5">
+              <CollapsibleContent className="space-y-1 mt-1">
                 {renderSubModules(subModule.subModules!, level + 1)}
               </CollapsibleContent>
             </Collapsible>
@@ -119,7 +125,7 @@ export function Sidebar({ sidebarItems, isSideBarOpen }: SidebarProps) {
           <NavLink
             key={`sub-module-${level}-${index}`}
             to={`/${subModule.route}`}
-            end={subModule.route === "conference-meetings/ypcl"}
+            end={true}
             className={({ isActive }) =>
               `flex items-center gap-2 py-2 px-2 transition-all ${
                 isActive 
@@ -181,7 +187,7 @@ export function Sidebar({ sidebarItems, isSideBarOpen }: SidebarProps) {
                       )}
                     </div>
                   </CollapsibleTrigger>
-                  <CollapsibleContent className="space-y-0.5 font-normal text-sm">
+                  <CollapsibleContent className="space-y-1 font-normal text-sm mt-1">
                     {renderSubModules(item.subModules)}
                   </CollapsibleContent>
                 </Collapsible>

@@ -1,6 +1,5 @@
 import { redirect, useLoaderData } from "react-router";
 import { BarChart3 } from "lucide-react";
-import { Card, CardContent } from "~/components/ui/card";
 import { DashboardStats } from "~/components/dashboard/DashboardStats";
 import type { Route } from "./+types/dashboard";
 import { getDashboardStatistics } from "~/lib/server/registration.server";

@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { Users, UserCheck, Heart, Clock, TrendingUp, MapPin, GraduationCap, Tag, Layers } from "lucide-react";
+import { Users, UserCheck, Heart, Clock, TrendingUp, MapPin, GraduationCap, Tag, Layers, CheckCircle } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import { Link } from "react-router";
 
@@ -54,115 +54,98 @@ export function DashboardStats({ statistics }: DashboardStatsProps) {
   return (
     <div className="space-y-6">
       {/* Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Registered</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card className="relative overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100 border-slate-200 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+          <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-slate-100 to-slate-200 rounded-full -mr-10 -mt-10 opacity-50"></div>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-sm font-semibold text-slate-700">Total Registered</CardTitle>
+            <div className="p-2 bg-slate-200 rounded-xl">
+              <Users className="h-5 w-5 text-slate-600" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalRegistrations}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-3xl font-bold text-slate-800 mb-1">{totalRegistrations}</div>
+            <p className="text-sm text-slate-600 flex items-center gap-1">
+              <TrendingUp className="h-3 w-3" />
               Young people registered
             </p>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Brothers</CardTitle>
-            <UserCheck className="h-4 w-4 text-blue-500" />
+        <Card className="relative overflow-hidden bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+          <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full -mr-10 -mt-10 opacity-50"></div>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-sm font-semibold text-blue-700">Brothers</CardTitle>
+            <div className="p-2 bg-blue-200 rounded-xl">
+              <UserCheck className="h-5 w-5 text-blue-600" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{brothersCount}</div>
-            <p className="text-xs text-muted-foreground">
-              {totalRegistrations > 0 ? Math.round((brothersCount / totalRegistrations) * 100) : 0}% of registrations
+            <div className="text-3xl font-bold text-blue-700 mb-1">{brothersCount}</div>
+            <p className="text-sm text-blue-600 flex items-center gap-1">
+              <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100 px-2 py-0.5 text-xs">
+                {totalRegistrations > 0 ? Math.round((brothersCount / totalRegistrations) * 100) : 0}%
+              </Badge>
+              of registrations
             </p>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Sisters</CardTitle>
-            <UserCheck className="h-4 w-4 text-pink-500" />
+        <Card className="relative overflow-hidden bg-gradient-to-br from-pink-50 to-pink-100 border-pink-200 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+          <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-pink-100 to-pink-200 rounded-full -mr-10 -mt-10 opacity-50"></div>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-sm font-semibold text-pink-700">Sisters</CardTitle>
+            <div className="p-2 bg-pink-200 rounded-xl">
+              <UserCheck className="h-5 w-5 text-pink-600" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-pink-600">{sistersCount}</div>
-            <p className="text-xs text-muted-foreground">
-              {totalRegistrations > 0 ? Math.round((sistersCount / totalRegistrations) * 100) : 0}% of registrations
+            <div className="text-3xl font-bold text-pink-700 mb-1">{sistersCount}</div>
+            <p className="text-sm text-pink-600 flex items-center gap-1">
+              <Badge className="bg-pink-100 text-pink-700 hover:bg-pink-100 px-2 py-0.5 text-xs">
+                {totalRegistrations > 0 ? Math.round((sistersCount / totalRegistrations) * 100) : 0}%
+              </Badge>
+              of registrations
             </p>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Checked In</CardTitle>
-            <UserCheck className="h-4 w-4 text-green-500" />
+        <Card className="relative overflow-hidden bg-gradient-to-br from-green-50 to-green-100 border-green-200 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+          <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-green-100 to-green-200 rounded-full -mr-10 -mt-10 opacity-50"></div>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-sm font-semibold text-green-700">Checked In</CardTitle>
+            <div className="p-2 bg-green-200 rounded-xl">
+              <CheckCircle className="h-5 w-5 text-green-600" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">{totalCheckedIn}</div>
-            <p className="text-xs text-muted-foreground">
-              {totalRegistrations > 0 ? Math.round((totalCheckedIn / totalRegistrations) * 100) : 0}% of registrations
+            <div className="text-3xl font-bold text-green-700 mb-1">{totalCheckedIn}</div>
+            <p className="text-sm text-green-600 flex items-center gap-1">
+              <Badge className="bg-green-100 text-green-700 hover:bg-green-100 px-2 py-0.5 text-xs">
+                {totalRegistrations > 0 ? Math.round((totalCheckedIn / totalRegistrations) * 100) : 0}%
+              </Badge>
+              of registrations
             </p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Group Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Groups</CardTitle>
-            <Layers className="h-4 w-4 text-muted-foreground" />
+      {/* Total Groups Card */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card className="relative overflow-hidden bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+          <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-purple-100 to-purple-200 rounded-full -mr-10 -mt-10 opacity-50"></div>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-sm font-semibold text-purple-700">Total Groups</CardTitle>
+            <div className="p-2 bg-purple-200 rounded-xl">
+              <Layers className="h-5 w-5 text-purple-600" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{groupInfo.totalGroups}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-3xl font-bold text-purple-700 mb-1">{groupInfo.totalGroups}</div>
+            <p className="text-sm text-purple-600 flex items-center gap-1">
+              <TrendingUp className="h-3 w-3" />
               Active groups created
             </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Assigned Members</CardTitle>
-            <Users className="h-4 w-4 text-green-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">{groupInfo.totalAssignedMembers}</div>
-            <p className="text-xs text-muted-foreground">
-              {groupInfo.assignmentPercentage}% assignment rate
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Unassigned Members</CardTitle>
-            <Users className="h-4 w-4 text-orange-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-orange-600">{groupInfo.totalUnassignedMembers}</div>
-            <p className="text-xs text-muted-foreground">
-              Awaiting group assignment
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Group Management</CardTitle>
-            <Layers className="h-4 w-4 text-[#213b36]" />
-          </CardHeader>
-          <CardContent>
-            <Link to="/conference-meetings/ypcl/groups" className="block">
-              <div className="text-sm font-medium text-[#213b36] hover:text-[#1a2f29]">
-                Manage Groups →
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                View and manage all groups
-              </p>
-            </Link>
           </CardContent>
         </Card>
       </div>
@@ -170,10 +153,12 @@ export function DashboardStats({ statistics }: DashboardStatsProps) {
       {/* Distribution Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Grade Level Distribution */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <GraduationCap className="h-5 w-5" />
+        <Card className="hover:shadow-lg transition-all duration-300 border-gray-200 bg-gradient-to-br from-white to-gray-50">
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center gap-2 text-gray-800">
+              <div className="p-2 bg-gray-100 rounded-lg">
+                <GraduationCap className="h-5 w-5 text-gray-600" />
+              </div>
               Grade Level Distribution
             </CardTitle>
           </CardHeader>
@@ -203,10 +188,12 @@ export function DashboardStats({ statistics }: DashboardStatsProps) {
         </Card>
 
         {/* Classification Distribution */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Tag className="h-5 w-5" />
+        <Card className="hover:shadow-lg transition-all duration-300 border-gray-200 bg-gradient-to-br from-white to-gray-50">
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center gap-2 text-gray-800">
+              <div className="p-2 bg-gray-100 rounded-lg">
+                <Tag className="h-5 w-5 text-gray-600" />
+              </div>
               Classification Distribution
             </CardTitle>
           </CardHeader>
@@ -240,10 +227,12 @@ export function DashboardStats({ statistics }: DashboardStatsProps) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Hall Distribution */}
         {hallDistribution.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MapPin className="h-5 w-5" />
+          <Card className="hover:shadow-lg transition-all duration-300 border-gray-200 bg-gradient-to-br from-white to-gray-50">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center gap-2 text-gray-800">
+                <div className="p-2 bg-gray-100 rounded-lg">
+                  <MapPin className="h-5 w-5 text-gray-600" />
+                </div>
                 Hall Distribution
               </CardTitle>
             </CardHeader>
@@ -274,10 +263,12 @@ export function DashboardStats({ statistics }: DashboardStatsProps) {
         )}
 
         {/* Recent Registrations */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Clock className="h-5 w-5" />
+        <Card className="hover:shadow-lg transition-all duration-300 border-gray-200 bg-gradient-to-br from-white to-gray-50">
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center gap-2 text-gray-800">
+              <div className="p-2 bg-gray-100 rounded-lg">
+                <Clock className="h-5 w-5 text-gray-600" />
+              </div>
               Recent Registrations
             </CardTitle>
           </CardHeader>
@@ -307,79 +298,15 @@ export function DashboardStats({ statistics }: DashboardStatsProps) {
         </Card>
       </div>
 
-      {/* Top Groups */}
-      {groupInfo.topGroups.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Layers className="h-5 w-5" />
-              Top Groups by Membership
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {groupInfo.topGroups.map((group, index) => (
-                <Link 
-                  key={group.id} 
-                  to={`/conference-meetings/ypcl/groups/${group.id}`}
-                  className="block hover:bg-muted/50 rounded-lg transition-colors"
-                >
-                  <div className="flex items-center justify-between p-3">
-                    <div className="flex items-center gap-3">
-                      <div 
-                        className="w-3 h-3 rounded-full" 
-                        style={{ 
-                          backgroundColor: `hsl(${index * 50 + 120}, 70%, 60%)` 
-                        }}
-                      />
-                      <div>
-                        <span className="font-medium">{group.name}</span>
-                        {group.utilizationPercentage !== null && (
-                          <div className="w-20 bg-gray-200 rounded-full h-1.5 mt-1">
-                            <div
-                              className={`h-1.5 rounded-full ${
-                                group.utilizationPercentage >= 100
-                                  ? "bg-red-500"
-                                  : group.utilizationPercentage >= 80
-                                  ? "bg-yellow-500"
-                                  : "bg-green-500"
-                              }`}
-                              style={{ width: `${Math.min(group.utilizationPercentage, 100)}%` }}
-                            />
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-muted-foreground">
-                        {group.currentMembers}
-                        {group.maxMembers && ` / ${group.maxMembers}`}
-                      </span>
-                      {group.utilizationPercentage !== null && (
-                        <Badge variant="secondary">
-                          {group.utilizationPercentage}%
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-            <div className="mt-4 pt-3 border-t">
-              <Link to="/conference-meetings/ypcl/groups" className="text-sm text-[#213b36] hover:text-[#1a2f29] font-medium">
-                View All Groups →
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Health Information Summary */}
       {(healthInfo.allergies > 0 || healthInfo.healthConditions > 0) && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Heart className="h-5 w-5" />
+        <Card className="hover:shadow-lg transition-all duration-300 border-gray-200 bg-gradient-to-br from-white to-gray-50">
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center gap-2 text-gray-800">
+              <div className="p-2 bg-gray-100 rounded-lg">
+                <Heart className="h-5 w-5 text-gray-600" />
+              </div>
               Health Information Summary
             </CardTitle>
           </CardHeader>

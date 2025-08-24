@@ -31,26 +31,27 @@ model YoungPeople {
 }
 
 model Registration {
-  id                String           @id @default(uuid())
-  YoungPeople       YoungPeople      @relation(fields: [youngPeopleId], references: [id])
-  youngPeopleId     String
-  dateRegistered    DateTime
-  GradeLevel        GradeLevel       @relation(fields: [gradeLevelId], references: [id])
-  gradeLevelId      String
-  Hall              Hall?            @relation(fields: [hallId], references: [id])
-  hallId            String?
-  Classification    Classification   @relation(fields: [classificationId], references: [id])
-  classificationId  String
-  remarks           String?
-  BasicHealthInfo   BasicHealthInfo? @relation(fields: [basicHealthInfoId], references: [id])
-  basicHealthInfoId String?
-  Group             Group?           @relation(fields: [groupId], references: [id])
-  groupId           String?
-  isCheckedIn       Boolean          @default(false)
-  checkedInAt       DateTime?
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
-  updatedBy         String?
+  id                      String                   @id @default(uuid())
+  YoungPeople             YoungPeople              @relation(fields: [youngPeopleId], references: [id])
+  youngPeopleId           String
+  dateRegistered          DateTime
+  GradeLevel              GradeLevel               @relation(fields: [gradeLevelId], references: [id])
+  gradeLevelId            String
+  Hall                    Hall?                    @relation(fields: [hallId], references: [id])
+  hallId                  String?
+  Classification          Classification           @relation(fields: [classificationId], references: [id])
+  classificationId        String
+  remarks                 String?
+  BasicHealthInfo         BasicHealthInfo?         @relation(fields: [basicHealthInfoId], references: [id])
+  basicHealthInfoId       String?
+  Group                   Group?                   @relation(fields: [groupId], references: [id])
+  groupId                 String?
+  isCheckedIn             Boolean                  @default(false)
+  checkedInAt             DateTime?
+  createdAt               DateTime                 @default(now())
+  updatedAt               DateTime                 @updatedAt
+  updatedBy               String?
+  accommodationAssignment AccommodationAssignment?
 }
 
 model GradeLevel {
@@ -104,6 +105,34 @@ model Group {
   createdBy      String?
   isActive       Boolean        @default(true)
   registrations  Registration[]
+}
+
+model Room {
+  id                      String                    @id @default(uuid())
+  name                    String                    @unique
+  description             String?
+  bedCount                Int
+  maxOccupancy            Int
+  currentOccupancy        Int                       @default(0)
+  isActive                Boolean                   @default(true)
+  createdAt               DateTime                  @default(now())
+  updatedAt               DateTime                  @updatedAt
+  createdBy               String?
+  accommodationAssignments AccommodationAssignment[]
+}
+
+model AccommodationAssignment {
+  id             String       @id @default(uuid())
+  Room           Room         @relation(fields: [roomId], references: [id])
+  roomId         String
+  Registration   Registration @relation(fields: [registrationId], references: [id])
+  registrationId String       @unique
+  bedNumber      Int?
+  assignedAt     DateTime     @default(now())
+  assignedBy     String?
+  notes          String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
 }
 
 enum Gender {

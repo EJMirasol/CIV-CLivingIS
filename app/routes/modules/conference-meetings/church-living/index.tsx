@@ -11,6 +11,7 @@ import { useState } from "react";
 import {
   ArrowDownToLine,
   ClipboardList,
+  Home,
   RefreshCcw,
   Search,
   Trash2,
@@ -42,7 +43,8 @@ import { SelectBoxWithSearch } from "~/components/selectbox/SelectBoxWithSearch"
 import type { Route } from "./+types/index";
 import {
   getAllClassifications,
-  getAllGenders,
+  getAllGroups,
+  getAllBedNumbers,
   getAllGradeLevels,
   getAllHalls,
   getYPCLLists,
@@ -67,7 +69,8 @@ export async function loader({ request }: Route.LoaderArgs) {
   const args = {
     hall: searchParams.hall || "",
     ypfirstName: searchParams.ypfirstName || "",
-    gender: searchParams.gender || "",
+    group: searchParams.group || "",
+    bedNumber: searchParams.bedNumber || "",
     classification: searchParams.classification || "",
     gradeLevel: searchParams.gradeLevel || "",
     pageNumber: parseInt(searchParams.pageNumber || "1"),
@@ -79,7 +82,8 @@ export async function loader({ request }: Route.LoaderArgs) {
   const { data, pagination } = await getYPCLLists(args);
   const statistics = await getDashboardStatistics();
   return {
-    genderList: await getAllGenders(),
+    groupList: await getAllGroups(),
+    bedNumberList: await getAllBedNumbers(),
     gradeLevelList: await getAllGradeLevels(),
     classificationList: await getAllClassifications(),
     hallList: await getAllHalls(),
@@ -121,7 +125,8 @@ export default () => {
   const {
     data,
     pagination,
-    genderList,
+    groupList,
+    bedNumberList,
     gradeLevelList,
     classificationList,
     hallList,
@@ -205,19 +210,57 @@ export default () => {
       },
     },
     {
-      accessorKey: "gender",
+      accessorKey: "group",
       header: ({ column }) => (
         <DataTableColumnHeader
           className="pl-2"
-          title="Gender"
+          title="Group"
           column={column}
-          columnKey="gender"
+          columnKey="group"
         />
       ),
       cell: ({ row }) => {
         return (
           <div className="flex items-center gap-2 pl-2">
-            <span className="text-sm font-medium">{row.original.gender}</span>
+            <span className="text-sm font-medium">{row.original.group || "No group"}</span>
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "room",
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          className="pl-2"
+          title="Room"
+          column={column}
+          columnKey="room"
+        />
+      ),
+      cell: ({ row }) => {
+        return (
+          <div className="flex items-center gap-2 pl-2">
+            <span className="text-sm font-medium">{row.original.room || "No room"}</span>
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "bedNumber",
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          className="pl-2"
+          title="Bed #"
+          column={column}
+          columnKey="bedNumber"
+        />
+      ),
+      cell: ({ row }) => {
+        return (
+          <div className="flex items-center gap-2 pl-2">
+            <span className="text-sm font-medium">
+              {row.original.bedNumber ? `Bed #${row.original.bedNumber}` : "N/A"}
+            </span>
           </div>
         );
       },
@@ -362,7 +405,7 @@ export default () => {
       </div>
       <Card className="w-full p-5">
         <Form
-          className="grid grid-cols-3 gap-x-6 gap-y-4"
+          className="grid grid-cols-4 gap-x-6 gap-y-4"
           id="search-admissions-form"
           method="GET"
         >
@@ -388,15 +431,27 @@ export default () => {
           </div>
 
           <div className="space-y-1">
-            <Label className="">Gender</Label>
+            <Label className="">Group</Label>
             <SelectBoxWithSearch
-              id="gender"
-              name="gender"
-              options={genderList.map(({ label, value }) => ({
+              id="group"
+              name="group"
+              options={groupList.map(({ label, value }) => ({
                 id: value,
                 name: label,
               }))}
-              defaultValue={searchFilter.gender}
+              defaultValue={searchFilter.group}
+            />
+          </div>
+          <div className="space-y-1">
+            <Label className="">Bed#</Label>
+            <SelectBoxWithSearch
+              id="bedNumber"
+              name="bedNumber"
+              options={bedNumberList.map(({ label, value }) => ({
+                id: value,
+                name: label,
+              }))}
+              defaultValue={searchFilter.bedNumber}
             />
           </div>
           <div className="space-y-1">
@@ -423,7 +478,7 @@ export default () => {
               defaultValue={searchFilter.classification}
             />
           </div>
-          <div className="col-start-6 row-start-1 row-span-2 flex ml-20 justify-center items-center gap-2">
+          <div className="col-start-5 row-start-1 row-span-2 flex ml-20 justify-center items-center gap-2">
             <Button className="bg-[#213b36]" variant="view" type="submit">
               <Search />
               Search
@@ -443,11 +498,6 @@ export default () => {
       </Card>
       <div className="flex justify-end items-center">
         <div className="flex gap-2">
-          <Link to="/conference-meetings/ypcl/groups">
-            <Button className="bg-[#213b36] hover:bg-[#1a2f29]" variant="view">
-              <Users className="h-4 w-4" /> Groups
-            </Button>
-          </Link>
           <Link to="/conference-meetings/ypcl/register/">
             <Button className="bg-[#213b36] " variant="view">
               <IoMdCheckboxOutline /> Register
@@ -594,7 +644,7 @@ export default () => {
                         Export{" "}
                         {selectedFormat === "excel-csv"
                           ? "Excel CSV"
-                          : selectedFormat.toUpperCase()}
+                          : selectedFormat?.toUpperCase() || "CSV"}
                       </>
                     )}
                   </Button>

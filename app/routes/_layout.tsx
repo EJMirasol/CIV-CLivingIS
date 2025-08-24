@@ -1,5 +1,5 @@
 import type { Route } from "./+types/_layout";
-import { BookHeart, Handshake, BarChart3, Users, UserCheck, UserPlus } from "lucide-react";
+import { BookHeart, Handshake, BarChart3, Users, UserCheck, UserPlus, Home } from "lucide-react";
 import { MdSpaceDashboard } from "react-icons/md";
 import { useState } from "react";
 import { Header } from "~/components/layouts/Header";
@@ -61,6 +61,28 @@ export default function DashboardLayout() {
               label: "Check-in Status",
               route: "conference-meetings/ypcl/status",
             },
+            {
+              icon: <Home className="h-4 w-4" />,
+              label: "Accommodation",
+              route: "",
+              subModules: [
+                {
+                  icon: <Home className="h-4 w-4" />,
+                  label: "Overview",
+                  route: "conference-meetings/ypcl/accommodation",
+                },
+                {
+                  icon: <Home className="h-4 w-4" />,
+                  label: "Room Management",
+                  route: "conference-meetings/ypcl/accommodation/rooms",
+                },
+                {
+                  icon: <Users className="h-4 w-4" />,
+                  label: "Assignments",
+                  route: "conference-meetings/ypcl/accommodation/assignments",
+                },
+              ],
+            },
           ],
         },
       ],
@@ -80,7 +102,7 @@ export default function DashboardLayout() {
       <div className="flex">
         <Sidebar sidebarItems={sidebarItems} isSideBarOpen={isSideBarOpen} />
 
-        <main className="flex-1 p-4 lg:p-6">
+        <main className="flex-1 p-4 lg:p-6 min-w-0">
           <Outlet />
         </main>
       </div>

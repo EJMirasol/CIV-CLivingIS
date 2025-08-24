@@ -64,6 +64,35 @@ export default [
             "./routes/modules/conference-meetings/church-living/groups/$id.assign.tsx"
           ),
         ]),
+        // Accommodation management - requires authentication
+        route(
+          "/accommodation",
+          "./routes/modules/conference-meetings/church-living/accommodation/index.tsx"
+        ),
+        route(
+          "/accommodation/rooms",
+          "./routes/modules/conference-meetings/church-living/accommodation/rooms/index.tsx"
+        ),
+        route(
+          "/accommodation/rooms/create",
+          "./routes/modules/conference-meetings/church-living/accommodation/rooms/create.tsx"
+        ),
+        route(
+          "/accommodation/rooms/:id",
+          "./routes/modules/conference-meetings/church-living/accommodation/rooms/$id.tsx"
+        ),
+        route(
+          "/accommodation/rooms/:id/edit",
+          "./routes/modules/conference-meetings/church-living/accommodation/rooms/$id.edit.tsx"
+        ),
+        route(
+          "/accommodation/assignments",
+          "./routes/modules/conference-meetings/church-living/accommodation/assignments/index.tsx"
+        ),
+        route(
+          "/accommodation/assignments/create",
+          "./routes/modules/conference-meetings/church-living/accommodation/assignments/create.tsx"
+        ),
       ]),
     ]),
   ]),

@@ -19,109 +19,94 @@ import {
 } from "~/components/ui/table";
 import { DataTablePagination } from "./pagination";
 import type { pagination_metadata } from "~/lib/pagination";
+import { ScrollArea, ScrollBar } from "../ui/scroll-area";
 
 interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[];
-  data: TData[];
-  pagination: pagination_metadata;
-  pageSizeOption?: number[];
-  sortBy?: string;
-  sortOrder?: string;
+    columns: ColumnDef<TData, TValue>[]
+    data: TData[]
+    pagination?: pagination_metadata
+    pageSizeOption?: number[]
+    className?: string
 }
 
 export function DataTable<TData, TValue>({
-  columns,
-  data,
-  pagination,
-  pageSizeOption = [10, 20, 30, 40, 50],
-  sortBy,
-  sortOrder,
-}: DataTableProps<TData, TValue>) {
-  const [sorting, setSorting] = React.useState<SortingState>(
-    sortBy && sortOrder
-      ? [{ id: sortBy, desc: sortOrder === "desc" }]
-      : []
-  );
-  const table = useReactTable({
-    data,
+    className = "table-auto",
     columns,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    onSortingChange: setSorting,
-    state: {
-      sorting,
-      pagination: {
-        pageIndex: (pagination.pageNumber ?? 1) - 1,
-        pageSize: pagination.pageSize ?? 10,
-      },
-    },
+    data,
+    pagination,
+    pageSizeOption = [5, 10, 20, 30, 40, 50],
+}: DataTableProps<TData, TValue>) {
+    const [sorting, setSorting] = React.useState<SortingState>([])
+    const table = useReactTable({
+        data,
+        columns,
+        getCoreRowModel: getCoreRowModel(),
+        getPaginationRowModel: getPaginationRowModel(),
+        onSortingChange: setSorting,
+        state: {
+            sorting,
+        },
     pageCount: Math.ceil(
-      (pagination.totalCount ?? 0) / (pagination.pageSize ?? 1)
+      (pagination?.totalCount ?? 0) / (pagination?.pageSize ?? 1)
     ),
-    manualPagination: true,
-    manualSorting: true,
-  });
+        manualPagination: true,
 
-  return (
-    <>
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
-                  );
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  No results.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
-      <div className="mt-4">
-        <DataTablePagination
-          table={table}
-          pagination={pagination}
-          pageSizeOption={pageSizeOption}
-        />
-      </div>
-    </>
-  );
+    })
+
+    return (
+        <>
+            <div className="rounded-md border">
+                <ScrollArea className="max-w-screen">
+                <div>    
+                <Table className={className}>
+                    <TableHeader>
+                        {table.getHeaderGroups().map((headerGroup) => (
+                            <TableRow key={headerGroup.id}>
+                                {headerGroup.headers.map((header) => {
+                                    return (
+                                        <TableHead key={header.id}>
+                                            {header.isPlaceholder
+                                                ? null
+                                                : flexRender(
+                                                    header.column.columnDef.header,
+                                                    header.getContext()
+                                                )}
+                                        </TableHead>
+                                    )
+                                })}
+                            </TableRow>
+                        ))}
+                    </TableHeader>
+                    <TableBody>
+                        {table.getRowModel().rows?.length ? (
+                            table.getRowModel().rows.map((row) => (
+                                <TableRow
+                                    key={row.id}
+                                    data-state={row.getIsSelected() && "selected"}
+                                >
+                                    {row.getVisibleCells().map((cell) => (
+                                        <TableCell key={cell.id}>
+                                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                        </TableCell>
+                                    ))}
+                                </TableRow>
+                            ))
+                        ) : (
+                            <TableRow>
+                                <TableCell colSpan={columns.length} className="h-24 text-center">
+                                    No results.
+                                </TableCell>
+                            </TableRow>
+                        )}
+                    </TableBody>
+                </Table>
+                </div>
+                <ScrollBar orientation="horizontal"/>
+                </ScrollArea>
+            </div>
+            <div className="mt-4">
+                <DataTablePagination table={table} pagination={pagination} pageSizeOption={pageSizeOption}/>
+            </div>
+        </>
+    )
 }
