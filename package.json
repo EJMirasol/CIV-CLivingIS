@@ -15,7 +15,6 @@
   "dependencies": {
     "@conform-to/react": "^1.8.1",
     "@conform-to/zod": "^1.8.1",
-    "@modelcontextprotocol/server-puppeteer": "^2025.5.12",
     "@prisma/client": "^6.16.1",
     "@prisma/extension-accelerate": "^2.0.2",
     "@radix-ui/react-accordion": "^1.2.11",
