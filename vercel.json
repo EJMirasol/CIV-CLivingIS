@@ -1,13 +1,7 @@
 {
-  "version": 2,
-  "buildCommand": "npm run vercel-build",
-  "outputDirectory": "build/client",
-  "devCommand": "npm run dev",
-  "installCommand": "npm install && npx prisma generate",
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/build/server/index.js"
+  "functions": {
+    "build/server/index.js": {
+      "runtime": "edge"
     }
-  ]
+  }
 }
