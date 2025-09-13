@@ -4,14 +4,12 @@
   "outputDirectory": "build/client",
   "devCommand": "npm run dev",
   "installCommand": "npm install && npx prisma generate",
+  "functions": {
+    "build/server/index.js": {
+      "maxDuration": 30
+    }
+  },
   "routes": [
-    {
-      "src": "/build/(.*)",
-      "dest": "/build/$1"
-    },
-    {
-      "handle": "filesystem"
-    },
     {
       "src": "/(.*)",
       "dest": "/build/server/index.js"
