@@ -118,6 +118,8 @@ model Room {
   createdAt               DateTime                  @default(now())
   updatedAt               DateTime                  @updatedAt
   createdBy               String?
+  EventType               EventType?                @relation(fields: [eventTypeId], references: [id])
+  eventTypeId             String?
   accommodationAssignments AccommodationAssignment[]
 }
 
@@ -191,4 +193,15 @@ model Verification {
   expiresAt  DateTime
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+}
+
+model EventType {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?
+  rooms       Room[]
 }

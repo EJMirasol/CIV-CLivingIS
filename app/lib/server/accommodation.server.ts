@@ -5,6 +5,7 @@ export interface RoomCreateInput {
   description?: string;
   bedCount: number;
   maxOccupancy: number;
+  eventTypeId?: string;
   createdBy?: string;
 }
 
@@ -13,6 +14,7 @@ export interface RoomUpdateInput {
   description?: string;
   bedCount?: number;
   maxOccupancy?: number;
+  eventTypeId?: string;
   isActive?: boolean;
 }
 
@@ -27,6 +29,7 @@ export interface AccommodationAssignmentInput {
 export interface RoomListArgs {
   name?: string;
   isActive?: boolean;
+  eventTypeId?: string;
   pageNumber?: number;
   pageSize?: number;
   sortBy?: string;
@@ -37,6 +40,7 @@ export async function getRoomsList(args: RoomListArgs = {}) {
   const {
     name = "",
     isActive,
+    eventTypeId,
     pageNumber = 1,
     pageSize = 10,
     sortBy = "name",
@@ -51,6 +55,7 @@ export async function getRoomsList(args: RoomListArgs = {}) {
       },
     }),
     ...(isActive !== undefined && { isActive }),
+    ...(eventTypeId && { eventTypeId }),
   };
 
   const orderBy = {
@@ -64,6 +69,7 @@ export async function getRoomsList(args: RoomListArgs = {}) {
       skip: (pageNumber - 1) * pageSize,
       take: pageSize,
       include: {
+        EventType: true,
         accommodationAssignments: {
           include: {
             Registration: {
@@ -94,6 +100,7 @@ export async function getRoomById(id: string, assignmentsPage = 1, assignmentsPa
     prisma.room.findUnique({
       where: { id },
       include: {
+        EventType: true,
         accommodationAssignments: {
           include: {
             Registration: {
@@ -136,6 +143,9 @@ export async function createRoom(data: RoomCreateInput) {
       ...data,
       currentOccupancy: 0,
     },
+    include: {
+      EventType: true,
+    },
   });
 }
 
@@ -143,6 +153,9 @@ export async function updateRoom(id: string, data: RoomUpdateInput) {
   return await prisma.room.update({
     where: { id },
     data,
+    include: {
+      EventType: true,
+    },
   });
 }
 

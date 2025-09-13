@@ -9,7 +9,19 @@ export interface Room {
   createdAt: Date;
   updatedAt: Date;
   createdBy?: string;
+  eventTypeId?: string;
+  EventType?: EventType;
   accommodationAssignments?: AccommodationAssignment[];
+}
+
+export interface EventType {
+  id: string;
+  name: string;
+  description?: string;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  createdBy?: string;
 }
 
 export interface AccommodationAssignment {
@@ -47,6 +59,12 @@ export interface RoomFormData {
   description: string;
   bedCount: string;
   maxOccupancy: string;
+  eventTypeId: string;
+}
+
+export interface EventTypeFormData {
+  name: string;
+  description: string;
 }
 
 export interface AccommodationAssignmentFormData {

@@ -15,6 +15,46 @@ export default [
   // Main application routes with layout - protected with authentication
   layout("./routes/_layout.tsx", [
     ...prefix("dashboard", [index("./routes/modules/dashboard/index.tsx")]),
+    // Accommodation Management - separate module for all event types
+    ...prefix("accommodation", [
+      index("./routes/modules/accommodation/index.tsx"),
+      // Event Types management
+      ...prefix("event-types", [
+        index("./routes/modules/accommodation/event-types/index.tsx"),
+        route(
+          "/create",
+          "./routes/modules/accommodation/event-types/create.tsx"
+        ),
+        route(
+          ":id/edit",
+          "./routes/modules/accommodation/event-types/$id.edit.tsx"
+        ),
+      ]),
+      // Rooms management
+      ...prefix("rooms", [
+        index("./routes/modules/accommodation/rooms/index.tsx"),
+        route(
+          "/create",
+          "./routes/modules/accommodation/rooms/create.tsx"
+        ),
+        route(
+          ":id",
+          "./routes/modules/accommodation/rooms/$id.tsx"
+        ),
+        route(
+          ":id/edit",
+          "./routes/modules/accommodation/rooms/$id.edit.tsx"
+        ),
+      ]),
+      // Assignments management
+      ...prefix("assignments", [
+        index("./routes/modules/accommodation/assignments/index.tsx"),
+        route(
+          "/create",
+          "./routes/modules/accommodation/assignments/create.tsx"
+        ),
+      ]),
+    ]),
     ...prefix("conference-meetings", [
       ...prefix("ypcl", [
         // Church living index - requires authentication
