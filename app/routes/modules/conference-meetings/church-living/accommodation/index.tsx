@@ -1,7 +1,7 @@
 import { Link, redirect, useLoaderData } from "react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
-import { Home, Users, Bed, Calendar, ArrowRight, Settings } from "lucide-react";
+import { Home, Users, Bed, Calendar } from "lucide-react";
 import type { Route } from "./+types/index";
 import { auth } from "~/lib/auth.server";
 import { getAccommodationStatistics } from "~/lib/server/accommodation.server";
@@ -68,36 +68,6 @@ export default function AccommodationDashboard() {
         <h1 className="text-base font-semibold">YP Church Living Accommodation</h1>
       </div>
 
-      {/* New Accommodation System Notice */}
-      <Card className="border-blue-200 bg-blue-50">
-        <CardHeader>
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-blue-500 text-white">
-              <Settings className="h-5 w-5" />
-            </div>
-            <CardTitle className="text-lg text-blue-800">New Accommodation Management System</CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <p className="text-blue-700 mb-4">
-            We've upgraded to a new accommodation management system that supports multiple event types and conferences. 
-            The new system allows you to configure rooms for different meetings and provides better organization.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Link to="/accommodation" className="flex-1">
-              <Button className="w-full bg-blue-600 hover:bg-blue-700">
-                Go to New Accommodation System
-                <ArrowRight className="h-4 w-4 ml-2" />
-              </Button>
-            </Link>
-            <Link to="/accommodation/rooms?eventType=young-people-church-living" className="flex-1">
-              <Button variant="outline" className="w-full border-blue-600 text-blue-600 hover:bg-blue-50">
-                View YP Church Living Rooms
-              </Button>
-            </Link>
-          </div>
-        </CardContent>
-      </Card>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {stats.map((stat) => (
@@ -114,14 +84,13 @@ export default function AccommodationDashboard() {
         ))}
       </div>
 
-      {/* Legacy System Access */}
       <Card>
         <CardHeader>
-          <CardTitle>Legacy System Access</CardTitle>
+          <CardTitle>Accommodation Management</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground mb-4">
-            Continue using the current YP Church Living accommodation system while transitioning to the new system.
+            Manage rooms and assignments for YP Church Living events.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {features.map((feature) => (

@@ -1,5 +1,5 @@
 import type { Route } from "./+types/_layout";
-import { BookHeart, Handshake, BarChart3, Users, UserCheck, UserPlus, Home, Building, Settings } from "lucide-react";
+import { BookHeart, Handshake, BarChart3, Users, UserCheck, UserPlus, Home, Building } from "lucide-react";
 import { MdSpaceDashboard } from "react-icons/md";
 import { useState } from "react";
 import { Header } from "~/components/layouts/Header";
@@ -29,34 +29,6 @@ export default function DashboardLayout() {
       route: "/dashboard",
       key: "dashboard",
       subModules: [],
-    },
-    {
-      icon: <Settings className="h-4 w-4" />,
-      label: "Accommodation Utilities",
-      route: "",
-      key: "accommodation",
-      subModules: [
-        {
-          icon: <BarChart3 className="h-4 w-4" />,
-          label: "Configuration",
-          route: "accommodation",
-        },
-        {
-          icon: <Building className="h-4 w-4" />,
-          label: "Meeting Types",
-          route: "accommodation/event-types",
-        },
-        {
-          icon: <Home className="h-4 w-4" />,
-          label: "Room Management",
-          route: "accommodation/rooms",
-        },
-        {
-          icon: <Users className="h-4 w-4" />,
-          label: "Assignments",
-          route: "accommodation/assignments",
-        },
-      ],
     },
     {
       icon: <Handshake className="h-4 w-4" />,
