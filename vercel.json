@@ -4,11 +4,6 @@
   "outputDirectory": "build/client",
   "devCommand": "npm run dev",
   "installCommand": "npm install && npx prisma generate",
-  "functions": {
-    "build/server/index.js": {
-      "runtime": "nodejs18.x"
-    }
-  },
   "routes": [
     {
       "src": "/build/(.*)",
