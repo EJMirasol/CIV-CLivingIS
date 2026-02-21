@@ -6,10 +6,12 @@ import {
   useNavigate,
   useSubmit,
   useNavigation,
+  useFetcher,
 } from "react-router";
 import { useState } from "react";
 import {
   ArrowDownToLine,
+  CheckCircle,
   ClipboardList,
   Home,
   RefreshCcw,
@@ -39,6 +41,7 @@ import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { SelectBoxWithSearch } from "~/components/selectbox/SelectBoxWithSearch";
 import { SearchInput } from "~/components/shared/SearchInput";
+import { Badge } from "~/components/ui/badge";
 import type { Route } from "./+types/index";
 import {
   getAllClassifications,
@@ -49,10 +52,12 @@ import {
   getYPCLLists,
   deleteRegistration,
   getDashboardStatistics,
+  toggleCheckInStatus,
 } from "~/lib/server/registration.server";
 import { getYear } from "date-fns";
 import { auth } from "~/lib/auth.server";
 import { redirectWithSuccess } from "remix-toast";
+import { toast } from "sonner";
 
 export async function loader({ request }: Route.LoaderArgs) {
   const session = await auth.api.getSession({
@@ -117,6 +122,15 @@ export async function action({ request }: Route.ActionArgs) {
     }
   }
 
+  if (intent === "toggleCheckIn" && registrationId) {
+    try {
+      const result = await toggleCheckInStatus(registrationId.toString());
+      return { success: true, message: result.message, isCheckedIn: result.isCheckedIn };
+    } catch (error) {
+      return { success: false, message: "Failed to update check-in status" };
+    }
+  }
+
   return { error: "Invalid action" };
 }
 
@@ -134,6 +148,7 @@ export default () => {
   } = useLoaderData<typeof loader>();
   const submit = useSubmit();
   const navigation = useNavigation();
+  const fetcher = useFetcher();
   const [isExporting, setIsExporting] = useState(false);
 
   const handleExport = async () => {
@@ -151,6 +166,18 @@ export default () => {
 
       const response = await fetch(exportUrl.toString());
 
+      const contentType = response.headers.get("Content-Type");
+
+      if (contentType?.includes("application/json")) {
+        const errorData = await response.json();
+        toast.error(errorData.message);
+        return;
+      }
+
+      if (!contentType?.includes("spreadsheet")) {
+        throw new Error("Export failed - unexpected response");
+      }
+
       if (!response.ok) {
         throw new Error(`Export failed: ${response.statusText}`);
       }
@@ -166,7 +193,7 @@ export default () => {
       window.URL.revokeObjectURL(downloadUrl);
     } catch (error) {
       console.error("Export error:", error);
-      alert("Export failed. Please try again.");
+      toast.error("Export failed. Please try again.");
     } finally {
       setIsExporting(false);
     }
@@ -314,6 +341,60 @@ export default () => {
         );
       },
     },
+    {
+      accessorKey: "isCheckedIn",
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          className="pl-2"
+          title="Check-in Status"
+          column={column}
+          columnKey="isCheckedIn"
+        />
+      ),
+      cell: ({ row }) => {
+        return (
+          <div className="flex items-center gap-2 pl-2 group cursor-pointer hover:bg-gray-50 rounded p-1 transition-colors">
+            <div className={`w-3 h-3 rounded-full ${
+              row.original.isCheckedIn ? "bg-green-500" : "bg-gray-400"
+            }`} />
+            {row.original.isCheckedIn ? (
+              <Badge className="bg-green-100 text-green-800 border-green-200 hover:bg-green-200 transition-colors">
+                <CheckCircle className="h-3 w-3 mr-1" />
+                Checked In
+              </Badge>
+            ) : (
+              <Badge variant="secondary" className="hover:bg-gray-300 text-gray-700 hover:text-gray-900 transition-colors">
+                Not Checked In
+              </Badge>
+            )}
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "checkedInAt",
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          className="pl-2"
+          title="Check-in Time"
+          column={column}
+          columnKey="checkedInAt"
+        />
+      ),
+      cell: ({ row }) => {
+        return (
+          <div className="flex items-center gap-2 pl-2">
+            {row.original.isCheckedIn && row.original.checkedInAt ? (
+              <span className="text-xs text-green-600">
+                {new Date(row.original.checkedInAt).toLocaleDateString()} {new Date(row.original.checkedInAt).toLocaleTimeString()}
+              </span>
+            ) : (
+              <span className="text-xs text-gray-400">-</span>
+            )}
+          </div>
+        );
+      },
+    },
 
     {
       accessorKey: "id",
@@ -327,7 +408,21 @@ export default () => {
       cell: ({ row }) => {
         return (
           <>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
+              <fetcher.Form method="post" className="inline">
+                <input type="hidden" name="intent" value="toggleCheckIn" />
+                <input type="hidden" name="registrationId" value={row.original.id} />
+                <Button
+                  type="submit"
+                  size="sm"
+                  variant={row.original.isCheckedIn ? "outline" : "default"}
+                  disabled={fetcher.state === "submitting"}
+                  className={row.original.isCheckedIn ? "hover:bg-red-100 hover:text-red-700 hover:border-red-300" : "bg-green-600 hover:bg-green-700"}
+                >
+                  {fetcher.state === "submitting" ? "..." : 
+                    row.original.isCheckedIn ? "Check Out" : "Check In"}
+                </Button>
+              </fetcher.Form>
               <Link to={`${row.original.id}`}>
                 <Button
                   size="sm"
@@ -393,8 +488,8 @@ export default () => {
         </h1>
       </div>
       <Card className="w-full p-5">
-        <Form
-          className="grid grid-cols-4 gap-x-6 gap-y-4"
+<Form
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4"
           id="search-admissions-form"
           method="GET"
         >
@@ -467,7 +562,7 @@ export default () => {
               defaultValue={searchFilter.classification}
             />
           </div>
-          <div className="col-start-5 row-start-1 row-span-2 flex ml-20 justify-center items-center gap-2">
+          <div className="col-span-1 sm:col-span-2 lg:col-span-4 flex flex-col sm:flex-row justify-start sm:justify-end items-start sm:items-center gap-2 pt-2">
             <Button className="bg-[#213b36]" variant="view" type="submit">
               <Search />
               Search
@@ -477,7 +572,7 @@ export default () => {
               variant="view"
               className="border-none bg-[#213b36] text-white"
               onClick={() => {
-                navigate("/conference-meetings/ypcl/");
+                navigate("/conference-meetings/ypcl/registration/");
               }}
             >
               <RefreshCcw className="h-5 w-auto" />
@@ -487,7 +582,7 @@ export default () => {
       </Card>
       <div className="flex justify-end items-center">
         <div className="flex gap-2">
-          <Link to="/conference-meetings/ypcl/register/">
+          <Link to="/conference-meetings/ypcl/registration/add/">
             <Button className="bg-[#213b36] " variant="view">
               <IoMdCheckboxOutline /> Register
             </Button>

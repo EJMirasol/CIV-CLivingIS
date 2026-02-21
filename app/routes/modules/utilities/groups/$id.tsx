@@ -5,7 +5,7 @@ import { GroupForm } from "~/components/forms/modules/groups/GroupForm";
 import { getGroupById, updateGroup } from "~/lib/server/groups.server";
 import { auth } from "~/lib/auth.server";
 import { redirectWithSuccess } from "remix-toast";
-import type { Route } from "./+types/$id.edit";
+import type { Route } from "./+types/$id";
 
 export async function loader({ request, params }: Route.LoaderArgs) {
   const session = await auth.api.getSession({
@@ -58,16 +58,14 @@ export async function action({ request, params }: Route.ActionArgs) {
   try {
     const groupData = {
       name: submission.value.name,
-      description: submission.value.description,
-      maxMembers: submission.value.maxMembers 
-        ? parseInt(submission.value.maxMembers, 10) 
-        : undefined,
+      description: submission.value.description || undefined,
+      maxMembers: parseInt(submission.value.maxMembers!, 10),
     };
 
     await updateGroup(params.id, groupData);
     
     return redirectWithSuccess(
-      `/conference-meetings/ypcl/groups/${params.id}`,
+      "/utilities/groups",
       "Group updated successfully!"
     );
   } catch (error) {
@@ -80,5 +78,11 @@ export async function action({ request, params }: Route.ActionArgs) {
 export default function EditGroup() {
   const { group } = useLoaderData<typeof loader>();
   
-  return <GroupForm defaultValues={group} isEdit={true} />;
+  return (
+    <GroupForm 
+      defaultValues={group} 
+      isEdit={true} 
+      redirectPath="/utilities/groups"
+    />
+  );
 }

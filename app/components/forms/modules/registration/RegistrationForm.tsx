@@ -155,18 +155,18 @@ export function RegistrationForm({
     <div className="bg-gray-50">
       <div className="w-full flex flex-col">
         {/* header of the Application Form */}
-        <div className="ml-4 py-5 flex justify-between flex-row items-center">
-          <div className="flex items-center">
+        <div className="px-4 py-3 sm:py-5 flex flex-col sm:flex-row justify-between gap-3">
+          <div className="flex items-center flex-wrap gap-2">
             <div className="rounded-md">
               <ClipboardList className="h-5 w-5" />
             </div>
-            <span className="text-[#15313F] font-[500]">REGISTRATION FORM</span>
-            <Separator orientation="vertical" className="mx-2 h-6" />
+            <span className="text-[#15313F] font-[500] text-sm sm:text-base">REGISTRATION FORM</span>
+            <Separator orientation="vertical" className="hidden sm:block mx-2 h-6" />
             <BackButton />
           </div>
           <div className="flex items-center gap-2">
             <SaveButton formId={form.id} />
-            <DeleteConfirmationDialog redirectPath="/conference-meetings/ypcl" />
+            <DeleteConfirmationDialog redirectPath="/conference-meetings/ypcl/registration" />
           </div>
         </div>
         <Form
@@ -183,7 +183,7 @@ export function RegistrationForm({
               </p>
             </div>
 
-            <CardContent className="px-0 pt-44 xl:pt-0">
+            <CardContent className="px-0 pt-4 sm:pt-44 xl:pt-0">
               {/* Main content */}
               <div className="mt-5">
                 <div className="grid grid-cols-1 xl:grid-cols-4 gap-5 relative">
@@ -240,7 +240,7 @@ export function RegistrationForm({
                     />
                   </div>
 
-                  <div className="absolute -top-50 md:-top-50 lg:-top-50 xl:-top-1 xl:-right-1 2xl:right-5">
+                  <div className="relative xl:absolute xl:-top-1 xl:-right-1 2xl:right-5 flex justify-start mb-4 xl:mb-0">
                     <input
                       ref={imageInputRef}
                       {...getInputProps(fields.image, { type: "hidden" })}

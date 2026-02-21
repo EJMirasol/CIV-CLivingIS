@@ -26,7 +26,7 @@ export default function AccommodationDashboard() {
       title: "Room Management",
       description: "Create, edit, and manage accommodation rooms with bed assignments",
       icon: Home,
-      href: "/conference-meetings/ypcl/accommodation/rooms",
+      href: "/utilities/rooms",
       color: "bg-blue-500",
     },
     {

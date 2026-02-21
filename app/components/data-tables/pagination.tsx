@@ -6,7 +6,7 @@ import {
   ChevronsRight,
 } from "lucide-react";
 import type { p } from "node_modules/@react-router/dev/dist/routes-DHIOx0R9";
-import { Navigate, useNavigate, useSearchParams } from "react-router";
+import { useNavigate, useSearchParams } from "react-router";
 
 import { Button } from "~/components/ui/button";
 import {
@@ -33,14 +33,14 @@ export function DataTablePagination<TData>({
 
   const [searchParams] = useSearchParams();
   return (
-    <div className="flex items-center justify-between px-2">
+    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 px-2">
       <div className="flex-1 text-sm text-muted-foreground">
         {/* {table.getFilteredSelectedRowModel().rows.length} of{" "}
         {table.getFilteredRowModel().rows.length} row(s) selected. */}
       </div>
-      <div className="flex items-center space-x-6 lg:space-x-8">
-        <div className="flex items-center space-x-2">
-          <p className="text-sm font-medium">Rows per page</p>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-6 lg:gap-8 w-full sm:w-auto">
+        <div className="flex items-center gap-2">
+          <p className="text-xs sm:text-sm font-medium whitespace-nowrap">Rows per page</p>
           <Select
             value={`${pagination?.pageSize || 10}`}
             onValueChange={(value) => {
@@ -64,14 +64,14 @@ export function DataTablePagination<TData>({
             </SelectContent>
           </Select>
         </div>
-        <div className="flex w-[100px] items-center justify-center text-sm font-medium">
+        <div className="flex items-center justify-center text-xs sm:text-sm font-medium whitespace-nowrap">
           Page {table.getState().pagination.pageIndex + 1} of{" "}
           {table.getPageCount()}
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center gap-1 sm:gap-2">
           <Button
             variant="outline"
-            className="hidden h-8 w-8 p-0 lg:flex"
+            className="hidden h-9 w-9 sm:h-8 sm:w-8 p-0 lg:flex"
             onClick={() => {
               table.setPageIndex(0);
               const query = setSearchParamsString(searchParams, {
@@ -86,7 +86,7 @@ export function DataTablePagination<TData>({
           </Button>
           <Button
             variant="outline"
-            className="h-8 w-8 p-0"
+            className="h-9 w-9 sm:h-8 sm:w-8 p-0"
             onClick={() => {
               table.previousPage();
               const query = setSearchParamsString(searchParams, {
@@ -101,7 +101,7 @@ export function DataTablePagination<TData>({
           </Button>
           <Button
             variant="outline"
-            className="h-8 w-8 p-0"
+            className="h-9 w-9 sm:h-8 sm:w-8 p-0"
             onClick={() => {
               table.nextPage();
               const query = setSearchParamsString(searchParams, {
@@ -119,7 +119,7 @@ export function DataTablePagination<TData>({
           </Button>
           <Button
             variant="outline"
-            className="hidden h-8 w-8 p-0 lg:flex"
+            className="hidden h-9 w-9 sm:h-8 sm:w-8 p-0 lg:flex"
             onClick={() => {
               const lastPage = Math.ceil((pagination?.totalCount ?? 0) / (pagination?.pageSize ?? 10));
               table.setPageIndex(lastPage - 1);

@@ -95,16 +95,18 @@ model ContactPersonEmergency {
 }
 
 model Group {
-  id             String         @id @default(uuid())
-  name           String         @unique
-  description    String?
-  maxMembers     Int?
-  currentMembers Int            @default(0)
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-  createdBy      String?
-  isActive       Boolean        @default(true)
-  registrations  Registration[]
+  id                   String         @id @default(uuid())
+  name                 String         @unique
+  description          String?
+  maxMembers           Int?
+  currentMembers       Int            @default(0)
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+  createdBy            String?
+  isActive             Boolean        @default(true)
+  isAssignmentActive   Boolean        @default(false)
+  isAssignmentDeleted  Boolean        @default(false)
+  registrations        Registration[]
 }
 
 model Room {

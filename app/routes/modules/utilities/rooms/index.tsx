@@ -87,12 +87,12 @@ export async function action({ request }: Route.ActionArgs) {
     try {
       await deleteRoom(roomId.toString());
       return redirectWithSuccess(
-        "/conference-meetings/ypcl/accommodation/rooms",
+        "/utilities/rooms",
         "Room deleted successfully!"
       );
     } catch (error) {
       return redirectWithError(
-        "/conference-meetings/ypcl/accommodation/rooms",
+        "/utilities/rooms",
         error instanceof Error ? error.message : "Failed to delete room"
       );
     }
@@ -316,7 +316,7 @@ export default function RoomsIndex() {
               variant="view"
               className="border-none bg-[#213b36] text-white"
               onClick={() => {
-                navigate("/conference-meetings/ypcl/accommodation/rooms");
+                navigate("/utilities/rooms");
               }}
             >
               <RefreshCcw className="h-5 w-auto" />

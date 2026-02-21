@@ -6,7 +6,6 @@ import {
   getPaginationRowModel,
   type SortingState,
   useReactTable,
-  getSortedRowModel,
 } from "@tanstack/react-table";
 import React from "react";
 import {

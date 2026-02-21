@@ -9,13 +9,11 @@ import {
 } from "react-router";
 import { useState } from "react";
 import {
-  ClipboardList,
   Plus,
   RefreshCcw,
   Search,
   Trash2,
   Users,
-  UserPlus,
 } from "lucide-react";
 import { DataTableColumnHeader } from "~/components/data-tables/header";
 import type { ColumnDef } from "@tanstack/react-table";
@@ -89,7 +87,7 @@ export async function action({ request }: Route.ActionArgs) {
     try {
       await deleteGroup(groupId.toString());
       return redirectWithSuccess(
-        "/conference-meetings/ypcl/groups",
+        "/utilities/groups",
         "Group deleted successfully!"
       );
     } catch (error) {
@@ -179,26 +177,6 @@ export default () => {
       },
     },
     {
-      accessorKey: "createdAt",
-      header: ({ column }) => (
-        <DataTableColumnHeader
-          className="pl-2"
-          title="Created"
-          column={column}
-          columnKey="createdAt"
-        />
-      ),
-      cell: ({ row }) => {
-        return (
-          <div className="flex items-center gap-2 pl-2">
-            <span className="text-sm">
-              {new Date(row.original.createdAt).toLocaleDateString()}
-            </span>
-          </div>
-        );
-      },
-    },
-    {
       accessorKey: "id",
       header: ({}) => {
         return (
@@ -220,16 +198,6 @@ export default () => {
                 >
                   <FaEye className="h-3.5 w-3.5" />
                   View
-                </Button>
-              </Link>
-              <Link to={`${row.original.id}/assign`}>
-                <Button
-                  size="sm"
-                  className="bg-[#213b36] hover:bg-[#1a2f29]"
-                  type="button"
-                >
-                  <UserPlus className="h-3.5 w-3.5" />
-                  Assign
                 </Button>
               </Link>
               <Dialog>
@@ -315,7 +283,7 @@ export default () => {
               variant="view"
               className="border-none bg-[#213b36] text-white"
               onClick={() => {
-                navigate("/conference-meetings/ypcl/groups");
+                navigate("/utilities/groups");
               }}
             >
               <RefreshCcw className="h-5 w-auto" />
@@ -326,10 +294,10 @@ export default () => {
       
       <div className="flex justify-end items-center">
         <div className="flex gap-2">
-          <Link to="/conference-meetings/ypcl/groups/create">
+          <Link to="/utilities/groups/add">
             <Button className="bg-[#213b36]" variant="view">
               <Plus className="h-4 w-4" />
-              Create Group
+              Add Group
             </Button>
           </Link>
         </div>

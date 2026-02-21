@@ -17,21 +17,24 @@ export default [
     ...prefix("dashboard", [index("./routes/modules/dashboard/index.tsx")]),
     ...prefix("conference-meetings", [
       ...prefix("ypcl", [
-        // Church living index - requires authentication
-        index("./routes/modules/conference-meetings/church-living/index.tsx"),
         // Dashboard sub-route - requires authentication
         route(
           "/dashboard",
           "./routes/modules/conference-meetings/church-living/dashboard/index.tsx"
         ),
-        // Registration form - requires authentication
+        // Registration list - requires authentication
         route(
-          "/register",
+          "/registration",
+          "./routes/modules/conference-meetings/church-living/index.tsx"
+        ),
+        // Registration form (add new) - requires authentication
+        route(
+          "/registration/add",
           "./routes/modules/conference-meetings/church-living/register.tsx"
         ),
         // Registration view/edit - requires authentication
         route(
-          ":id",
+          "/registration/:id",
           "./routes/modules/conference-meetings/church-living/$id.tsx"
         ),
         // Export data - requires authentication
@@ -44,46 +47,23 @@ export default [
           "/status",
           "./routes/modules/conference-meetings/church-living/status/index.tsx"
         ),
-        // Groups management - requires authentication
-        ...prefix("groups", [
-          index("./routes/modules/conference-meetings/church-living/groups/index.tsx"),
-          route(
-            "/create",
-            "./routes/modules/conference-meetings/church-living/groups/create.tsx"
-          ),
-          route(
-            ":id",
-            "./routes/modules/conference-meetings/church-living/groups/$id.tsx"
-          ),
-          route(
-            ":id/edit",
-            "./routes/modules/conference-meetings/church-living/groups/$id.edit.tsx"
-          ),
-          route(
-            ":id/assign",
-            "./routes/modules/conference-meetings/church-living/groups/$id.assign.tsx"
-          ),
-        ]),
+        // Group Assignments - requires authentication
+        route(
+          "/group-assignments",
+          "./routes/modules/conference-meetings/church-living/group-assignments/index.tsx"
+        ),
+        route(
+          "/group-assignments/add",
+          "./routes/modules/conference-meetings/church-living/group-assignments/add.tsx"
+        ),
+        route(
+          "/group-assignments/:id",
+          "./routes/modules/conference-meetings/church-living/group-assignments/$id.tsx"
+        ),
         // Accommodation management - requires authentication
         route(
           "/accommodation",
           "./routes/modules/conference-meetings/church-living/accommodation/index.tsx"
-        ),
-        route(
-          "/accommodation/rooms",
-          "./routes/modules/conference-meetings/church-living/accommodation/rooms/index.tsx"
-        ),
-        route(
-          "/accommodation/rooms/create",
-          "./routes/modules/conference-meetings/church-living/accommodation/rooms/create.tsx"
-        ),
-        route(
-          "/accommodation/rooms/:id",
-          "./routes/modules/conference-meetings/church-living/accommodation/rooms/$id.tsx"
-        ),
-        route(
-          "/accommodation/rooms/:id/edit",
-          "./routes/modules/conference-meetings/church-living/accommodation/rooms/$id.edit.tsx"
         ),
         route(
           "/accommodation/assignments",
@@ -92,6 +72,37 @@ export default [
         route(
           "/accommodation/assignments/create",
           "./routes/modules/conference-meetings/church-living/accommodation/assignments/create.tsx"
+        ),
+      ]),
+    ]),
+    // Utilities module
+    ...prefix("utilities", [
+      // Groups management
+      ...prefix("groups", [
+        index("./routes/modules/utilities/groups/index.tsx"),
+        route(
+          "/add",
+          "./routes/modules/utilities/groups/add.tsx"
+        ),
+        route(
+          ":id",
+          "./routes/modules/utilities/groups/$id.tsx"
+        ),
+      ]),
+      // Rooms management
+      ...prefix("rooms", [
+        index("./routes/modules/utilities/rooms/index.tsx"),
+        route(
+          "/create",
+          "./routes/modules/utilities/rooms/create.tsx"
+        ),
+        route(
+          ":id",
+          "./routes/modules/utilities/rooms/$id.tsx"
+        ),
+        route(
+          ":id/edit",
+          "./routes/modules/utilities/rooms/$id.edit.tsx"
         ),
       ]),
     ]),

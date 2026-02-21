@@ -52,13 +52,13 @@ export async function action({ request }: Route.ActionArgs) {
   try {
     const result = await register(submission.value);
     return redirectWithSuccess(
-      "/conference-meetings/ypcl/",
+      "/conference-meetings/ypcl/registration/",
       result.message
     );
   } catch (error: any) {
     if (error.message === "Duplicate") {
-      return redirectWithError(
-        "/conference-meetings/ypcl/register/",
+return redirectWithError(
+        "/conference-meetings/ypcl/registration/add/",
         "Young people already exists"
       );
     }

@@ -1,5 +1,5 @@
 import type { Route } from "./+types/_layout";
-import { BookHeart, Handshake, BarChart3, Users, UserCheck, UserPlus, Home, Building } from "lucide-react";
+import { BookHeart, Handshake, BarChart3, Users, UserCheck, UserPlus, Home, Building, Settings } from "lucide-react";
 import { MdSpaceDashboard } from "react-icons/md";
 import { useState, useMemo } from "react";
 import { Header } from "~/components/layouts/Header";
@@ -49,41 +49,37 @@ export default function DashboardLayout() {
             {
               icon: <UserPlus className="h-4 w-4" />,
               label: "Registration",
-              route: "conference-meetings/ypcl",
-            },
-            {
-              icon: <Users className="h-4 w-4" />,
-              label: "Groups",
-              route: "conference-meetings/ypcl/groups",
+              route: "conference-meetings/ypcl/registration",
             },
             {
               icon: <UserCheck className="h-4 w-4" />,
-              label: "Check-in Status",
-              route: "conference-meetings/ypcl/status",
+              label: "Group Assignments",
+              route: "conference-meetings/ypcl/group-assignments",
             },
             {
               icon: <Home className="h-4 w-4" />,
-              label: "Accommodation",
-              route: "",
-              subModules: [
-                {
-                  icon: <Home className="h-4 w-4" />,
-                  label: "Overview",
-                  route: "conference-meetings/ypcl/accommodation",
-                },
-                {
-                  icon: <Home className="h-4 w-4" />,
-                  label: "Room Management",
-                  route: "conference-meetings/ypcl/accommodation/rooms",
-                },
-                {
-                  icon: <Users className="h-4 w-4" />,
-                  label: "Assignments",
-                  route: "conference-meetings/ypcl/accommodation/assignments",
-                },
-              ],
+              label: "Accommodation Assignments",
+              route: "conference-meetings/ypcl/accommodation/assignments",
             },
           ],
+        },
+      ],
+    },
+    {
+      icon: <Settings className="h-4 w-4" />,
+      label: "Utilities",
+      route: "",
+      key: "utilities",
+      subModules: [
+        {
+          icon: <Users className="h-4 w-4" />,
+          label: "Groups",
+          route: "utilities/groups",
+        },
+        {
+          icon: <Building className="h-4 w-4" />,
+          label: "Rooms",
+          route: "utilities/rooms",
         },
       ],
     },

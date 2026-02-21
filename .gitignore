@@ -19,3 +19,5 @@ yarn.lock
 CLAUDE.md
 /.opencode
 AGENTS.md
+/playwright-report
+/tests

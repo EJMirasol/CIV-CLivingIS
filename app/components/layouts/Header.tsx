@@ -52,7 +52,7 @@ export function Header({ sidebarItems, user, setOpen }: HeaderProps) {
                 <Menu className="w-5 h-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-64 max-w-64 min-w-64 p-0">
+            <SheetContent side="left" className="w-64 max-w-64 min-w-64 p-0 bg-[#213b36] border-r-0">
               <MobileMenu
                 sidebarItems={sidebarItems}
                 onClose={() => setIsMobileMenuOpen(false)}

@@ -29,23 +29,25 @@ export function Sidebar({ sidebarItems, isSideBarOpen }: SidebarProps) {
   const location = useLocation();
   const [openModules, setOpenModules] = useState<Set<string>>(new Set());
 
-  // Auto-open modules based on current route
+  // Auto-open modules based on current route (preserves manually expanded modules)
   useEffect(() => {
     const currentPath = location.pathname;
-    const newOpenModules = new Set<string>();
     
-    sidebarItems.forEach(item => {
-      if (item.subModules.length > 0) {
-        const hasActiveSubModule = checkActiveSubModule(item.subModules, currentPath);
-        if (hasActiveSubModule) {
-          newOpenModules.add(item.label);
-          // Also open nested sub-modules if needed
-          addOpenNestedModules(item.subModules, currentPath, newOpenModules);
+    setOpenModules(prevOpenModules => {
+      const newOpenModules = new Set(prevOpenModules);
+      
+      sidebarItems.forEach(item => {
+        if (item.subModules.length > 0) {
+          const hasActiveSubModule = checkActiveSubModule(item.subModules, currentPath);
+          if (hasActiveSubModule) {
+            newOpenModules.add(item.label);
+            addOpenNestedModules(item.subModules, currentPath, newOpenModules);
+          }
         }
-      }
+      });
+      
+      return newOpenModules;
     });
-    
-    setOpenModules(newOpenModules);
   }, [location.pathname, sidebarItems]);
 
   const checkActiveSubModule = (subModules: SubModule[], currentPath: string): boolean => {

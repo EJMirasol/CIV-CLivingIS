@@ -12,18 +12,23 @@ export interface GroupFormData {
 export interface GroupSearch extends pagination {
   name?: string;
   isActive?: boolean;
+  status?: "full" | "available";
+  isAssignmentActive?: boolean;
+  isAssignmentDeleted?: boolean;
 }
 
 // Get all groups with pagination and filtering
 export async function getGroups({
   name,
   isActive = true,
+  status,
+  isAssignmentActive,
+  isAssignmentDeleted,
   pageNumber = 1,
   pageSize = 10,
   sortBy,
   sortOrder = "asc" as "asc" | "desc",
 }: GroupSearch) {
-  // Check if group model is available
   if (!prisma.group) {
     throw new Error("Group model not available. Please regenerate Prisma client.");
   }
@@ -51,6 +56,8 @@ export async function getGroups({
 
   const where: Prisma.GroupWhereInput = {
     isActive,
+    ...(isAssignmentActive !== undefined && { isAssignmentActive }),
+    ...(isAssignmentDeleted !== undefined && { isAssignmentDeleted }),
     ...(name && {
       name: {
         contains: name,
@@ -74,30 +81,38 @@ export async function getGroups({
         },
       },
     },
-    skip: (Number(pageNumber) - 1) * Number(pageSize),
-    take: Number(pageSize),
     orderBy: orderByDir,
   });
 
-  const totalCount = await prisma.group.count({
-    where,
-  });
+  let data = groups.map((group) => ({
+    id: group.id,
+    name: group.name,
+    description: group.description,
+    maxMembers: group.maxMembers,
+    currentMembers: group.registrations.length,
+    isActive: group.isActive,
+    createdAt: group.createdAt,
+    members: group.registrations.map((reg) => ({
+      id: reg.id,
+      name: `${reg.YoungPeople.firstName.toUpperCase()} ${reg.YoungPeople.lastName.toUpperCase()}`,
+      gender: reg.YoungPeople.gender,
+    })),
+  }));
+
+  if (status === "full") {
+    data = data.filter((group) => group.maxMembers && group.currentMembers >= group.maxMembers);
+  } else if (status === "available") {
+    data = data.filter((group) => !group.maxMembers || group.currentMembers < group.maxMembers);
+  }
+
+  const totalCount = data.length;
+  const paginatedData = data.slice(
+    (Number(pageNumber) - 1) * Number(pageSize),
+    Number(pageNumber) * Number(pageSize)
+  );
 
   return {
-    data: groups.map((group) => ({
-      id: group.id,
-      name: group.name,
-      description: group.description,
-      maxMembers: group.maxMembers,
-      currentMembers: group.registrations.length,
-      isActive: group.isActive,
-      createdAt: group.createdAt,
-      members: group.registrations.map((reg) => ({
-        id: reg.id,
-        name: `${reg.YoungPeople.firstName.toUpperCase()} ${reg.YoungPeople.lastName.toUpperCase()}`,
-        gender: reg.YoungPeople.gender,
-      })),
-    })),
+    data: paginatedData,
     pagination: {
       pageNumber: Number(pageNumber),
       pageSize: Number(pageSize),
@@ -455,5 +470,104 @@ export async function getGroupStatistics() {
   } catch (error) {
     console.error("Error getting group statistics:", error);
     throw new Error("Failed to get group statistics.");
+  }
+}
+
+// Get groups for dropdown with additional info
+export async function getGroupsForDropdown() {
+  const groups = await prisma.group.findMany({
+    where: { 
+      isActive: true,
+      isAssignmentActive: false,
+      isAssignmentDeleted: false,
+    },
+    include: {
+      registrations: true,
+    },
+    orderBy: { name: "asc" },
+  });
+
+  return groups.map((group) => ({
+    id: group.id,
+    name: group.name,
+    description: group.description,
+    maxMembers: group.maxMembers,
+    currentMembers: group.registrations.length,
+  }));
+}
+
+// Get all registrations with group assignment status
+export async function getAllRegistrationsWithGroupStatus(excludeGroupId?: string) {
+  const registrations = await prisma.registration.findMany({
+    include: {
+      YoungPeople: {
+        select: {
+          firstName: true,
+          lastName: true,
+          gender: true,
+        },
+      },
+      GradeLevel: {
+        select: {
+          name: true,
+        },
+      },
+      Classification: {
+        select: {
+          name: true,
+        },
+      },
+      Group: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+    },
+    orderBy: {
+      YoungPeople: {
+        firstName: "asc",
+      },
+    },
+  });
+
+  return registrations.map((reg) => ({
+    id: reg.id,
+    name: `${reg.YoungPeople.firstName.toUpperCase()} ${reg.YoungPeople.lastName.toUpperCase()}`,
+    gender: reg.YoungPeople.gender,
+    gradeLevel: reg.GradeLevel.name,
+    classification: reg.Classification.name,
+    groupId: reg.groupId,
+    groupName: reg.Group?.name || null,
+    isAssigned: !!reg.groupId && reg.groupId !== excludeGroupId,
+    isAssignedToCurrentGroup: reg.groupId === excludeGroupId,
+  }));
+}
+
+// Activate a group for assignments
+export async function activateGroupForAssignment(groupId: string) {
+  try {
+    const group = await prisma.group.update({
+      where: { id: groupId },
+      data: { isAssignmentActive: true },
+    });
+    return { success: true, message: "Group activated for assignments.", group };
+  } catch (error) {
+    console.error("Error activating group:", error);
+    throw new Error("Failed to activate group for assignments.");
+  }
+}
+
+// Soft delete a group assignment
+export async function softDeleteGroupAssignment(groupId: string) {
+  try {
+    const group = await prisma.group.update({
+      where: { id: groupId },
+      data: { isAssignmentDeleted: true },
+    });
+    return { success: true, message: "Group assignment deleted successfully.", group };
+  } catch (error) {
+    console.error("Error deleting group assignment:", error);
+    throw new Error("Failed to delete group assignment.");
   }
 }

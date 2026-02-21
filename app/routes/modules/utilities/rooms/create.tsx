@@ -67,12 +67,12 @@ export async function action({ request }: Route.ActionArgs) {
     });
 
     return redirectWithSuccess(
-      "/conference-meetings/ypcl/accommodation/rooms",
+      "/utilities/rooms",
       "Room created successfully!"
     );
   } catch (error) {
     return redirectWithError(
-      "/conference-meetings/ypcl/accommodation/rooms/create",
+      "/utilities/rooms/create",
       error instanceof Error ? error.message : "Failed to create room"
     );
   }
@@ -163,7 +163,7 @@ export default function CreateRoom() {
 
             <div className="flex gap-2 pt-4">
               <BackButton 
-                to="/conference-meetings/ypcl/accommodation/rooms" 
+                to="/utilities/rooms" 
                 variant="outline" 
               />
               <Button type="submit" className="bg-[#213b36]">

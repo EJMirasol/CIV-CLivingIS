@@ -5,7 +5,7 @@ import { GroupForm } from "~/components/forms/modules/groups/GroupForm";
 import { createGroup } from "~/lib/server/groups.server";
 import { auth } from "~/lib/auth.server";
 import { redirectWithSuccess } from "remix-toast";
-import type { Route } from "./+types/create";
+import type { Route } from "./+types/add";
 
 export async function loader({ request }: Route.LoaderArgs) {
   const session = await auth.api.getSession({
@@ -35,25 +35,23 @@ export async function action({ request }: Route.ActionArgs) {
   try {
     const groupData = {
       name: submission.value.name,
-      description: submission.value.description,
-      maxMembers: submission.value.maxMembers 
-        ? parseInt(submission.value.maxMembers, 10) 
-        : undefined,
+      description: submission.value.description || undefined,
+      maxMembers: parseInt(submission.value.maxMembers!, 10),
     };
 
     await createGroup(groupData, session.user.id);
     
     return redirectWithSuccess(
-      "/conference-meetings/ypcl/groups",
-      "Group created successfully!"
+      "/utilities/groups",
+      "Group added successfully!"
     );
   } catch (error) {
     return submission.reply({
-      formErrors: [error instanceof Error ? error.message : "Failed to create group"],
+      formErrors: [error instanceof Error ? error.message : "Failed to add group"],
     });
   }
 }
 
-export default function CreateGroup() {
-  return <GroupForm />;
+export default function AddGroup() {
+  return <GroupForm redirectPath="/utilities/groups" />;
 }

@@ -1,6 +1,5 @@
 import { ClipboardList } from "lucide-react";
 import { Form } from "react-router";
-import { Button } from "~/components/ui/button";
 import {
   getFormProps,
   useForm,
@@ -17,6 +16,7 @@ import { Label } from "~/components/ui/label";
 import { Textarea } from "~/components/ui/textarea";
 import { BackButton } from "~/components/shared/buttons/BackButton";
 import { Separator } from "~/components/ui/separator";
+import { DeleteConfirmationDialog } from "~/components/shared/dialogs/DeleteConfirmationDialog";
 
 interface GroupFormProps {
   defaultValues?: {
@@ -25,9 +25,10 @@ interface GroupFormProps {
     maxMembers?: number;
   };
   isEdit?: boolean;
+  redirectPath?: string;
 }
 
-export function GroupForm({ defaultValues, isEdit = false }: GroupFormProps) {
+export function GroupForm({ defaultValues, isEdit = false, redirectPath }: GroupFormProps) {
   const [form, fields] = useForm({
     onValidate({ formData }) {
       return parseWithZod(formData, { schema: GroupFormSchema });
@@ -46,13 +47,20 @@ export function GroupForm({ defaultValues, isEdit = false }: GroupFormProps) {
               <ClipboardList className="h-5 w-5" />
             </div>
             <span className="text-[#15313F] font-[500]">
-              {isEdit ? "EDIT GROUP" : "CREATE GROUP"}
+              {isEdit ? "EDIT GROUP" : "ADD GROUP"}
             </span>
             <Separator orientation="vertical" className="mx-2 h-6" />
             <BackButton />
           </div>
           <div className="flex items-center gap-2">
             <SaveButton formId={form.id} />
+            {redirectPath && (
+              <DeleteConfirmationDialog
+                redirectPath={redirectPath}
+                title="Delete Group"
+                description="Are you sure you want to delete this group?"
+              />
+            )}
           </div>
         </div>
         <Form
@@ -90,12 +98,11 @@ export function GroupForm({ defaultValues, isEdit = false }: GroupFormProps) {
 
                   <div>
                     <div className="space-y-1">
-                      <Label htmlFor={fields.maxMembers.id}>
+                      <LabelNoGapRequired htmlFor={fields.maxMembers.id}>
                         Maximum Members
-                      </Label>
+                      </LabelNoGapRequired>
                       <Input
                         {...getInputProps(fields.maxMembers, { type: "number" })}
-                        placeholder="Leave blank for unlimited"
                         min="1"
                         max="1000"
                       />

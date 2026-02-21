@@ -70,7 +70,7 @@ export function DashboardStats({ statistics }: DashboardStatsProps) {
       {/* Overview Cards - 8 Card Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* 1. Total Registered */}
-        <Link to="/conference-meetings/ypcl/" className="group">
+        <Link to="/conference-meetings/ypcl/registration/" className="group">
           <Card className={cardClassName}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
               <CardTitle className={titleClassName}>Total Registered</CardTitle>
@@ -84,7 +84,7 @@ export function DashboardStats({ statistics }: DashboardStatsProps) {
         </Link>
 
         {/* 2. Brothers */}
-        <Link to="/conference-meetings/ypcl/" className="group">
+        <Link to="/conference-meetings/ypcl/registration/" className="group">
           <Card className={cardClassName}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
               <CardTitle className={titleClassName}>Brothers</CardTitle>
@@ -100,7 +100,7 @@ export function DashboardStats({ statistics }: DashboardStatsProps) {
         </Link>
 
         {/* 3. Sisters */}
-        <Link to="/conference-meetings/ypcl/" className="group">
+        <Link to="/conference-meetings/ypcl/registration/" className="group">
           <Card className={cardClassName}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
               <CardTitle className={titleClassName}>Sisters</CardTitle>
@@ -116,7 +116,7 @@ export function DashboardStats({ statistics }: DashboardStatsProps) {
         </Link>
 
         {/* 4. Checked In */}
-        <Link to="/conference-meetings/ypcl/" className="group">
+        <Link to="/conference-meetings/ypcl/registration/" className="group">
           <Card className={cardClassName}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
               <CardTitle className={titleClassName}>Checked In</CardTitle>
@@ -132,7 +132,7 @@ export function DashboardStats({ statistics }: DashboardStatsProps) {
         </Link>
 
         {/* 5. Total Groups */}
-        <Link to="/conference-meetings/ypcl/groups" className="group">
+        <Link to="/utilities/groups" className="group">
           <Card className={cardClassName}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
               <CardTitle className={titleClassName}>Total Groups</CardTitle>
@@ -146,7 +146,7 @@ export function DashboardStats({ statistics }: DashboardStatsProps) {
         </Link>
 
         {/* 6. Assigned Members */}
-        <Link to="/conference-meetings/ypcl/groups" className="group">
+        <Link to="/utilities/groups" className="group">
           <Card className={cardClassName}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
               <CardTitle className={titleClassName}>Assigned</CardTitle>
@@ -160,7 +160,7 @@ export function DashboardStats({ statistics }: DashboardStatsProps) {
         </Link>
 
         {/* 7. Unassigned Members */}
-        <Link to="/conference-meetings/ypcl/groups" className="group">
+        <Link to="/utilities/groups" className="group">
           <Card className={cardClassName}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
               <CardTitle className={titleClassName}>Unassigned</CardTitle>
@@ -174,7 +174,7 @@ export function DashboardStats({ statistics }: DashboardStatsProps) {
         </Link>
 
         {/* 8. Assignment Rate */}
-        <Link to="/conference-meetings/ypcl/groups" className="group">
+        <Link to="/utilities/groups" className="group">
           <Card className={cardClassName}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
               <CardTitle className={titleClassName}>Assignment Rate</CardTitle>
@@ -273,7 +273,7 @@ export function DashboardStats({ statistics }: DashboardStatsProps) {
                 recentRegistrations.slice(0, 5).map((registration) => (
                   <Link
                     key={registration.id}
-                    to={`/conference-meetings/ypcl/${registration.id}`}
+                    to={`/conference-meetings/ypcl/registration/${registration.id}`}
                     className="block group border-b border-slate-100 last:border-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-950 focus-visible:ring-offset-2"
                   >
                     <div className="py-2.5">

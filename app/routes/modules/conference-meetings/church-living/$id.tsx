@@ -25,7 +25,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 
   const { id } = params;
   if (!id) {
-    throw redirect("/conference-meetings/ypcl/");
+    throw redirect("/conference-meetings/ypcl/registration/");
   }
 
   try {
@@ -46,7 +46,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     };
   } catch (error) {
     console.error("Error loading registration:", error);
-    throw redirect("/conference-meetings/ypcl/");
+    throw redirect("/conference-meetings/ypcl/registration/");
   }
 }
 
@@ -72,7 +72,7 @@ export async function action({ request, params }: Route.ActionArgs) {
 
   const { id } = params;
   if (!id) {
-    throw redirect("/conference-meetings/ypcl/");
+    throw redirect("/conference-meetings/ypcl/registration/");
   }
 
   const formData = await request.formData();
@@ -85,13 +85,13 @@ export async function action({ request, params }: Route.ActionArgs) {
   try {
     const result = await updateRegistration(id, submission.value);
     return redirectWithSuccess(
-      "/conference-meetings/ypcl",
+      "/conference-meetings/ypcl/registration",
       result.message
     );
   } catch (error: any) {
     if (error.message === "Duplicate") {
       return redirectWithError(
-        `/conference-meetings/ypcl/${id}`,
+        `/conference-meetings/ypcl/registration/${id}`,
         "Young person with the same name and date of birth already exists"
       );
     }

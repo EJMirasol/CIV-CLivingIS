@@ -76,12 +76,12 @@ export async function action({ request, params }: Route.ActionArgs) {
     });
 
     return redirectWithSuccess(
-      `/conference-meetings/ypcl/accommodation/rooms/${params.id}`,
+      `/utilities/rooms/${params.id}`,
       "Room updated successfully!"
     );
   } catch (error) {
     return redirectWithError(
-      `/conference-meetings/ypcl/accommodation/rooms/${params.id}/edit`,
+      `/utilities/rooms/${params.id}/edit`,
       error instanceof Error ? error.message : "Failed to update room"
     );
   }
@@ -192,7 +192,7 @@ export default function EditRoom() {
 
             <div className="flex gap-2 pt-4">
               <BackButton 
-                to={`/conference-meetings/ypcl/accommodation/rooms/${room.id}`}
+                to={`/utilities/rooms/${room.id}`}
                 variant="outline" 
               />
               <Button type="submit" className="bg-[#213b36]">

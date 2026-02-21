@@ -12,11 +12,10 @@ export const GroupFormSchema = z.object({
     .optional()
     .or(z.literal("")),
   maxMembers: z
-    .string()
-    .optional()
+    .string({ required_error: "Maximum members is required" })
+    .min(1, "Maximum members is required")
     .refine(
       (val) => {
-        if (!val || val === "") return true;
         const num = parseInt(val, 10);
         return !isNaN(num) && num > 0 && num <= 1000;
       },

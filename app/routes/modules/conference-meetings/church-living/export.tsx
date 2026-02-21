@@ -1,7 +1,6 @@
 import type { Route } from "./+types/export";
 import { redirect } from "react-router";
 import { auth } from "~/lib/auth.server";
-import { redirectWithError } from "remix-toast";
 import { exportYPCLData } from "~/lib/server/registration.server";
 import ExcelJS from "exceljs";
 
@@ -28,9 +27,9 @@ async function handleExport(request: Request) {
     const exportData = await exportYPCLData(args);
 
     if (exportData.length === 0) {
-      return redirectWithError(
-        "/conference-meetings/ypcl",
-        "No data found to export."
+      return new Response(
+        JSON.stringify({ success: false, message: "No data found to export." }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
       );
     }
 
@@ -61,9 +60,12 @@ async function handleExport(request: Request) {
     });
   } catch (error) {
     console.error("Export error:", error);
-    return redirectWithError(
-      "/conference-meetings/ypcl",
-      `Export failed: ${error instanceof Error ? error.message : "Unknown error"}`
+    return new Response(
+      JSON.stringify({ 
+        success: false, 
+        message: `Export failed: ${error instanceof Error ? error.message : "Unknown error"}` 
+      }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
     );
   }
 }

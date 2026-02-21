@@ -218,7 +218,7 @@ export default function RoomDetail() {
       </div>
 
       <div className="flex gap-2">
-        <BackButton to="/conference-meetings/ypcl/accommodation/rooms" />
+        <BackButton to="/utilities/rooms" />
         <Link to="edit">
           <Button className="bg-[#213b36]" variant="view">
             <Edit className="h-4 w-4" />
