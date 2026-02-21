@@ -32,7 +32,7 @@ import {
 } from "~/components/ui/dialog";
 import { DataTable } from "~/components/data-tables/data-table";
 import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
+import { SearchInput } from "~/components/shared/SearchInput";
 import { Badge } from "~/components/ui/badge";
 import type { Route } from "./+types/index";
 import {
@@ -299,7 +299,7 @@ export default function RoomsIndex() {
         >
           <div className="space-y-1">
             <Label>Room Name</Label>
-            <Input
+            <SearchInput
               name="name"
               type="text"
               defaultValue={searchFilter.name}

@@ -389,7 +389,6 @@ export function RegistrationViewEditForm({
                     <div className="space-y-1">
                       <Label htmlFor={fields.age.id}>Age</Label>
                       <Input
-                        {...getInputProps(fields.age, { type: "text" })}
                         maxLength={3}
                         className="max-w-full xl:max-w-[100px] 2xl:max-w-[130px]"
                         value={calculatedAge}

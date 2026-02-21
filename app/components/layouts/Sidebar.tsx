@@ -76,6 +76,26 @@ export function Sidebar({ sidebarItems, isSideBarOpen }: SidebarProps) {
     });
   };
 
+  const hasActiveDescendant = (subModules: SubModule[], currentPath: string): boolean => {
+    return subModules.some(sub => {
+      const routePattern = `/${sub.route}`;
+      const isActive = currentPath === routePattern || 
+                      currentPath === routePattern + '/' ||
+                      currentPath.startsWith(routePattern + '/');
+      
+      if (isActive) return true;
+      if (sub.subModules && sub.subModules.length > 0) {
+        return hasActiveDescendant(sub.subModules, currentPath);
+      }
+      return false;
+    });
+  };
+
+  const hasActiveSubModule = (item: typeof sidebarItems[0], currentPath: string): boolean => {
+    if (item.subModules.length === 0) return false;
+    return hasActiveDescendant(item.subModules, currentPath);
+  };
+
   const toggleModule = (label: string) => {
     const newOpenModules = new Set(openModules);
     if (newOpenModules.has(label)) {
@@ -93,6 +113,7 @@ export function Sidebar({ sidebarItems, isSideBarOpen }: SidebarProps) {
       const paddingLeft = `${(level + 1) * 16}px`;
       
       if (hasSubModules) {
+        const hasActiveChild = subModule.subModules ? hasActiveDescendant(subModule.subModules, location.pathname) : false;
         return (
           <div key={`sub-module-${level}-${index}`} className="space-y-1">
             <Collapsible
@@ -102,7 +123,11 @@ export function Sidebar({ sidebarItems, isSideBarOpen }: SidebarProps) {
             >
               <CollapsibleTrigger asChild className="cursor-pointer w-full">
                 <div 
-                  className="flex items-center gap-2 py-2 px-2 text-gray-300 hover:text-white hover:bg-[#374d47] transition-all"
+                  className={`flex items-center gap-2 py-2 px-2 transition-all ${
+                    isOpen || hasActiveChild
+                      ? 'text-white bg-[#2d4a43]' 
+                      : 'text-gray-300 hover:text-white hover:bg-[#374d47]'
+                  }`}
                   style={{ paddingLeft }}
                 >
                   {subModule.icon}
@@ -121,14 +146,19 @@ export function Sidebar({ sidebarItems, isSideBarOpen }: SidebarProps) {
           </div>
         );
       } else {
+        const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        const pathAfterRoute = location.pathname.replace(`/${subModule.route}`, "");
+        const isExactMatch = pathAfterRoute === "" || pathAfterRoute === "/";
+        const isRecordView = pathAfterRoute.startsWith("/") && 
+                             uuidPattern.test(pathAfterRoute.slice(1).split("/")[0]);
+        const isSubModuleActive = isExactMatch || isRecordView;
         return (
           <NavLink
             key={`sub-module-${level}-${index}`}
             to={`/${subModule.route}`}
-            end={true}
-            className={({ isActive }) =>
+            className={() =>
               `flex items-center gap-2 py-2 px-2 transition-all ${
-                isActive 
+                isSubModuleActive 
                   ? 'text-white bg-[#2d4a43] font-medium' 
                   : 'text-gray-400 hover:text-white hover:bg-[#374d47]'
               }`
@@ -173,7 +203,7 @@ export function Sidebar({ sidebarItems, isSideBarOpen }: SidebarProps) {
                   <CollapsibleTrigger asChild className="cursor-pointer w-full">
                     <div 
                       className={`flex items-center gap-3 px-4 py-3 transition-all ${
-                        isOpen 
+                        isOpen || hasActiveSubModule(item, location.pathname)
                           ? 'text-white bg-[#2d4a43]' 
                           : 'text-gray-300 hover:text-white hover:bg-[#2d4a43]'
                       }`}

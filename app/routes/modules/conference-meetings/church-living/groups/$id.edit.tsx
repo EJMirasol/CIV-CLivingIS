@@ -5,7 +5,7 @@ import { GroupForm } from "~/components/forms/modules/groups/GroupForm";
 import { getGroupById, updateGroup } from "~/lib/server/groups.server";
 import { auth } from "~/lib/auth.server";
 import { redirectWithSuccess } from "remix-toast";
-import type { Route } from "./+types/groups.$id.edit";
+import type { Route } from "./+types/$id.edit";
 
 export async function loader({ request, params }: Route.LoaderArgs) {
   const session = await auth.api.getSession({

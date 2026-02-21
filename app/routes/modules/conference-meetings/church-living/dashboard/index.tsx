@@ -1,7 +1,7 @@
 import { redirect, useLoaderData } from "react-router";
 import { BarChart3 } from "lucide-react";
 import { DashboardStats } from "~/components/dashboard/DashboardStats";
-import type { Route } from "./+types/dashboard";
+import type { Route } from "./+types/index";
 import { getDashboardStatistics } from "~/lib/server/registration.server";
 import { getYear } from "date-fns";
 import { auth } from "~/lib/auth.server";

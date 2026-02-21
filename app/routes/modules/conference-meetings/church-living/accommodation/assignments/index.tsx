@@ -94,7 +94,7 @@ export default function AssignmentsIndex() {
   const submit = useSubmit();
   const navigate = useNavigate();
 
-  const columns: ColumnDef<(typeof assignments)[0]>[] = [
+  const columns: ColumnDef<(typeof assignments.data)[0]>[] = [
     {
       accessorKey: "Registration.YoungPeople.firstName",
       header: ({ column }) => (

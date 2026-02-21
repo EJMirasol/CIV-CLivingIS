@@ -88,10 +88,19 @@ export async function getYPCLLists({
     YoungPeople:
       ypfirstName && ypfirstName !== "" && ypfirstName !== "none"
         ? {
-            firstName: {
-              contains: ypfirstName.toLowerCase().trim(),
-              mode: "insensitive",
-            },
+            AND: ypfirstName
+              .toLowerCase()
+              .trim()
+              .split(/\s+/)
+              .filter(Boolean)
+              .map((word) => ({
+                OR: [
+                  { firstName: { contains: word, mode: "insensitive" } },
+                  { lastName: { contains: word, mode: "insensitive" } },
+                  { middleName: { contains: word, mode: "insensitive" } },
+                  { suffix: { contains: word, mode: "insensitive" } },
+                ],
+              })),
           }
         : undefined,
     groupId: group && group !== "" && group !== "none" ? group : undefined,
@@ -109,6 +118,9 @@ export async function getYPCLLists({
       YoungPeople: {
         select: {
           firstName: true,
+          lastName: true,
+          middleName: true,
+          suffix: true,
         },
       },
       Hall: {
@@ -157,6 +169,8 @@ export async function getYPCLLists({
         id: x.id,
         ypfirstName: x.YoungPeople.firstName?.toUpperCase() || "",
         yplastName: x.YoungPeople.lastName?.toUpperCase() || "",
+        ypMiddleName: x.YoungPeople.middleName?.toUpperCase() || "",
+        ypSuffix: x.YoungPeople.suffix?.toUpperCase() || "",
         gradeLevel: x.GradeLevel.name,
         classification: x.Classification.name,
         hall: x.Hall?.name,
@@ -258,7 +272,7 @@ export async function register(data: RegistrationFormDTO) {
   });
 
   // Return a value to indicate success for the toaster
-  return { success: true, message: "Registration successful." };
+  return { success: true, message: "Successfully saved." };
 }
 
 export async function getAllGradeLevels() {
@@ -374,10 +388,19 @@ export async function exportYPCLData(searchParams: {
   // Handle YoungPeople filters
   if (searchParams.ypfirstName && searchParams.ypfirstName !== "" && searchParams.ypfirstName !== "none") {
     where.YoungPeople = {
-      firstName: {
-        contains: searchParams.ypfirstName.toLowerCase().trim(),
-        mode: "insensitive",
-      },
+      AND: searchParams.ypfirstName
+        .toLowerCase()
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean)
+        .map((word) => ({
+          OR: [
+            { firstName: { contains: word, mode: "insensitive" } },
+            { lastName: { contains: word, mode: "insensitive" } },
+            { middleName: { contains: word, mode: "insensitive" } },
+            { suffix: { contains: word, mode: "insensitive" } },
+          ],
+        })),
     };
   } else if (searchParams.gender && searchParams.gender !== "" && searchParams.gender !== "none") {
     where.YoungPeople = {
@@ -748,7 +771,7 @@ export async function getRegistrationById(registrationId: string) {
       suffix: registration.YoungPeople.suffix || "",
       gender: registration.YoungPeople.gender.toLowerCase(),
       dateOfBirth: registration.YoungPeople?.dateOfBirth ? registration.YoungPeople.dateOfBirth.toISOString().split('T')[0] : "",
-      age: registration.YoungPeople?.age?.toString() || null,
+      age: registration.YoungPeople?.age?.toString() ?? undefined,
       image: registration.YoungPeople.image || "",
       hall: registration.Hall?.id || "",
       classification: registration.Classification.id,
@@ -889,7 +912,7 @@ export async function updateRegistration(registrationId: string, data: Registrat
       },
     });
 
-    return { success: true, message: "Registration updated successfully." };
+    return { success: true, message: "Successfully updated." };
   } catch (error) {
     console.error("Error updating registration:", error);
     if (error instanceof Error && error.message === "Duplicate") {
@@ -1065,10 +1088,19 @@ export async function getRegistrationList({
     YoungPeople:
       ypfirstName && ypfirstName !== "" && ypfirstName !== "none"
         ? {
-            firstName: {
-              contains: ypfirstName.toLowerCase().trim(),
-              mode: "insensitive",
-            },
+            AND: ypfirstName
+              .toLowerCase()
+              .trim()
+              .split(/\s+/)
+              .filter(Boolean)
+              .map((word) => ({
+                OR: [
+                  { firstName: { contains: word, mode: "insensitive" } },
+                  { lastName: { contains: word, mode: "insensitive" } },
+                  { middleName: { contains: word, mode: "insensitive" } },
+                  { suffix: { contains: word, mode: "insensitive" } },
+                ],
+              })),
           }
         : undefined,
     groupId: group && group !== "" && group !== "none" ? group : undefined,
@@ -1087,6 +1119,8 @@ export async function getRegistrationList({
         select: {
           firstName: true,
           lastName: true,
+          middleName: true,
+          suffix: true,
           gender: true,
         },
       },
@@ -1121,6 +1155,8 @@ export async function getRegistrationList({
         id: x.id,
         ypfirstName: x.YoungPeople.firstName?.toUpperCase() || "",
         yplastName: x.YoungPeople.lastName?.toUpperCase() || "",
+        ypMiddleName: x.YoungPeople.middleName?.toUpperCase() || "",
+        ypSuffix: x.YoungPeople.suffix?.toUpperCase() || "",
         gender: x.YoungPeople.gender,
         gradeLevel: x.GradeLevel.name,
         classification: x.Classification.name,

@@ -2,7 +2,7 @@ import { redirect, useLoaderData, useFetcher, Form, useNavigate } from "react-ro
 import { Users, UserCheck, Search, CheckCircle, RefreshCcw } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
+import { SearchInput } from "~/components/shared/SearchInput";
 import { Badge } from "~/components/ui/badge";
 
 import { 
@@ -99,10 +99,15 @@ export default function StatusPage() {
         />
       ),
       cell: ({ row }) => {
+        const firstName = row.original.ypfirstName || "";
+        const middleName = row.original.ypMiddleName || "";
+        const lastName = row.original.yplastName || "";
+        const suffix = row.original.ypSuffix || "";
+        const displayName = `${firstName} ${middleName} ${lastName} ${suffix}`.replace(/\s+/g, ' ').trim();
         return (
           <div className="flex items-center gap-2 pl-2">
             <span className="text-sm font-medium uppercase">
-              {row.original.ypfirstName} {row.original.yplastName}
+              {displayName}
             </span>
           </div>
         );
@@ -259,8 +264,8 @@ export default function StatusPage() {
           method="GET"
         >
           <div className="space-y-1">
-            <Label>Yp First Name</Label>
-            <Input
+            <Label>Young People Name</Label>
+            <SearchInput
               name="ypfirstName"
               type="text"
               defaultValue={searchParams.ypfirstName}

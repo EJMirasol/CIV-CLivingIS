@@ -17,3 +17,5 @@ yarn.lock
 # claude
 .claude/
 CLAUDE.md
+/.opencode
+AGENTS.md

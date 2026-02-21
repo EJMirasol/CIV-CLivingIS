@@ -11,7 +11,7 @@ import {
 } from "~/lib/server/registration.server";
 import { RegistrationFormSchema } from "~/types/registration.dto";
 import { auth } from "~/lib/auth.server";
-import type { Route } from "./+types";
+import type { Route } from "./+types/register";
 
 export async function loader({ request }: Route.LoaderArgs) {
   // Add authentication check like in the index route

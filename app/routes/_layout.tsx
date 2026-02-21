@@ -1,7 +1,7 @@
 import type { Route } from "./+types/_layout";
 import { BookHeart, Handshake, BarChart3, Users, UserCheck, UserPlus, Home, Building } from "lucide-react";
 import { MdSpaceDashboard } from "react-icons/md";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Header } from "~/components/layouts/Header";
 import { Sidebar } from "~/components/layouts/Sidebar";
 import { Outlet, redirect, useLoaderData } from "react-router";
@@ -22,7 +22,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 export default function DashboardLayout() {
   const { user } = useLoaderData<typeof loader>();
-  const sidebarItems = [
+  const sidebarItems = useMemo(() => [
     {
       icon: <MdSpaceDashboard className="h-4 w-4" />,
       label: "Dashboard",
@@ -87,7 +87,7 @@ export default function DashboardLayout() {
         },
       ],
     },
-  ];
+  ], []);
   const [isSideBarOpen, setIsSideBarOpen] = useState(false);
   return (
     <div className="min-h-screen bg-gray-50">

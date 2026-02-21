@@ -31,6 +31,7 @@ interface SelectProps {
   disabled?: boolean;
   className?: string;
   error?: boolean;
+  placeholder?: string;
 }
 
 
@@ -42,12 +43,18 @@ export const SelectBoxWithSearch = ({
   defaultValue,
   disabled,
   className,
-  error = false
+  error = false,
+  placeholder = "Select option..."
 }: SelectProps) => {
   const [open, setOpen] = React.useState(false);
   const [value, setValue] = React.useState(
     defaultValue ? String(defaultValue) : ""
   );
+
+  React.useEffect(() => {
+    setValue(defaultValue ? String(defaultValue) : "");
+  }, [defaultValue]);
+
   return (
     <>
       <Popover open={open} onOpenChange={setOpen}>
@@ -114,7 +121,7 @@ export const SelectBoxWithSearch = ({
           </Command>
         </PopoverContent>
       </Popover>
-      <Input id={id} name={name} value={value} readOnly type="hidden" />
+      <Input id={id} name={name} value={value} type="hidden" />
     </>
   );
 };

@@ -4,15 +4,9 @@ import { getFormProps, getInputProps, useForm } from "@conform-to/react";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
-import { Eye, EyeOff, Loader2, MessageSquareText, User } from "lucide-react";
+import { Eye, EyeOff, Loader2, User } from "lucide-react";
 import { toast } from "sonner";
 import { Form, redirect, useActionData } from "react-router";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "~/components/ui/accordion";
 import { signInSchema } from "~/lib/validations/auth";
 import { useState } from "react";
 import { useIsPending } from "~/hooks/use-is-pending";
@@ -165,71 +159,76 @@ export default function SignIn() {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-green-200 to-slate-800 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md bg-white shadow-2xl border-0">
-        <CardContent className="p-8">
+    <div className="min-h-screen bg-gradient-to-br from-[#1a2e29] via-[#213b36] to-[#1a2e29] flex items-center justify-center p-4">
+      
+      <Card className="w-full max-w-md bg-white/95 backdrop-blur-sm shadow-2xl border border-white/20 animate-in fade-in-0 slide-in-from-bottom-4 duration-500">
+        <CardContent className="p-8 space-y-6">
           {/* Logo and Header */}
-          <div className="flex flex-col items-center mb-8">
-            <div className="w-20 h-20 mb-4">
+          <div className="flex flex-col items-center text-center space-y-4">
+            <div className="w-20 h-20 bg-gradient-to-br from-[#213b36] to-[#2c4f48] rounded-2xl flex items-center justify-center shadow-lg">
               <img
                 src={Logo}
                 alt="CIV Logo"
-                className="w-full h-full object-contain"
+                className="w-14 h-14 object-contain"
               />
             </div>
-            <h1 className="text-slate-700 text-lg font-semibold uppercase text-center mb-2">
-              CIV INFORMATION SYSTEM
-            </h1>
-            <a className="text-green-300 font-bold hover:text-green-700 transition-colors"></a>
+            <div className="space-y-1">
+              <h1 className="text-2xl font-bold text-[#213b36] tracking-wide uppercase">
+                CIV Information System
+              </h1>
+              <p className="text-sm text-gray-500">
+                Secure access to Church management
+              </p>
+            </div>
           </div>
 
           {/* Login Form */}
-          <Form method="post" {...getFormProps(form)} className="space-y-4">
+          <Form method="post" {...getFormProps(form)} className="space-y-5">
             {/* Email Field */}
-            <div>
+            <div className="space-y-2">
               <label
                 htmlFor={fields.email.id}
-                className="block text-sm font-medium text-gray-700 mb-1"
+                className="text-sm font-medium text-gray-700 block"
               >
                 Email Address
               </label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <div className="relative group">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4 group-focus-within:text-[#213b36] transition-colors" />
                 <Input
                   {...getInputProps(fields.email, { type: "email" })}
                   placeholder="Enter your email"
-                  className="pl-10 h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                  className="pl-10 h-10 border-gray-200 focus:border-[#213b36] transition-all"
                   disabled={isSubmitting}
                 />
               </div>
               {fields.email.errors && (
-                <p className="text-sm text-red-600 mt-1">
+                <p className="text-sm text-red-600 animate-in fade-in-0 duration-200">
                   {fields.email.errors[0]}
                 </p>
               )}
             </div>
 
             {/* Password Field */}
-            <div>
+            <div className="space-y-2">
               <label
                 htmlFor={fields.password.id}
-                className="block text-sm font-medium text-gray-700 mb-1"
+                className="text-sm font-medium text-gray-700 block"
               >
                 Password
               </label>
-              <div className="relative">
+              <div className="relative group">
                 <Input
                   {...getInputProps(fields.password, {
                     type: showPassword ? "text" : "password",
                   })}
                   placeholder="Enter your password"
-                  className="pr-10 h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                  className="pr-10 h-10 border-gray-200 focus:border-[#213b36] transition-all"
                   disabled={isSubmitting}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#213b36] transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
                   disabled={isSubmitting}
                 >
                   {showPassword ? (
@@ -240,7 +239,7 @@ export default function SignIn() {
                 </button>
               </div>
               {fields.password.errors && (
-                <p className="text-sm text-red-600 mt-1">
+                <p className="text-sm text-red-600 animate-in fade-in-0 duration-200">
                   {fields.password.errors[0]}
                 </p>
               )}
@@ -248,7 +247,7 @@ export default function SignIn() {
 
             {/* Form Errors */}
             {form.errors && (
-              <div className="text-sm text-red-600 text-center">
+              <div className="text-sm text-red-600 text-center bg-red-50 border border-red-200 rounded-lg p-3 animate-in fade-in-0 slide-in-from-top-2 duration-200">
                 {form.errors.map((error, index) => (
                   <p key={index}>{error}</p>
                 ))}
@@ -258,7 +257,7 @@ export default function SignIn() {
             {/* Submit Button */}
             <Button
               type="submit"
-              className="w-full h-12 bg-slate-800 hover:bg-slate-700 text-white font-medium text-base mt-6"
+              className="w-full h-10 bg-[#213b36] hover:bg-[#2c4f48] text-white font-medium transition-all duration-200 shadow-md hover:shadow-lg"
               disabled={isSubmitting}
             >
               {isSubmitting ? (
@@ -273,28 +272,6 @@ export default function SignIn() {
           </Form>
         </CardContent>
       </Card>
-
-      {/* Help Section - Outside the card */}
-      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
-        <Accordion type="single" collapsible className="w-80">
-          <AccordionItem value="help" className="border-none">
-            <AccordionTrigger className="text-sm text-white/80 hover:text-white py-2 justify-center">
-              <div className="flex items-center gap-2">
-                <MessageSquareText className="h-4 w-4" />
-                Need help signing in?
-              </div>
-            </AccordionTrigger>
-            <AccordionContent className="text-sm text-white/70 text-center space-y-2 pb-4">
-              <p>If you're having trouble signing in:</p>
-              <ul className="space-y-1 text-left">
-                <li>• Make sure your email and password are correct</li>
-                <li>• Check if your account is active</li>
-                <li>• Contact your administrator if your account is locked</li>
-              </ul>
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
-      </div>
     </div>
   );
 }

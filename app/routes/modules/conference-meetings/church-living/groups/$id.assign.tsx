@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
+import { SearchInput } from "~/components/shared/SearchInput";
 import { Label } from "~/components/ui/label";
 import {
   getGroupById,
@@ -19,7 +19,7 @@ import {
 } from "~/lib/server/groups.server";
 import { auth } from "~/lib/auth.server";
 import { redirectWithSuccess } from "remix-toast";
-import type { Route } from "./+types/groups.$id.assign";
+import type { Route } from "./+types/$id.assign";
 import { Form, useSubmit, useNavigation } from "react-router";
 import { Separator } from "~/components/ui/separator";
 import { BackButton } from "~/components/shared/buttons/BackButton";
@@ -266,7 +266,7 @@ export default function GroupAssign() {
         >
           <div className="space-y-1">
             <Label>Search Members</Label>
-            <Input
+            <SearchInput
               name="search"
               type="text"
               placeholder="Search by name..."

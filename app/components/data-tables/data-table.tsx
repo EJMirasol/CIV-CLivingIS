@@ -27,6 +27,8 @@ interface DataTableProps<TData, TValue> {
     pagination?: pagination_metadata
     pageSizeOption?: number[]
     className?: string
+    sortBy?: string
+    sortOrder?: "asc" | "desc"
 }
 
 export function DataTable<TData, TValue>({
@@ -35,6 +37,8 @@ export function DataTable<TData, TValue>({
     data,
     pagination,
     pageSizeOption = [5, 10, 20, 30, 40, 50],
+    sortBy,
+    sortOrder,
 }: DataTableProps<TData, TValue>) {
     const [sorting, setSorting] = React.useState<SortingState>([])
     const table = useReactTable({

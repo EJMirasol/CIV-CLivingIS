@@ -1,6 +1,15 @@
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { Users, UserCheck, Heart, Clock, TrendingUp, MapPin, GraduationCap, Tag, Layers, CheckCircle } from "lucide-react";
-import { Badge } from "~/components/ui/badge";
+import { 
+  Users, 
+  UserCheck, 
+  Clock, 
+  MapPin, 
+  GraduationCap, 
+  Tag, 
+  Layers, 
+  CheckCircle,
+  UserMinus
+} from "lucide-react";
 import { Link } from "react-router";
 
 interface DashboardStatsProps {
@@ -43,7 +52,6 @@ export function DashboardStats({ statistics }: DashboardStatsProps) {
     gradeLevelDistribution,
     classificationDistribution,
     hallDistribution,
-    healthInfo,
     groupInfo,
     recentRegistrations,
   } = statistics;
@@ -51,294 +59,256 @@ export function DashboardStats({ statistics }: DashboardStatsProps) {
   const brothersCount = genderDistribution.find(g => g.gender === 'Brother')?.count || 0;
   const sistersCount = genderDistribution.find(g => g.gender === 'Sister')?.count || 0;
 
+  const cardClassName = "bg-white border border-slate-200 hover:border-emerald-950 motion-safe:transition-colors motion-safe:duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-950 focus-visible:ring-offset-2 h-full";
+  const iconClassName = "h-5 w-5 text-slate-500 group-hover:text-emerald-950 motion-safe:transition-colors motion-safe:duration-200";
+  const titleClassName = "text-sm font-semibold text-slate-700";
+  const numberClassName = "text-3xl font-bold text-slate-900 mb-1";
+  const subtitleClassName = "text-sm text-slate-500";
+
   return (
-    <div className="space-y-4">
-      {/* Overview Cards */}
+    <div className="space-y-8">
+      {/* Overview Cards - 8 Card Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="relative overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100 border-slate-200 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-          <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-slate-100 to-slate-200 rounded-full -mr-10 -mt-10 opacity-50"></div>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-            <CardTitle className="text-sm font-semibold text-slate-700">Total Registered</CardTitle>
-            <div className="p-2 bg-slate-200 rounded-xl">
-              <Users className="h-5 w-5 text-slate-600" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-slate-800 mb-1">{totalRegistrations}</div>
-            <p className="text-sm text-slate-600 flex items-center gap-1">
-              <TrendingUp className="h-3 w-3" />
-              Young people registered
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="relative overflow-hidden bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-          <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full -mr-10 -mt-10 opacity-50"></div>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-            <CardTitle className="text-sm font-semibold text-blue-700">Brothers</CardTitle>
-            <div className="p-2 bg-blue-200 rounded-xl">
-              <UserCheck className="h-5 w-5 text-blue-600" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-blue-700 mb-1">{brothersCount}</div>
-            <p className="text-sm text-blue-600 flex items-center gap-1">
-              <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100 px-2 py-0.5 text-xs">
-                {totalRegistrations > 0 ? Math.round((brothersCount / totalRegistrations) * 100) : 0}%
-              </Badge>
-              of registrations
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="relative overflow-hidden bg-gradient-to-br from-pink-50 to-pink-100 border-pink-200 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-          <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-pink-100 to-pink-200 rounded-full -mr-10 -mt-10 opacity-50"></div>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-            <CardTitle className="text-sm font-semibold text-pink-700">Sisters</CardTitle>
-            <div className="p-2 bg-pink-200 rounded-xl">
-              <UserCheck className="h-5 w-5 text-pink-600" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-pink-700 mb-1">{sistersCount}</div>
-            <p className="text-sm text-pink-600 flex items-center gap-1">
-              <Badge className="bg-pink-100 text-pink-700 hover:bg-pink-100 px-2 py-0.5 text-xs">
-                {totalRegistrations > 0 ? Math.round((sistersCount / totalRegistrations) * 100) : 0}%
-              </Badge>
-              of registrations
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="relative overflow-hidden bg-gradient-to-br from-green-50 to-green-100 border-green-200 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-          <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-green-100 to-green-200 rounded-full -mr-10 -mt-10 opacity-50"></div>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-            <CardTitle className="text-sm font-semibold text-green-700">Checked In</CardTitle>
-            <div className="p-2 bg-green-200 rounded-xl">
-              <CheckCircle className="h-5 w-5 text-green-600" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-green-700 mb-1">{totalCheckedIn}</div>
-            <p className="text-sm text-green-600 flex items-center gap-1">
-              <Badge className="bg-green-100 text-green-700 hover:bg-green-100 px-2 py-0.5 text-xs">
-                {totalRegistrations > 0 ? Math.round((totalCheckedIn / totalRegistrations) * 100) : 0}%
-              </Badge>
-              of registrations
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Total Groups Card */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="relative overflow-hidden bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-          <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-purple-100 to-purple-200 rounded-full -mr-10 -mt-10 opacity-50"></div>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-            <CardTitle className="text-sm font-semibold text-purple-700">Total Groups</CardTitle>
-            <div className="p-2 bg-purple-200 rounded-xl">
-              <Layers className="h-5 w-5 text-purple-600" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-purple-700 mb-1">{groupInfo.totalGroups}</div>
-            <p className="text-sm text-purple-600 flex items-center gap-1">
-              <TrendingUp className="h-3 w-3" />
-              Active groups created
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Distribution Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Grade Level Distribution */}
-        <Card className="bg-white border border-gray-200 hover:shadow-sm transition-shadow duration-200">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-gray-800 text-sm font-medium">
-              <GraduationCap className="h-4 w-4 text-gray-600" />
-              Grade Level Distribution
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div 
-              className="space-y-2 overflow-y-auto" 
-              style={{ 
-                maxHeight: `${Math.min(gradeLevelDistribution.length * 40 + 20, 300)}px`
-              }}
-            >
-              {gradeLevelDistribution.map((level, index) => {
-                const percentage = totalRegistrations > 0 ? Math.round((level.count / totalRegistrations) * 100) : 0;
-                return (
-                  <div key={level.name} className="flex items-center justify-between py-1">
-                    <div className="flex items-center gap-2">
-                      <div 
-                        className="w-2 h-2 rounded-full" 
-                        style={{ backgroundColor: `hsl(${index * 40}, 60%, 50%)` }}
-                      />
-                      <span className="text-xs text-gray-700">{level.name}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-medium text-gray-900">{level.count}</span>
-                      <span className=" text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded text-xs">
-                        {percentage}%
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Classification Distribution */}
-        <Card className="bg-white border border-gray-200 hover:shadow-sm transition-shadow duration-200">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-gray-800 text-sm font-medium">
-              <Tag className="h-4 w-4 text-gray-600" />
-              Classification Distribution
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="space-y-3">
-              {classificationDistribution.map((classification, index) => {
-                const percentage = totalRegistrations > 0 ? Math.round((classification.count / totalRegistrations) * 100) : 0;
-                return (
-                  <div key={classification.name} className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div 
-                        className="w-2 h-2 rounded-full" 
-                        style={{ backgroundColor: `hsl(${index * 60 + 180}, 60%, 50%)` }}
-                      />
-                      <span className="text-sm text-gray-700">{classification.name}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-gray-900">{classification.count}</span>
-                      <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                        {percentage}%
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Hall Distribution and Recent Registrations */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Hall Distribution */}
-        {hallDistribution.length > 0 && (
-          <Card className="bg-white border border-gray-200 hover:shadow-sm transition-shadow duration-200">
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-gray-800 text-sm font-medium">
-                <MapPin className="h-4 w-4 text-gray-600" />
-                Hall Distribution
-              </CardTitle>
+        {/* 1. Total Registered */}
+        <Link to="/conference-meetings/ypcl/" className="group">
+          <Card className={cardClassName}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+              <CardTitle className={titleClassName}>Total Registered</CardTitle>
+              <Users className={iconClassName} />
             </CardHeader>
-            <CardContent className="pt-0">
-              <div className="space-y-3">
-                {hallDistribution.map((hall, index) => {
-                  const percentage = totalRegistrations > 0 ? Math.round((hall.count / totalRegistrations) * 100) : 0;
-                  return (
-                    <div key={hall.name} className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div 
-                          className="w-2 h-2 rounded-full" 
-                          style={{ backgroundColor: `hsl(${index * 45 + 90}, 60%, 50%)` }}
-                        />
-                        <span className="text-sm text-gray-700">{hall.name}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium text-gray-900">{hall.count}</span>
-                        <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                          {percentage}%
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+            <CardContent>
+              <div className={numberClassName}>{totalRegistrations}</div>
+              <p className={subtitleClassName}>Young people registered</p>
             </CardContent>
           </Card>
-        )}
+        </Link>
+
+        {/* 2. Brothers */}
+        <Link to="/conference-meetings/ypcl/" className="group">
+          <Card className={cardClassName}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+              <CardTitle className={titleClassName}>Brothers</CardTitle>
+              <UserCheck className={iconClassName} />
+            </CardHeader>
+            <CardContent>
+              <div className={numberClassName}>{brothersCount}</div>
+              <p className={subtitleClassName}>
+                {totalRegistrations > 0 ? Math.round((brothersCount / totalRegistrations) * 100) : 0}% of registrations
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
+
+        {/* 3. Sisters */}
+        <Link to="/conference-meetings/ypcl/" className="group">
+          <Card className={cardClassName}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+              <CardTitle className={titleClassName}>Sisters</CardTitle>
+              <UserCheck className={iconClassName} />
+            </CardHeader>
+            <CardContent>
+              <div className={numberClassName}>{sistersCount}</div>
+              <p className={subtitleClassName}>
+                {totalRegistrations > 0 ? Math.round((sistersCount / totalRegistrations) * 100) : 0}% of registrations
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
+
+        {/* 4. Checked In */}
+        <Link to="/conference-meetings/ypcl/" className="group">
+          <Card className={cardClassName}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+              <CardTitle className={titleClassName}>Checked In</CardTitle>
+              <CheckCircle className={iconClassName} />
+            </CardHeader>
+            <CardContent>
+              <div className={numberClassName}>{totalCheckedIn}</div>
+              <p className={subtitleClassName}>
+                {totalRegistrations > 0 ? Math.round((totalCheckedIn / totalRegistrations) * 100) : 0}% of registrations
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
+
+        {/* 5. Total Groups */}
+        <Link to="/conference-meetings/ypcl/groups" className="group">
+          <Card className={cardClassName}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+              <CardTitle className={titleClassName}>Total Groups</CardTitle>
+              <Layers className={iconClassName} />
+            </CardHeader>
+            <CardContent>
+              <div className={numberClassName}>{groupInfo.totalGroups}</div>
+              <p className={subtitleClassName}>Active groups created</p>
+            </CardContent>
+          </Card>
+        </Link>
+
+        {/* 6. Assigned Members */}
+        <Link to="/conference-meetings/ypcl/groups" className="group">
+          <Card className={cardClassName}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+              <CardTitle className={titleClassName}>Assigned</CardTitle>
+              <UserCheck className={iconClassName} />
+            </CardHeader>
+            <CardContent>
+              <div className={numberClassName}>{groupInfo.totalAssignedMembers}</div>
+              <p className={subtitleClassName}>{groupInfo.assignmentPercentage}% assigned</p>
+            </CardContent>
+          </Card>
+        </Link>
+
+        {/* 7. Unassigned Members */}
+        <Link to="/conference-meetings/ypcl/groups" className="group">
+          <Card className={cardClassName}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+              <CardTitle className={titleClassName}>Unassigned</CardTitle>
+              <UserMinus className={iconClassName} />
+            </CardHeader>
+            <CardContent>
+              <div className={numberClassName}>{groupInfo.totalUnassignedMembers}</div>
+              <p className={subtitleClassName}>Waiting for group</p>
+            </CardContent>
+          </Card>
+        </Link>
+
+        {/* 8. Assignment Rate */}
+        <Link to="/conference-meetings/ypcl/groups" className="group">
+          <Card className={cardClassName}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+              <CardTitle className={titleClassName}>Assignment Rate</CardTitle>
+              <Layers className={iconClassName} />
+            </CardHeader>
+            <CardContent>
+              <div className={numberClassName}>{groupInfo.assignmentPercentage}%</div>
+              <p className={subtitleClassName}>Overall completion</p>
+            </CardContent>
+          </Card>
+        </Link>
+      </div>
+
+      {/* Distributions and Recent Registrations - Side by Side */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+        {/* Distributions */}
+        <Card className="bg-white border border-slate-200 self-start">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-slate-900 text-sm font-medium">
+              <GraduationCap className="h-4 w-4 text-slate-500" />
+              <Tag className="h-4 w-4 text-slate-500" />
+              <MapPin className="h-4 w-4 text-slate-500" />
+              Distributions
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
+            {/* Single Table Header */}
+            <div className="grid grid-cols-[1fr_auto] py-2 border-b border-slate-300 font-medium text-xs text-slate-500 uppercase tracking-wider">
+              <div>Name</div>
+              <div className="text-right pr-2">Count</div>
+            </div>
+
+            {/* Grade Levels Section */}
+            <div className="mt-4 mb-6">
+              <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
+                Grade Levels
+              </h3>
+              {gradeLevelDistribution.map((level) => (
+                <div 
+                  key={level.name} 
+                  className="grid grid-cols-[1fr_auto] py-2 border-b border-slate-100 last:border-0"
+                >
+                  <span className="text-sm text-slate-700">{level.name}</span>
+                  <span className="text-sm font-medium text-slate-900 text-right pr-2">{level.count}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Classifications Section */}
+            <div className="mb-6">
+              <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
+                Classifications
+              </h3>
+              {classificationDistribution.map((classification) => (
+                <div 
+                  key={classification.name} 
+                  className="grid grid-cols-[1fr_auto] py-2 border-b border-slate-100 last:border-0"
+                >
+                  <span className="text-sm text-slate-700">{classification.name}</span>
+                  <span className="text-sm font-medium text-slate-900 text-right pr-2">{classification.count}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Halls Section */}
+            {hallDistribution.length > 0 && (
+              <div>
+                <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
+                  Halls
+                </h3>
+                {hallDistribution.map((hall) => (
+                  <div 
+                    key={hall.name} 
+                    className="grid grid-cols-[1fr_auto] py-2 border-b border-slate-100 last:border-0"
+                  >
+                    <span className="text-sm text-slate-700">{hall.name}</span>
+                    <span className="text-sm font-medium text-slate-900 text-right pr-2">{hall.count}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Recent Registrations */}
-        <Card className="bg-white border border-gray-200 hover:shadow-sm transition-shadow duration-200">
+        <Card className="bg-white border border-slate-200 self-start">
           <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-gray-800 text-sm font-medium">
-              <Clock className="h-4 w-4 text-gray-600" />
+            <CardTitle className="flex items-center gap-2 text-slate-900 text-sm font-medium">
+              <Clock className="h-4 w-4 text-slate-500" />
               Recent Registrations
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
-            <div className="space-y-3">
+            <div className="space-y-0">
               {recentRegistrations.length > 0 ? (
-                recentRegistrations.map((registration) => (
-                  <div key={registration.id} className="flex items-center justify-between py-2">
-                    <div>
-                      <div className="text-sm font-medium text-gray-900">{registration.name}</div>
-                      <div className="flex items-center gap-2 text-xs text-gray-500">
-                        <span>{registration.classification}</span>
-                        <span>•</span>
-                        <span>{registration.gender}</span>
+                recentRegistrations.slice(0, 5).map((registration) => (
+                  <Link
+                    key={registration.id}
+                    to={`/conference-meetings/ypcl/${registration.id}`}
+                    className="block group border-b border-slate-100 last:border-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-950 focus-visible:ring-offset-2"
+                  >
+                    <div className="py-2.5">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="text-sm font-medium text-slate-900 group-hover:text-emerald-950 motion-safe:transition-colors motion-safe:duration-200">
+                            {registration.name}
+                          </div>
+                          <div className="text-xs text-slate-500 mt-0.5">
+                            {registration.classification} • {registration.gender}
+                          </div>
+                        </div>
+                        <div className="text-xs text-slate-400">
+                          {new Date(registration.dateRegistered).toLocaleString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            hour: 'numeric',
+                            minute: '2-digit',
+                            hour12: true
+                          })}
+                        </div>
                       </div>
                     </div>
-                    <div className="text-xs text-gray-500">
-                      {new Date(registration.dateRegistered).toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric'
-                      })}
-                    </div>
-                  </div>
+                  </Link>
                 ))
               ) : (
                 <div className="text-center py-6">
-                  <Clock className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                  <p className="text-sm text-gray-500">No recent registrations</p>
+                  <Clock className="h-8 w-8 text-slate-300 mx-auto mb-2" />
+                  <p className="text-sm text-slate-500">No recent registrations</p>
                 </div>
               )}
             </div>
           </CardContent>
         </Card>
       </div>
-
-
-      {/* Health Information Summary */}
-      {(healthInfo.allergies > 0 || healthInfo.healthConditions > 0) && (
-        <Card className="bg-white border border-gray-200 hover:shadow-sm transition-shadow duration-200">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-gray-800 text-sm font-medium">
-              <Heart className="h-4 w-4 text-gray-600" />
-              Health Information Summary
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="flex items-center justify-between p-3 bg-red-50 border border-red-200 rounded-lg">
-                <div>
-                  <div className="text-sm font-medium text-red-800">Allergies</div>
-                  <div className="text-xs text-red-600">
-                    {healthInfo.allergies} registrations
-                  </div>
-                </div>
-                <div className="text-2xl font-bold text-red-700">{healthInfo.allergies}</div>
-              </div>
-              
-              <div className="flex items-center justify-between p-3 bg-orange-50 border border-orange-200 rounded-lg">
-                <div>
-                  <div className="text-sm font-medium text-orange-800">Health Conditions</div>
-                  <div className="text-xs text-orange-600">
-                    {healthInfo.healthConditions} registrations
-                  </div>
-                </div>
-                <div className="text-2xl font-bold text-orange-700">{healthInfo.healthConditions}</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 }

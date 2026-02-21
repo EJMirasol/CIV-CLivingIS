@@ -34,8 +34,8 @@ import {
 } from "~/components/ui/dialog";
 import { DataTable } from "~/components/data-tables/data-table";
 import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import type { Route } from "./+types/groups.index";
+import { SearchInput } from "~/components/shared/SearchInput";
+import type { Route } from "./+types/index";
 import {
   getGroups,
   deleteGroup,
@@ -61,7 +61,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     pageNumber: parseInt(searchParams.pageNumber || "1"),
     pageSize: parseInt(searchParams.pageSize || "10"),
     sortBy: searchParams.sortBy,
-    sortOrder: searchParams.sortOrder || "asc",
+    sortOrder: (searchParams.sortOrder || "asc") as "asc" | "desc",
   };
 
   const { data, pagination } = await getGroups(args);
@@ -210,7 +210,7 @@ export default () => {
       cell: ({ row }) => {
         return (
           <>
-            <div className="flex gap-2">
+            <div className="flex gap-2 justify-center">
               <Link to={`${row.original.id}`}>
                 <Button
                   size="sm"
@@ -298,7 +298,7 @@ export default () => {
         >
           <div className="space-y-1">
             <Label>Group Name</Label>
-            <Input
+            <SearchInput
               name="name"
               type="text"
               defaultValue={searchFilter.name}

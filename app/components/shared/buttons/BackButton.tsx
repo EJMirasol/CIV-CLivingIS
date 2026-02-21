@@ -6,15 +6,20 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 
 interface props {
   navigateTo?: string
+  to?: string
   title?: string,
   description?: string
+  variant?: string
 }
 
 export function BackButton({
   navigateTo = "/",
+  to,
   title = "Confirmation",
-  description = "Are you sure you want to exit the page? Any changes will not be saved."
+  description = "Are you sure you want to exit the page? Any changes will not be saved.",
+  variant
 }: props) {
+  const targetPath = to || navigateTo;
   const navigate = useNavigate();
 
   const handleGoBack = () => {

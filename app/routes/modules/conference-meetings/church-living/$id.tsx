@@ -85,7 +85,7 @@ export async function action({ request, params }: Route.ActionArgs) {
   try {
     const result = await updateRegistration(id, submission.value);
     return redirectWithSuccess(
-      `/conference-meetings/ypcl/${id}`,
+      "/conference-meetings/ypcl",
       result.message
     );
   } catch (error: any) {

@@ -6,7 +6,7 @@ import { Button } from "~/components/ui/button";
 import { getGroupById, removeFromGroup } from "~/lib/server/groups.server";
 import { auth } from "~/lib/auth.server";
 import { redirectWithSuccess } from "remix-toast";
-import type { Route } from "./+types/groups.$id";
+import type { Route } from "./+types/$id";
 import { Link, useSubmit } from "react-router";
 import {
   Dialog,
