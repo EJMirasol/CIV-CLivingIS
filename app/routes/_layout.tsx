@@ -1,5 +1,5 @@
 import type { Route } from "./+types/_layout";
-import { BookHeart, Handshake, BarChart3, Users, UserCheck, UserPlus, Home, Building, Settings } from "lucide-react";
+import { BookHeart, Handshake, BarChart3, Users, UserCheck, UserPlus, Home, Building, Settings, DollarSign, FileText, ClipboardList } from "lucide-react";
 import { MdSpaceDashboard } from "react-icons/md";
 import { useState, useMemo } from "react";
 import { Header } from "~/components/layouts/Header";
@@ -63,6 +63,41 @@ export default function DashboardLayout() {
             },
           ],
         },
+        {
+          icon: <ClipboardList className="h-4 w-4" />,
+          label: "CAMANAVA SSOT",
+          route: "conference-meetings/ssot",
+          subModules: [
+            {
+              icon: <BarChart3 className="h-4 w-4" />,
+              label: "Dashboard",
+              route: "conference-meetings/ssot/dashboard",
+            },
+            {
+              icon: <UserPlus className="h-4 w-4" />,
+              label: "Registration",
+              route: "conference-meetings/ssot/registration",
+            },
+          ],
+        },
+      ],
+    },
+    {
+      icon: <DollarSign className="h-4 w-4" />,
+      label: "Finance",
+      route: "",
+      key: "finance",
+      subModules: [
+        {
+          icon: <FileText className="h-4 w-4" />,
+          label: "Registration",
+          route: "finance/registration",
+        },
+        {
+          icon: <BarChart3 className="h-4 w-4" />,
+          label: "Statistics",
+          route: "finance/statistics",
+        },
       ],
     },
     {
@@ -80,6 +115,11 @@ export default function DashboardLayout() {
           icon: <Building className="h-4 w-4" />,
           label: "Rooms",
           route: "utilities/rooms",
+        },
+        {
+          icon: <DollarSign className="h-4 w-4" />,
+          label: "Billing Settings",
+          route: "utilities/billing-settings",
         },
       ],
     },

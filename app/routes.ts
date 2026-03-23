@@ -12,42 +12,39 @@ export default [
   route("sign-in", "./routes/modules/auth/sign-in.tsx"),
   route("sign-out", "./routes/modules/auth/sign-out.tsx"),
 
+  // Public SSOT Registration (no auth required)
+  route("ssot-registration", "./routes/modules/ssot-registration/register.tsx"),
+  route("ssot-registration/success", "./routes/modules/ssot-registration/success.tsx"),
+
   // Main application routes with layout - protected with authentication
   layout("./routes/_layout.tsx", [
     ...prefix("dashboard", [index("./routes/modules/dashboard/index.tsx")]),
     ...prefix("conference-meetings", [
       ...prefix("ypcl", [
-        // Dashboard sub-route - requires authentication
         route(
           "/dashboard",
           "./routes/modules/conference-meetings/church-living/dashboard/index.tsx"
         ),
-        // Registration list - requires authentication
         route(
           "/registration",
           "./routes/modules/conference-meetings/church-living/index.tsx"
         ),
-        // Registration form (add new) - requires authentication
         route(
           "/registration/add",
           "./routes/modules/conference-meetings/church-living/register.tsx"
         ),
-        // Registration view/edit - requires authentication
         route(
           "/registration/:id",
           "./routes/modules/conference-meetings/church-living/$id.tsx"
         ),
-        // Export data - requires authentication
         route(
           "/export",
           "./routes/modules/conference-meetings/church-living/export.tsx"
         ),
-        // Check-in status - requires authentication
         route(
           "/status",
           "./routes/modules/conference-meetings/church-living/status/index.tsx"
         ),
-        // Group Assignments - requires authentication
         route(
           "/group-assignments",
           "./routes/modules/conference-meetings/church-living/group-assignments/index.tsx"
@@ -60,7 +57,6 @@ export default [
           "/group-assignments/:id",
           "./routes/modules/conference-meetings/church-living/group-assignments/$id.tsx"
         ),
-        // Accommodation management - requires authentication
         route(
           "/accommodation",
           "./routes/modules/conference-meetings/church-living/accommodation/index.tsx"
@@ -74,36 +70,55 @@ export default [
           "./routes/modules/conference-meetings/church-living/accommodation/assignments/create.tsx"
         ),
       ]),
-    ]),
-    // Utilities module
-    ...prefix("utilities", [
-      // Groups management
-      ...prefix("groups", [
-        index("./routes/modules/utilities/groups/index.tsx"),
+      ...prefix("ssot", [
         route(
-          "/add",
-          "./routes/modules/utilities/groups/add.tsx"
+          "/dashboard",
+          "./routes/modules/conference-meetings/ssot/dashboard/index.tsx"
         ),
         route(
-          ":id",
-          "./routes/modules/utilities/groups/$id.tsx"
+          "/registration",
+          "./routes/modules/conference-meetings/ssot/index.tsx"
+        ),
+        route(
+          "/registration/:id",
+          "./routes/modules/conference-meetings/ssot/$id.tsx"
+        ),
+        route(
+          "/export",
+          "./routes/modules/conference-meetings/ssot/export.tsx"
         ),
       ]),
-      // Rooms management
+    ]),
+    ...prefix("finance", [
+      route(
+        "/registration",
+        "./routes/modules/finance/registration/index.tsx"
+      ),
+      route(
+        "/statistics",
+        "./routes/modules/finance/statistics/index.tsx"
+      ),
+      route(
+        "/registrants",
+        "./routes/modules/finance/registrants.ts"
+      ),
+    ]),
+    ...prefix("utilities", [
+      ...prefix("groups", [
+        index("./routes/modules/utilities/groups/index.tsx"),
+        route("/add", "./routes/modules/utilities/groups/add.tsx"),
+        route(":id", "./routes/modules/utilities/groups/$id.tsx"),
+      ]),
       ...prefix("rooms", [
         index("./routes/modules/utilities/rooms/index.tsx"),
-        route(
-          "/create",
-          "./routes/modules/utilities/rooms/create.tsx"
-        ),
-        route(
-          ":id",
-          "./routes/modules/utilities/rooms/$id.tsx"
-        ),
-        route(
-          ":id/edit",
-          "./routes/modules/utilities/rooms/$id.edit.tsx"
-        ),
+        route("/create", "./routes/modules/utilities/rooms/create.tsx"),
+        route(":id", "./routes/modules/utilities/rooms/$id.tsx"),
+        route(":id/edit", "./routes/modules/utilities/rooms/$id.edit.tsx"),
+      ]),
+      ...prefix("billing-settings", [
+        index("./routes/modules/utilities/billing-settings/index.tsx"),
+        route("/add", "./routes/modules/utilities/billing-settings/add.tsx"),
+        route(":id", "./routes/modules/utilities/billing-settings/$id.tsx"),
       ]),
     ]),
   ]),

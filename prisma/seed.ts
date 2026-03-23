@@ -22,6 +22,7 @@ async function main() {
     "3rd Year College",
     "4th Year College",
     "Graduate",
+    "Serving One",
   ];
 
   for (const gradeName of gradeLevels) {

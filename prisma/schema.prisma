@@ -52,12 +52,14 @@ model Registration {
   updatedAt               DateTime                 @updatedAt
   updatedBy               String?
   accommodationAssignment AccommodationAssignment?
+  financeRecords          FinanceRecord[]          @relation("FinanceRegistration")
 }
 
 model GradeLevel {
-  id           String         @id @default(uuid())
-  name         String
-  Registration Registration[]
+  id               String            @id @default(uuid())
+  name             String
+  Registration     Registration[]
+  SsotRegistration SsotRegistration[]
 }
 
 model Hall {
@@ -73,7 +75,7 @@ model Classification {
 }
 
 model BasicHealthInfo {
-  id                         String         @id @default(uuid())
+  id                         String            @id @default(uuid())
   isAllergy                  Boolean?
   allergyDescription         String?
   allergyMedicine            String?
@@ -81,6 +83,7 @@ model BasicHealthInfo {
   healthConditionDescription String?
   healthConditionMedication  String?
   Registration               Registration[]
+  SsotRegistration           SsotRegistration?
 }
 
 model ContactPersonEmergency {
@@ -142,6 +145,18 @@ model AccommodationAssignment {
 enum Gender {
   Brother
   Sister
+}
+
+enum Locality {
+  CALOOCAN_CITY
+  MALABON_CITY
+  NAVOTAS_CITY
+  VALENZUELA_CITY
+}
+
+enum ConferenceType {
+  YP_CHURCH_LIVING
+  CAMANAVA_SSOT
 }
 
 // Better Auth Models
@@ -206,4 +221,48 @@ model EventType {
   updatedAt   DateTime @updatedAt
   createdBy   String?
   rooms       Room[]
+}
+
+model SsotRegistration {
+  id                String          @id @default(uuid())
+  lastName          String
+  firstName         String
+  middleName        String?
+  suffix            String?
+  locality          Locality
+  gender            Gender
+  gradeLevelId      String
+  GradeLevel        GradeLevel      @relation(fields: [gradeLevelId], references: [id])
+  remarks           String?
+  basicHealthInfoId String?         @unique
+  BasicHealthInfo   BasicHealthInfo? @relation(fields: [basicHealthInfoId], references: [id])
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  financeRecords    FinanceRecord[]
+}
+
+model BillingSetting {
+  id             String          @id @default(uuid())
+  feeType        String          @unique
+  conferenceType ConferenceType
+  amount         Float
+  isActive       Boolean         @default(true)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  financeRecords FinanceRecord[]
+}
+
+model FinanceRecord {
+  id                String           @id @default(uuid())
+  conferenceType    ConferenceType
+  registrationId    String?
+  Registration      Registration?    @relation("FinanceRegistration", fields: [registrationId], references: [id])
+  ssotRegistrationId String?
+  SsotRegistration  SsotRegistration? @relation(fields: [ssotRegistrationId], references: [id])
+  billingSettingId  String
+  BillingSetting    BillingSetting   @relation(fields: [billingSettingId], references: [id])
+  isPaid            Boolean          @default(false)
+  paidAt            DateTime?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
 }

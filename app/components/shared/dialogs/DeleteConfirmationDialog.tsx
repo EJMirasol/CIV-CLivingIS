@@ -18,6 +18,7 @@ interface DeleteConfirmationDialogProps {
   title?: string;
   description?: string;
   redirectPath: string;
+  fullReload?: boolean;
 }
 
 export const DeleteConfirmationDialog = ({
@@ -25,12 +26,17 @@ export const DeleteConfirmationDialog = ({
   title = "Confirmation",
   description = "Are you sure you want to delete this item?",
   redirectPath,
+  fullReload = false,
 }: DeleteConfirmationDialogProps) => {
   const navigate = useNavigate();
 
   const handleDelete = () => {
     toast.success("Successfully deleted.");
-    navigate(redirectPath);
+    if (fullReload) {
+      window.location.href = redirectPath;
+    } else {
+      navigate(redirectPath);
+    }
   };
 
   return (
