@@ -120,7 +120,7 @@ export function SsotRegistrationForm({
                     CAMANAVA SSOT 2026 REGISTRATION
                   </span>
                   <p className="text-xs text-gray-500 mt-0.5">
-                    Date: May 5-10, 2026 &middot; Venue: CAMANAVA Lot Amadeo
+                    Date: May 5-10, 2026 &middot; Reg Fee: ₱1,000 &middot; Venue: CAMANAVA Lot Amadeo
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
