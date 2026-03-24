@@ -95,12 +95,44 @@ export default [
         "./routes/modules/finance/registration/index.tsx"
       ),
       route(
+        "/registration/add",
+        "./routes/modules/finance/registration/add.tsx"
+      ),
+      route(
+        "/registration/:id",
+        "./routes/modules/finance/registration/$id.tsx"
+      ),
+      route(
         "/statistics",
         "./routes/modules/finance/statistics/index.tsx"
       ),
       route(
         "/registrants",
         "./routes/modules/finance/registrants.ts"
+      ),
+      route(
+        "/expenses",
+        "./routes/modules/finance/expenses/index.tsx"
+      ),
+      route(
+        "/expenses/add",
+        "./routes/modules/finance/expenses/add.tsx"
+      ),
+      route(
+        "/expenses/:id",
+        "./routes/modules/finance/expenses/$id.tsx"
+      ),
+      route(
+        "/return-changes",
+        "./routes/modules/finance/return-changes/index.tsx"
+      ),
+      route(
+        "/return-changes/add",
+        "./routes/modules/finance/return-changes/add.tsx"
+      ),
+      route(
+        "/return-changes/:id",
+        "./routes/modules/finance/return-changes/$id.tsx"
       ),
     ]),
     ...prefix("utilities", [

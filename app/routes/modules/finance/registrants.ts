@@ -9,11 +9,12 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   const url = new URL(request.url);
   const conferenceType = url.searchParams.get("conferenceType") || "";
+  const locality = url.searchParams.get("locality") || "";
 
   if (!conferenceType) {
     return Response.json({ data: [] });
   }
 
-  const data = await getRegistrationsForFinanceDropdown(conferenceType);
+  const data = await getRegistrationsForFinanceDropdown(conferenceType, locality || undefined);
   return Response.json({ data });
 }

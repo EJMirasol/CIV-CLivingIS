@@ -5,17 +5,24 @@ import {
   Clock,
   MapPin,
   GraduationCap,
-  Heart,
+  BookOpen,
+  UserCog,
+  CheckCircle,
 } from "lucide-react";
 import { Link } from "react-router";
 
 interface SsotDashboardStatsProps {
   statistics: {
     totalRegistrations: number;
+    totalCheckedIn: number;
     genderDistribution: { gender: string; count: number }[];
     localityDistribution: { locality: string; count: number }[];
     gradeLevelDistribution: { name: string; count: number }[];
-    healthInfo: { allergies: number; healthConditions: number };
+    categoryCounts: {
+      juniorYp: number;
+      seniorYp: number;
+      servingOnes: number;
+    };
     recentRegistrations: {
       id: string;
       name: string;
@@ -30,16 +37,16 @@ interface SsotDashboardStatsProps {
 export function SsotDashboardStats({ statistics }: SsotDashboardStatsProps) {
   const {
     totalRegistrations,
+    totalCheckedIn,
     genderDistribution,
     localityDistribution,
     gradeLevelDistribution,
-    healthInfo,
+    categoryCounts,
     recentRegistrations,
   } = statistics;
 
   const brothersCount = genderDistribution.find((g) => g.gender === "Brother")?.count || 0;
   const sistersCount = genderDistribution.find((g) => g.gender === "Sister")?.count || 0;
-  const healthConcernsCount = healthInfo.allergies + healthInfo.healthConditions;
 
   const cardClassName = "bg-white border border-slate-200 hover:border-emerald-950 motion-safe:transition-colors motion-safe:duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-950 focus-visible:ring-offset-2 h-full";
   const iconClassName = "h-5 w-5 text-slate-500 group-hover:text-emerald-950 motion-safe:transition-colors motion-safe:duration-200";
@@ -49,7 +56,7 @@ export function SsotDashboardStats({ statistics }: SsotDashboardStatsProps) {
 
   return (
     <div className="space-y-8">
-      {/* Overview Cards - 4 Card Grid */}
+      {/* Overview Cards - Row 1 */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* 1. Total Registered */}
         <Link to="/conference-meetings/ssot/registration/" className="group">
@@ -97,16 +104,63 @@ export function SsotDashboardStats({ statistics }: SsotDashboardStatsProps) {
           </Card>
         </Link>
 
-        {/* 4. Health Concerns */}
+        {/* 4. Checked In */}
         <Link to="/conference-meetings/ssot/registration/" className="group">
           <Card className={cardClassName}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-              <CardTitle className={titleClassName}>Health Concerns</CardTitle>
-              <Heart className={iconClassName} />
+              <CardTitle className={titleClassName}>Checked In</CardTitle>
+              <CheckCircle className={iconClassName} />
             </CardHeader>
             <CardContent>
-              <div className={numberClassName}>{healthConcernsCount}</div>
-              <p className={subtitleClassName}>Require special attention</p>
+              <div className={numberClassName}>{totalCheckedIn}</div>
+              <p className={subtitleClassName}>
+                {totalRegistrations > 0 ? Math.round((totalCheckedIn / totalRegistrations) * 100) : 0}% of registrations
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
+      </div>
+
+      {/* Overview Cards - Row 2: Category Counts */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* 5. Junior YP Count */}
+        <Link to="/conference-meetings/ssot/registration/" className="group">
+          <Card className={cardClassName}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+              <CardTitle className={titleClassName}>Junior YP Count</CardTitle>
+              <BookOpen className={iconClassName} />
+            </CardHeader>
+            <CardContent>
+              <div className={numberClassName}>{categoryCounts.juniorYp}</div>
+              <p className={subtitleClassName}>All Grade 7 - 10</p>
+            </CardContent>
+          </Card>
+        </Link>
+
+        {/* 6. Senior YP Count */}
+        <Link to="/conference-meetings/ssot/registration/" className="group">
+          <Card className={cardClassName}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+              <CardTitle className={titleClassName}>Senior YP Count</CardTitle>
+              <GraduationCap className={iconClassName} />
+            </CardHeader>
+            <CardContent>
+              <div className={numberClassName}>{categoryCounts.seniorYp}</div>
+              <p className={subtitleClassName}>All Grade 11 - 12</p>
+            </CardContent>
+          </Card>
+        </Link>
+
+        {/* 7. Serving Ones Count */}
+        <Link to="/conference-meetings/ssot/registration/" className="group">
+          <Card className={cardClassName}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+              <CardTitle className={titleClassName}>Serving Ones Count</CardTitle>
+              <UserCog className={iconClassName} />
+            </CardHeader>
+            <CardContent>
+              <div className={numberClassName}>{categoryCounts.servingOnes}</div>
+              <p className={subtitleClassName}>All 1st Year College - 4th Year College & Serving Ones</p>
             </CardContent>
           </Card>
         </Link>

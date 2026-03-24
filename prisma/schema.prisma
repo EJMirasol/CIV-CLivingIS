@@ -234,6 +234,8 @@ model SsotRegistration {
   gradeLevelId      String
   GradeLevel        GradeLevel      @relation(fields: [gradeLevelId], references: [id])
   remarks           String?
+  isCheckedIn       Boolean         @default(false)
+  checkedInAt       DateTime?
   basicHealthInfoId String?         @unique
   BasicHealthInfo   BasicHealthInfo? @relation(fields: [basicHealthInfoId], references: [id])
   createdAt         DateTime        @default(now())
@@ -246,6 +248,7 @@ model BillingSetting {
   feeType        String          @unique
   conferenceType ConferenceType
   amount         Float
+  remarks        String?
   isActive       Boolean         @default(true)
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
@@ -265,4 +268,24 @@ model FinanceRecord {
   paidAt            DateTime?
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
+}
+
+model Expense {
+  id             String          @id @default(uuid())
+  name           String
+  amount         Float
+  conferenceType ConferenceType
+  isActive       Boolean         @default(true)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+}
+
+model ReturnChange {
+  id             String          @id @default(uuid())
+  name           String
+  amount         Float
+  conferenceType ConferenceType
+  isActive       Boolean         @default(true)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
 }

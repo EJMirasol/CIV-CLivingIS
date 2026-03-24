@@ -1,45 +1,41 @@
-import { Settings } from "lucide-react";
+import { RotateCcw } from "lucide-react";
 import { Form } from "react-router";
-import { getFormProps, useForm, getInputProps, getTextareaProps } from "@conform-to/react";
-import { BillingSettingFormSchema } from "~/types/billing-setting.dto";
+import { getFormProps, useForm, getInputProps } from "@conform-to/react";
+import { ReturnChangeFormSchema, RETURN_CHANGE_CONFERENCE_TYPE_OPTIONS } from "~/types/return-change.dto";
 import { parseWithZod } from "@conform-to/zod";
 import { SaveButton } from "~/components/shared/buttons/SaveButton";
 import { Card, CardContent } from "~/components/ui/card";
 import { LabelNoGapRequired } from "~/components/labels/LabelNoGap";
 import { Input } from "~/components/ui/input";
-import { Textarea } from "~/components/ui/textarea";
 import { SelectBoxWithSearch } from "~/components/selectbox/SelectBoxWithSearch";
-import { CONFERENCE_TYPE_OPTIONS } from "~/types/billing-setting.dto";
 import { BackButton } from "~/components/shared/buttons/BackButton";
 import { Separator } from "~/components/ui/separator";
 import { DeleteConfirmationDialog } from "~/components/shared/dialogs/DeleteConfirmationDialog";
-import { Label } from "~/components/ui/label";
 
-interface BillingSettingFormProps {
+interface ReturnChangeFormProps {
   defaultValues?: {
-    feeType?: string;
+    name?: string;
     conferenceType?: string;
     amount?: string;
-    remarks?: string;
   };
   isEdit?: boolean;
   redirectPath?: string;
 }
 
-export function BillingSettingForm({
+export function ReturnChangeForm({
   defaultValues,
   isEdit = false,
-  redirectPath,
-}: BillingSettingFormProps) {
+  redirectPath = "/finance/return-changes",
+}: ReturnChangeFormProps) {
   const [form, fields] = useForm({
     onValidate({ formData }) {
-      return parseWithZod(formData, { schema: BillingSettingFormSchema });
+      return parseWithZod(formData, { schema: ReturnChangeFormSchema });
     },
     shouldValidate: "onSubmit",
     defaultValue: defaultValues || {},
   });
 
-  const conferenceTypeOptions = CONFERENCE_TYPE_OPTIONS.map((opt) => ({
+  const conferenceTypeOptions = RETURN_CHANGE_CONFERENCE_TYPE_OPTIONS.map((opt) => ({
     id: opt.value,
     name: opt.label,
   }));
@@ -50,21 +46,29 @@ export function BillingSettingForm({
         <div className="ml-4 py-5 flex justify-between flex-row items-center">
           <div className="flex items-center">
             <div className="rounded-md">
-              <Settings className="h-5 w-5" />
+              <RotateCcw className="h-5 w-5" />
             </div>
             <span className="text-[#15313F] font-[500]">
-              {isEdit ? "EDIT BILLING SETTING" : "ADD BILLING SETTING"}
+              {isEdit ? "EDIT RETURN CHANGE" : "ADD RETURN CHANGE"}
             </span>
             <Separator orientation="vertical" className="mx-2 h-6" />
             <BackButton />
           </div>
           <div className="flex items-center gap-2">
             <SaveButton formId={form.id} />
-            {redirectPath && (
+            {isEdit && (
               <DeleteConfirmationDialog
                 redirectPath={redirectPath}
-                title="Delete Billing Setting"
-                description="Are you sure you want to delete this billing setting?"
+                title="Delete Return Change"
+                description="Are you sure you want to delete this return change?"
+              />
+            )}
+            {!isEdit && (
+              <DeleteConfirmationDialog
+                redirectPath={redirectPath}
+                title="Cancel"
+                description="Are you sure you want to cancel? Any changes will not be saved."
+                triggerText="Cancel"
               />
             )}
           </div>
@@ -87,18 +91,20 @@ export function BillingSettingForm({
                 <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
                   <div>
                     <div className="space-y-1">
-                      <LabelNoGapRequired htmlFor={fields.feeType.id}>
-                        Fee Type
+                      <LabelNoGapRequired htmlFor={fields.name.id}>
+                        Name
                       </LabelNoGapRequired>
                       <Input
-                        {...getInputProps(fields.feeType, { type: "text" })}
+                        {...getInputProps(fields.name, { type: "text" })}
                         maxLength={100}
-                        placeholder="e.g., Registration Fee"
+                        placeholder="e.g., Change for Group A"
                       />
                     </div>
-                    <span className="text-red-500 text-xs">
-                      {fields.feeType.errors}
-                    </span>
+                    {fields.name.errors && (
+                      <div className="text-red-500 text-xs mt-[1px]">
+                        {fields.name.errors.map((e) => e === "Required" ? "This field is required." : e)}
+                      </div>
+                    )}
                   </div>
 
                   <div>
@@ -111,12 +117,12 @@ export function BillingSettingForm({
                           type: "text",
                         })}
                         options={conferenceTypeOptions}
-                        error={fields.conferenceType.errors ? true : false}
+                        error={!!fields.conferenceType.errors}
                         placeholder="Select conference type"
                       />
                       {fields.conferenceType.errors && (
                         <div className="text-red-500 text-xs mt-[1px]">
-                          {fields.conferenceType.errors}
+                          {fields.conferenceType.errors.map((e) => e === "Required" ? "This field is required." : e)}
                         </div>
                       )}
                     </div>
@@ -134,24 +140,12 @@ export function BillingSettingForm({
                         placeholder="0.00"
                       />
                     </div>
-                    <span className="text-red-500 text-xs">
-                      {fields.amount.errors}
-                    </span>
+                    {fields.amount.errors && (
+                      <div className="text-red-500 text-xs mt-[1px]">
+                        {fields.amount.errors.map((e) => e === "Required" ? "This field is required." : e)}
+                      </div>
+                    )}
                   </div>
-                </div>
-
-                <div className="mt-5">
-                  <div className="space-y-1">
-                    <Label htmlFor={fields.remarks.id}>Remarks</Label>
-                    <Textarea
-                      {...getTextareaProps(fields.remarks)}
-                      placeholder="Enter remarks (optional)"
-                      rows={3}
-                    />
-                  </div>
-                  <span className="text-red-500 text-xs">
-                    {fields.remarks.errors}
-                  </span>
                 </div>
               </div>
             </CardContent>

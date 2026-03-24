@@ -5,10 +5,12 @@ import {
   useLoaderData,
   useNavigate,
   useSubmit,
+  useFetcher,
 } from "react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   ArrowDownToLine,
+  CheckCircle,
   ClipboardList,
   RefreshCcw,
   Search,
@@ -33,6 +35,7 @@ import { DataTable } from "~/components/data-tables/data-table";
 import { Button } from "~/components/ui/button";
 import { SelectBoxWithSearch } from "~/components/selectbox/SelectBoxWithSearch";
 import { SearchInput } from "~/components/shared/SearchInput";
+import { Badge } from "~/components/ui/badge";
 import { auth } from "~/lib/auth.server";
 import { redirectWithSuccess } from "remix-toast";
 import { toast } from "sonner";
@@ -44,6 +47,7 @@ import {
   getLocalities,
   getSsotGenders,
   deleteSsotRegistration,
+  toggleSsotCheckInStatus,
 } from "~/lib/server/ssot-registration.server";
 
 export async function loader({ request }: Route.LoaderArgs) {
@@ -96,6 +100,15 @@ export async function action({ request }: Route.ActionArgs) {
     }
   }
 
+  if (intent === "toggleCheckIn" && registrationId) {
+    try {
+      const result = await toggleSsotCheckInStatus(registrationId.toString());
+      return { success: true, message: result.message, isCheckedIn: result.isCheckedIn };
+    } catch (error) {
+      return { success: false, message: "Failed to update check-in status" };
+    }
+  }
+
   return { error: "Invalid action" };
 }
 
@@ -110,7 +123,17 @@ export default () => {
   } = useLoaderData<typeof loader>();
   const submit = useSubmit();
   const navigate = useNavigate();
+  const fetcher = useFetcher();
   const [isExporting, setIsExporting] = useState(false);
+
+  useEffect(() => {
+    if (fetcher.data?.success) {
+      toast.success(fetcher.data.message);
+    }
+    if (fetcher.data?.success === false) {
+      toast.error(fetcher.data.message);
+    }
+  }, [fetcher.data]);
 
   const handleExport = async () => {
     setIsExporting(true);
@@ -205,6 +228,68 @@ export default () => {
       ),
     },
     {
+      accessorKey: "isCheckedIn",
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          className="pl-2"
+          title="Check-in Status"
+          column={column}
+          columnKey="isCheckedIn"
+        />
+      ),
+      cell: ({ row }) => {
+        return (
+          <div className="flex items-center gap-2 pl-2 group cursor-pointer hover:bg-gray-50 rounded p-1 transition-colors">
+            <div className={`w-3 h-3 rounded-full ${
+              row.original.isCheckedIn ? "bg-green-500" : "bg-gray-400"
+            }`} />
+            {row.original.isCheckedIn ? (
+              <Badge className="bg-green-100 text-green-800 border-green-200 hover:bg-green-200 transition-colors">
+                <CheckCircle className="h-3 w-3 mr-1" />
+                Checked In
+              </Badge>
+            ) : (
+              <Badge variant="secondary" className="hover:bg-gray-300 text-gray-700 hover:text-gray-900 transition-colors">
+                Not Checked In
+              </Badge>
+            )}
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "checkedInAt",
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          className="pl-2"
+          title="Check-in Time"
+          column={column}
+          columnKey="checkedInAt"
+        />
+      ),
+      cell: ({ row }) => {
+        return (
+          <div className="flex items-center gap-2 pl-2">
+            {row.original.isCheckedIn && row.original.checkedInAt ? (
+              <span className="text-xs text-green-600">
+                {new Date(row.original.checkedInAt).toLocaleDateString('en-US', {
+                  month: 'long',
+                  day: 'numeric',
+                  year: 'numeric',
+                })} at {new Date(row.original.checkedInAt).toLocaleTimeString('en-US', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  hour12: true,
+                })}
+              </span>
+            ) : (
+              <span className="text-xs text-gray-400">-</span>
+            )}
+          </div>
+        );
+      },
+    },
+    {
       accessorKey: "createdAt",
       header: ({ column }) => (
         <DataTableColumnHeader title="Date of Registration" column={column} columnKey="createdAt" />
@@ -236,6 +321,20 @@ export default () => {
               View
             </Button>
           </Link>
+           <fetcher.Form method="post" className="inline">
+            <input type="hidden" name="intent" value="toggleCheckIn" />
+            <input type="hidden" name="registrationId" value={row.original.id} />
+            <Button
+              type="submit"
+              size="sm"
+              variant={row.original.isCheckedIn ? "outline" : "default"}
+              disabled={fetcher.state === "submitting"}
+              className={row.original.isCheckedIn ? "hover:bg-red-100 hover:text-red-700 hover:border-red-300" : "bg-green-600 hover:bg-green-700"}
+            >
+              {fetcher.state === "submitting" ? "..." :
+                row.original.isCheckedIn ? "Check Out" : "Check In"}
+            </Button>
+          </fetcher.Form>
           <Dialog>
             <DialogTrigger asChild>
               <Button size="sm" variant="destructive">

@@ -61,6 +61,7 @@ export async function getBillingSettings({
       feeType: setting.feeType,
       conferenceType: formatConferenceType(setting.conferenceType),
       amount: setting.amount,
+      remarks: setting.remarks || "",
       isActive: setting.isActive,
       createdAt: setting.createdAt,
     })),
@@ -98,6 +99,7 @@ export async function createBillingSetting(data: BillingSettingFormDTO) {
       feeType: normalizedFeeType,
       conferenceType: data.conferenceType as any,
       amount: parseFloat(data.amount),
+      remarks: data.remarks?.trim() || null,
     },
   });
 
@@ -118,6 +120,7 @@ export async function getBillingSettingById(id: string) {
     feeType: setting.feeType,
     conferenceType: setting.conferenceType,
     amount: setting.amount.toString(),
+    remarks: setting.remarks || "",
     isActive: setting.isActive,
   };
 }
@@ -150,10 +153,11 @@ export async function updateBillingSetting(id: string, data: BillingSettingFormD
       feeType: normalizedFeeType,
       conferenceType: data.conferenceType as any,
       amount: parseFloat(data.amount),
+      remarks: data.remarks?.trim() || null,
     },
   });
 
-  return { success: true, message: "Billing setting updated successfully." };
+  return { success: true, message: "Successfully updated." };
 }
 
 export async function deleteBillingSetting(id: string) {

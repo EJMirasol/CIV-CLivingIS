@@ -166,7 +166,7 @@ export async function createFinanceRecord(data: {
   });
 
   if (existingFinance) {
-    throw new Error("A finance record for this registration and fee type already exists.");
+    throw new Error("Record already exists. Please check and try again.");
   }
 
   const record = await prisma.financeRecord.create({
@@ -235,6 +235,108 @@ export async function deleteFinanceRecord(id: string) {
   });
 
   return { success: true, message: "Finance record deleted successfully." };
+}
+
+export async function getFinanceRecordById(id: string) {
+  const record = await prisma.financeRecord.findUnique({
+    where: { id },
+    include: {
+      BillingSetting: true,
+      Registration: {
+        include: {
+          YoungPeople: { select: { firstName: true, lastName: true } },
+        },
+      },
+      SsotRegistration: {
+        include: { GradeLevel: { select: { name: true } } },
+      },
+    },
+  });
+
+  if (!record) {
+    throw new Error("Finance record not found.");
+  }
+
+  const isSsot = record.conferenceType === "CAMANAVA_SSOT";
+  const name = isSsot
+    ? `${record.SsotRegistration?.firstName?.toUpperCase() || ""} ${record.SsotRegistration?.lastName?.toUpperCase() || ""}`
+    : `${record.Registration?.YoungPeople?.firstName?.toUpperCase() || ""} ${record.Registration?.YoungPeople?.lastName?.toUpperCase() || ""}`;
+  const locality = isSsot
+    ? formatLocality(record.SsotRegistration?.locality || "")
+    : null;
+  const rawLocality = isSsot
+    ? record.SsotRegistration?.locality || ""
+    : "";
+
+  return {
+    id: record.id,
+    name,
+    locality,
+    rawLocality,
+    conferenceType: record.conferenceType,
+    conferenceTypeLabel: formatConferenceType(record.conferenceType),
+    feeType: record.BillingSetting.feeType,
+    amount: record.BillingSetting.amount,
+    isPaid: record.isPaid,
+    paidAt: record.paidAt,
+    createdAt: record.createdAt,
+    registrationId: record.registrationId,
+    ssotRegistrationId: record.ssotRegistrationId,
+    billingSettingId: record.billingSettingId,
+  };
+}
+
+export async function updateFinanceRecord(id: string, data: {
+  conferenceType: string;
+  registrationId?: string;
+  ssotRegistrationId?: string;
+  billingSettingId: string;
+}) {
+  const existingRecord = await prisma.financeRecord.findUnique({
+    where: { id },
+  });
+
+  if (!existingRecord) {
+    throw new Error("Finance record not found.");
+  }
+
+  const billingSetting = await prisma.billingSetting.findUnique({
+    where: { id: data.billingSettingId },
+  });
+
+  if (!billingSetting) {
+    throw new Error("Invalid billing setting selected.");
+  }
+
+  if (!billingSetting.isActive) {
+    throw new Error("This billing setting is no longer active.");
+  }
+
+  const duplicateRecord = await prisma.financeRecord.findFirst({
+    where: {
+      id: { not: id },
+      conferenceType: data.conferenceType as any,
+      billingSettingId: data.billingSettingId,
+      ...(data.registrationId && { registrationId: data.registrationId }),
+      ...(data.ssotRegistrationId && { ssotRegistrationId: data.ssotRegistrationId }),
+    },
+  });
+
+  if (duplicateRecord) {
+    throw new Error("Record already exists. Please check and try again.");
+  }
+
+  await prisma.financeRecord.update({
+    where: { id },
+    data: {
+      conferenceType: data.conferenceType as any,
+      registrationId: data.registrationId || null,
+      ssotRegistrationId: data.ssotRegistrationId || null,
+      billingSettingId: data.billingSettingId,
+    },
+  });
+
+  return { success: true, message: "Successfully updated." };
 }
 
 export async function getFinanceStatistics(conferenceType?: string) {
@@ -330,9 +432,10 @@ export async function getSsotFinanceStatisticsByLocality() {
   }));
 }
 
-export async function getRegistrationsForFinanceDropdown(conferenceType: string) {
+export async function getRegistrationsForFinanceDropdown(conferenceType: string, locality?: string) {
   if (conferenceType === "CAMANAVA_SSOT") {
     const ssotRegistrations = await prisma.ssotRegistration.findMany({
+      where: locality && locality !== "none" ? { locality: locality as any } : undefined,
       include: { GradeLevel: { select: { name: true } } },
       orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
     });

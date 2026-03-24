@@ -1,5 +1,5 @@
 import type { Route } from "./+types/_layout";
-import { BookHeart, Handshake, BarChart3, Users, UserCheck, UserPlus, Home, Building, Settings, DollarSign, FileText, ClipboardList } from "lucide-react";
+import { BookHeart, Handshake, BarChart3, Users, UserCheck, UserPlus, Home, Building, Settings, DollarSign, FileText, ClipboardList, Receipt, RotateCcw } from "lucide-react";
 import { MdSpaceDashboard } from "react-icons/md";
 import { useState, useMemo } from "react";
 import { Header } from "~/components/layouts/Header";
@@ -97,6 +97,16 @@ export default function DashboardLayout() {
           icon: <BarChart3 className="h-4 w-4" />,
           label: "Statistics",
           route: "finance/statistics",
+        },
+        {
+          icon: <Receipt className="h-4 w-4" />,
+          label: "Expenses",
+          route: "finance/expenses",
+        },
+        {
+          icon: <RotateCcw className="h-4 w-4" />,
+          label: "Return Changes",
+          route: "finance/return-changes",
         },
       ],
     },

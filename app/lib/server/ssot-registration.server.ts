@@ -87,6 +87,8 @@ export async function getSsotRegistrations({
       remarks: reg.remarks || "",
       hasAllergies: reg.BasicHealthInfo?.isAllergy || false,
       hasHealthCondition: reg.BasicHealthInfo?.isHealthCondition || false,
+      isCheckedIn: reg.isCheckedIn,
+      checkedInAt: reg.checkedInAt,
       createdAt: reg.createdAt,
     })),
     pagination: {
@@ -270,7 +272,7 @@ export async function updateSsotRegistration(id: string, data: SsotRegistrationF
       },
     });
 
-    return { success: true, message: "Registration updated successfully." };
+    return { success: true, message: "Successfully updated." };
   });
 }
 
@@ -386,7 +388,10 @@ export async function exportSsotData(searchParams: { name?: string; locality?: s
     "Health Condition Description": reg.BasicHealthInfo?.healthConditionDescription || "",
     "Health Condition Medication": reg.BasicHealthInfo?.healthConditionMedication || "",
     "Remarks": reg.remarks || "",
-    "Registration Date": reg.createdAt.toLocaleDateString(),
+    "Registration Date": `${reg.createdAt.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} at ${reg.createdAt.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}`,
+    "Check-In Time": reg.isCheckedIn && reg.checkedInAt
+      ? `${reg.checkedInAt.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} at ${reg.checkedInAt.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}`
+      : "-",
   }));
 }
 
@@ -437,6 +442,9 @@ export async function getSsotStatistics() {
 
 export async function getSsotDashboardStatistics() {
   const totalRegistrations = await prisma.ssotRegistration.count();
+  const totalCheckedIn = await prisma.ssotRegistration.count({
+    where: { isCheckedIn: true },
+  });
 
   const genderStats = await prisma.ssotRegistration.groupBy({
     by: ["gender"],
@@ -466,13 +474,19 @@ export async function getSsotDashboardStatistics() {
     })
   );
 
-  const allergyCount = await prisma.basicHealthInfo.count({
-    where: { isAllergy: true, SsotRegistration: { isNot: null } },
-  });
+  const juniorYpGrades = ["Grade 7", "Grade 8", "Grade 9", "Grade 10"];
+  const seniorYpGrades = ["Grade 11", "Grade 12"];
+  const servingOneGrades = ["1st Year College", "2nd Year College", "3rd Year College", "4th Year College", "Serving One"];
 
-  const healthConditionCount = await prisma.basicHealthInfo.count({
-    where: { isHealthCondition: true, SsotRegistration: { isNot: null } },
-  });
+  const categoryCounts = gradeLevelData.reduce(
+    (acc, item) => {
+      if (juniorYpGrades.includes(item.name)) acc.juniorYp += item.count;
+      else if (seniorYpGrades.includes(item.name)) acc.seniorYp += item.count;
+      else if (servingOneGrades.includes(item.name)) acc.servingOnes += item.count;
+      return acc;
+    },
+    { juniorYp: 0, seniorYp: 0, servingOnes: 0 }
+  );
 
   const recentRegistrations = await prisma.ssotRegistration.findMany({
     take: 5,
@@ -484,6 +498,7 @@ export async function getSsotDashboardStatistics() {
 
   return {
     totalRegistrations,
+    totalCheckedIn,
     genderDistribution: genderStats.map((stat) => ({
       gender: stat.gender,
       count: stat._count.id,
@@ -493,10 +508,7 @@ export async function getSsotDashboardStatistics() {
       count: stat._count.id,
     })),
     gradeLevelDistribution: gradeLevelData,
-    healthInfo: {
-      allergies: allergyCount,
-      healthConditions: healthConditionCount,
-    },
+    categoryCounts,
     recentRegistrations: recentRegistrations.map((reg) => ({
       id: reg.id,
       name: `${reg.firstName.toUpperCase()} ${reg.lastName.toUpperCase()}`,
@@ -506,4 +518,34 @@ export async function getSsotDashboardStatistics() {
       createdAt: reg.createdAt,
     })),
   };
+}
+
+export async function toggleSsotCheckInStatus(registrationId: string) {
+  try {
+    const registration = await prisma.ssotRegistration.findUnique({
+      where: { id: registrationId },
+      select: { isCheckedIn: true },
+    });
+
+    if (!registration) {
+      throw new Error("Registration not found");
+    }
+
+    const updatedRegistration = await prisma.ssotRegistration.update({
+      where: { id: registrationId },
+      data: {
+        isCheckedIn: !registration.isCheckedIn,
+        checkedInAt: !registration.isCheckedIn ? new Date() : null,
+      },
+    });
+
+    return {
+      success: true,
+      message: updatedRegistration.isCheckedIn ? "Checked in successfully." : "Checked out successfully.",
+      isCheckedIn: updatedRegistration.isCheckedIn,
+    };
+  } catch (error) {
+    console.error("Error toggling check-in status:", error);
+    throw new Error("Failed to update check-in status");
+  }
 }

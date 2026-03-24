@@ -14,6 +14,7 @@ export const BillingSettingFormSchema = z.object({
       },
       { message: "Amount must be a positive number" }
     ),
+  remarks: z.string().optional().or(z.literal("")),
 });
 
 export type BillingSettingFormDTO = z.infer<typeof BillingSettingFormSchema>;

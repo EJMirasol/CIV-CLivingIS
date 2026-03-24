@@ -1,20 +1,19 @@
 import { redirect } from "react-router";
-import { redirectWithSuccess, redirectWithError } from "remix-toast";
+import { redirectWithSuccess } from "remix-toast";
 import { auth } from "~/lib/auth.server";
 import {
   getFinanceRecords,
-  createFinanceRecord,
   markAsPaid,
   markAsUnpaid,
   deleteFinanceRecord,
 } from "~/lib/server/finance.server";
-import { getBillingSettingsForDropdown } from "~/lib/server/billing-setting.server";
-import { Plus, Trash2 } from "lucide-react";
-import { Link, useLoaderData, useFetcher, Form, useSubmit } from "react-router";
+import { DollarSign, Plus, Trash2, Search, RefreshCcw } from "lucide-react";
+import { Link, useLoaderData, useSubmit, useNavigate } from "react-router";
 import { DataTable } from "~/components/data-tables/data-table";
 import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { Card, CardContent } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
+import { FaEye } from "react-icons/fa";
 import {
   Dialog,
   DialogClose,
@@ -25,10 +24,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "~/components/ui/dialog";
-import { LabelNoGapRequired } from "~/components/labels/LabelNoGap";
+import { Label } from "~/components/ui/label";
 import { SelectBoxWithSearch } from "~/components/selectbox/SelectBoxWithSearch";
 import type { ColumnDef } from "@tanstack/react-table";
-import { useState, useEffect } from "react";
+import { Form } from "react-router";
 import { FINANCE_CONFERENCE_TYPE_OPTIONS } from "~/types/finance-record.dto";
 import type { Route } from "./+types/index";
 
@@ -55,12 +54,6 @@ interface LoaderData {
       totalCount: number;
     };
   };
-  billingSettings: Array<{
-    label: string;
-    value: string;
-    feeType: string;
-    amount: number;
-  }>;
   filters: {
     conferenceType: string;
     isPaid: string;
@@ -77,17 +70,14 @@ export async function loader({ request }: Route.LoaderArgs): Promise<LoaderData>
   const pageNumber = parseInt(url.searchParams.get("pageNumber") || "1", 10);
   const pageSize = parseInt(url.searchParams.get("pageSize") || "10", 10);
 
-  const [records, billingSettings] = await Promise.all([
-    getFinanceRecords({
-      conferenceType,
-      isPaid,
-      pageNumber,
-      pageSize,
-    }),
-    getBillingSettingsForDropdown(),
-  ]);
+  const records = await getFinanceRecords({
+    conferenceType,
+    isPaid,
+    pageNumber,
+    pageSize,
+  });
 
-  return { records, billingSettings, filters: { conferenceType, isPaid } };
+  return { records, filters: { conferenceType, isPaid } };
 }
 
 export async function action({ request }: Route.ActionArgs) {
@@ -98,21 +88,6 @@ export async function action({ request }: Route.ActionArgs) {
   const intent = formData.get("intent");
 
   try {
-    if (intent === "create") {
-      const conferenceType = formData.get("conferenceType") as string;
-      const registrationId = formData.get("registrationId") as string;
-      const ssotRegistrationId = formData.get("ssotRegistrationId") as string;
-      const billingSettingId = formData.get("billingSettingId") as string;
-
-      await createFinanceRecord({
-        conferenceType,
-        registrationId: registrationId || undefined,
-        ssotRegistrationId: ssotRegistrationId || undefined,
-        billingSettingId,
-      });
-      return redirectWithSuccess("/finance/registration", "Finance record created successfully!");
-    }
-
     if (intent === "markPaid") {
       const id = formData.get("id") as string;
       await markAsPaid(id);
@@ -133,64 +108,14 @@ export async function action({ request }: Route.ActionArgs) {
 
     return { success: false };
   } catch (error) {
-    if (intent === "create") {
-      return redirectWithError(
-        "/finance/registration",
-        error instanceof Error ? error.message : "Failed to create finance record."
-      );
-    }
     return { success: false, error: error instanceof Error ? error.message : "Operation failed" };
   }
 }
 
 export default function FinanceRegistration() {
-  const { records, billingSettings, filters } = useLoaderData<typeof loader>();
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [dialogKey, setDialogKey] = useState(0);
-  const [selectedConferenceType, setSelectedConferenceType] = useState("");
+  const { records, filters } = useLoaderData<typeof loader>();
   const submit = useSubmit();
-
-  const registrantFetcher = useFetcher();
-
-  const handleDialogOpenChange = (open: boolean) => {
-    setIsDialogOpen(open);
-    if (open) {
-      setDialogKey((k) => k + 1);
-      setSelectedConferenceType("");
-    }
-  };
-
-  const handleConferenceTypeChange = (_: string, val: string) => {
-    setSelectedConferenceType(val);
-  };
-
-  useEffect(() => {
-    if (selectedConferenceType) {
-      registrantFetcher.load(`/finance/registrants?conferenceType=${selectedConferenceType}`);
-    }
-  }, [selectedConferenceType]);
-
-  const registrantOptions = registrantFetcher.data?.data
-    ? registrantFetcher.data.data.map((r: any) => ({
-        id: r.id,
-        name: `${r.name}${r.locality ? ` - ${r.locality}` : ""}${r.gradeLevel ? ` (${r.gradeLevel})` : ""}`,
-      }))
-    : [];
-
-  const filteredBillingSettings = selectedConferenceType
-    ? billingSettings.filter((s) => {
-        const settingType = s.feeType.toLowerCase();
-        if (selectedConferenceType === "CAMANAVA_SSOT") {
-          return settingType.includes("ssot") || settingType.includes("camanava");
-        }
-        return settingType.includes("church living") || settingType.includes("yp");
-      })
-    : billingSettings;
-
-  const billingSettingOptions = filteredBillingSettings.map((s) => ({
-    id: s.value,
-    name: s.label,
-  }));
+  const navigate = useNavigate();
 
   const conferenceTypeOptions = FINANCE_CONFERENCE_TYPE_OPTIONS.map((o) => ({
     id: o.value,
@@ -237,12 +162,20 @@ export default function FinanceRegistration() {
     },
     {
       id: "actions",
-      header: "Actions",
+      header: ({}) => (
+        <div className="text-center text-Raisinblack font-medium">Actions</div>
+      ),
       cell: ({ row }) => {
         const record = row.original;
         const isPaid = record.isPaid;
         return (
           <div className="flex gap-2">
+            <Link to={`${record.id}`}>
+              <Button size="sm" className="bg-[#213b36]" variant="view" type="button">
+                <FaEye className="h-3.5 w-3.5" />
+                View
+              </Button>
+            </Link>
             <Form method="post" className="inline">
               <input type="hidden" name="intent" value={isPaid ? "markUnpaid" : "markPaid"} />
               <input type="hidden" name="id" value={record.id} />
@@ -296,108 +229,82 @@ export default function FinanceRegistration() {
   ];
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Finance - Registration</h1>
-        <Dialog open={isDialogOpen} onOpenChange={handleDialogOpenChange}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Finance Record
+    <div className="w-full flex flex-col gap-5">
+      <div className="flex items-center gap-3">
+        <div className="rounded-md">
+          <DollarSign className="h-5 w-5" />
+        </div>
+        <h1 className="text-base font-semibold">
+          FINANCE - REGISTRATION
+        </h1>
+      </div>
+
+      <Card className="w-full p-5">
+        <Form
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4"
+          id="search-finance-form"
+          method="GET"
+        >
+          <div className="space-y-1">
+            <Label>Conference Type</Label>
+            <SelectBoxWithSearch
+              id="conferenceType"
+              name="conferenceType"
+              options={conferenceTypeOptions}
+              defaultValue={filters.conferenceType}
+              placeholder="All Types"
+            />
+          </div>
+          <div className="space-y-1">
+            <Label>Payment Status</Label>
+            <SelectBoxWithSearch
+              id="isPaid"
+              name="isPaid"
+              options={[
+                { id: "true", name: "Paid" },
+                { id: "false", name: "Unpaid" },
+              ]}
+              defaultValue={filters.isPaid}
+              placeholder="All Status"
+            />
+          </div>
+          <div className="col-span-1 sm:col-span-2 lg:col-span-4 flex flex-col sm:flex-row justify-start sm:justify-end items-start sm:items-center gap-2 pt-2">
+            <Button className="bg-[#213b36]" variant="view" type="submit">
+              <Search />
+              Search
             </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-lg">
-            <DialogHeader>
-              <DialogTitle>Add Finance Record</DialogTitle>
-            </DialogHeader>
-            <Form method="post" key={dialogKey} className="space-y-4">
-              <input type="hidden" name="intent" value="create" />
-              <div>
-                <LabelNoGapRequired htmlFor="conferenceType">Conference Type</LabelNoGapRequired>
-                <SelectBoxWithSearch
-                  id="conferenceType"
-                  name="conferenceType"
-                  options={conferenceTypeOptions}
-                  onSelectValue={handleConferenceTypeChange}
-                  placeholder="Select conference type"
-                />
-              </div>
-              <div>
-                <LabelNoGapRequired htmlFor="registrantId">Registrant</LabelNoGapRequired>
-                <SelectBoxWithSearch
-                  key={`registrant-${selectedConferenceType}`}
-                  id="registrantId"
-                  name={selectedConferenceType === "CAMANAVA_SSOT" ? "ssotRegistrationId" : "registrationId"}
-                  options={registrantOptions}
-                  disabled={!selectedConferenceType}
-                  placeholder={selectedConferenceType ? "Select registrant" : "Select conference type first"}
-                />
-              </div>
-              <div>
-                <LabelNoGapRequired htmlFor="billingSettingId">Fee Type</LabelNoGapRequired>
-                <SelectBoxWithSearch
-                  key={`billing-${selectedConferenceType}`}
-                  id="billingSettingId"
-                  name="billingSettingId"
-                  options={billingSettingOptions}
-                  disabled={!selectedConferenceType}
-                  placeholder={selectedConferenceType ? "Select fee type" : "Select conference type first"}
-                />
-              </div>
-              <Button type="submit" className="w-full">
-                Create Record
-              </Button>
-            </Form>
-          </DialogContent>
-        </Dialog>
+            <Button
+              type="button"
+              variant="view"
+              className="border-none bg-[#213b36] text-white"
+              onClick={() => {
+                navigate("/finance/registration/");
+              }}
+            >
+              <RefreshCcw className="h-5 w-auto" />
+            </Button>
+          </div>
+        </Form>
+      </Card>
+
+      <div className="flex justify-end items-center">
+        <Link to="/finance/registration/add">
+          <Button className="bg-[#213b36]" variant="view">
+            <Plus />
+            Add Finance Record
+          </Button>
+        </Link>
       </div>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Search & Filter</CardTitle>
-        </CardHeader>
         <CardContent>
-          <Form method="get" className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="text-sm font-medium">Conference Type</label>
-              <SelectBoxWithSearch
-                id="filter-conferenceType"
-                name="conferenceType"
-                options={conferenceTypeOptions}
-                defaultValue={filters.conferenceType}
-                placeholder="All Types"
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium">Payment Status</label>
-              <SelectBoxWithSearch
-                id="filter-isPaid"
-                name="isPaid"
-                options={[
-                  { id: "true", name: "Paid" },
-                  { id: "false", name: "Unpaid" },
-                ]}
-                defaultValue={filters.isPaid}
-                placeholder="All Status"
-              />
-            </div>
-            <div className="flex items-end gap-2">
-              <Button type="submit">Search</Button>
-              <Link to="/finance/registration">
-                <Button variant="outline" type="button">
-                  Clear
-                </Button>
-              </Link>
-            </div>
-          </Form>
+          <DataTable
+            columns={columns}
+            data={records.data}
+            pagination={records.pagination}
+          />
         </CardContent>
       </Card>
-
-      <DataTable
-        columns={columns}
-        data={records.data}
-        pagination={records.pagination}
-      />
     </div>
   );
 }

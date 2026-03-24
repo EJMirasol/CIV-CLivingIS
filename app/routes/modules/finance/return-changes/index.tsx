@@ -6,7 +6,7 @@ import {
   useNavigate,
   useSubmit,
 } from "react-router";
-import { Plus, Search, Settings, Trash2, RefreshCcw } from "lucide-react";
+import { Plus, Search, RotateCcw, Trash2, RefreshCcw } from "lucide-react";
 import { DataTableColumnHeader } from "~/components/data-tables/header";
 import type { ColumnDef } from "@tanstack/react-table";
 import { FaEye } from "react-icons/fa";
@@ -28,8 +28,8 @@ import { SelectBoxWithSearch } from "~/components/selectbox/SelectBoxWithSearch"
 import { SearchInput } from "~/components/shared/SearchInput";
 import { auth } from "~/lib/auth.server";
 import { redirectWithSuccess } from "remix-toast";
-import { getBillingSettings, deleteBillingSetting } from "~/lib/server/billing-setting.server";
-import { CONFERENCE_TYPE_OPTIONS } from "~/types/billing-setting.dto";
+import { getReturnChanges, deleteReturnChange } from "~/lib/server/return-change.server";
+import { FINANCE_CONFERENCE_TYPE_OPTIONS } from "~/types/finance-record.dto";
 import type { Route } from "./+types/index";
 
 export async function loader({ request }: Route.LoaderArgs) {
@@ -41,20 +41,20 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   const args = {
     conferenceType: searchParams.conferenceType || "",
-    feeType: searchParams.feeType || "",
+    name: searchParams.name || "",
     pageNumber: parseInt(searchParams.pageNumber || "1"),
     pageSize: parseInt(searchParams.pageSize || "10"),
     sortBy: searchParams.sortBy,
     sortOrder: (searchParams.sortOrder || "asc") as "asc" | "desc",
   };
 
-  const { data, pagination } = await getBillingSettings(args);
+  const { data, pagination } = await getReturnChanges(args);
 
   return {
     data,
     pagination,
     searchFilter: args,
-    conferenceTypeOptions: CONFERENCE_TYPE_OPTIONS.map((o) => ({
+    conferenceTypeOptions: FINANCE_CONFERENCE_TYPE_OPTIONS.map((o) => ({
       id: o.value,
       name: o.label,
     })),
@@ -67,17 +67,14 @@ export async function action({ request }: Route.ActionArgs) {
 
   const formData = await request.formData();
   const intent = formData.get("intent");
-  const settingId = formData.get("settingId");
+  const returnChangeId = formData.get("returnChangeId");
 
-  if (intent === "delete" && settingId) {
+  if (intent === "delete" && returnChangeId) {
     try {
-      await deleteBillingSetting(settingId.toString());
-      return redirectWithSuccess(
-        "/utilities/billing-settings",
-        "Successfully Deleted!"
-      );
+      await deleteReturnChange(returnChangeId.toString());
+      return redirectWithSuccess("/finance/return-changes", "Successfully deleted!");
     } catch (error) {
-      return { error: "Failed to delete billing setting" };
+      return { error: "Failed to delete return change" };
     }
   }
 
@@ -96,13 +93,13 @@ export default () => {
 
   const columns: ColumnDef<(typeof data)[0]>[] = [
     {
-      accessorKey: "feeType",
+      accessorKey: "name",
       header: ({ column }) => (
-        <DataTableColumnHeader title="Fee Type" column={column} columnKey="feeType" />
+        <DataTableColumnHeader title="Name" column={column} columnKey="name" />
       ),
       cell: ({ row }) => (
         <div className="flex items-center gap-2 pl-2">
-          <span className="text-sm font-medium">{row.original.feeType}</span>
+          <span className="text-sm font-medium">{row.original.name}</span>
         </div>
       ),
     },
@@ -131,17 +128,6 @@ export default () => {
       ),
     },
     {
-      accessorKey: "remarks",
-      header: ({ column }) => (
-        <DataTableColumnHeader title="Remarks" column={column} columnKey="remarks" />
-      ),
-      cell: ({ row }) => (
-        <div className="flex items-center gap-2 pl-2">
-          <span className="text-sm font-medium">{row.original.remarks || "-"}</span>
-        </div>
-      ),
-    },
-    {
       accessorKey: "id",
       header: ({}) => (
         <div className="text-center text-Raisinblack font-medium">Actions</div>
@@ -163,10 +149,10 @@ export default () => {
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Delete Billing Setting</DialogTitle>
+                <DialogTitle>Delete Return Change</DialogTitle>
                 <DialogDescription>
                   Are you sure you want to delete{" "}
-                  <strong>{row.original.feeType}</strong>? This action cannot be undone.
+                  <strong>{row.original.name}</strong>? This action cannot be undone.
                 </DialogDescription>
               </DialogHeader>
               <DialogFooter className="flex flex-row items-baseline md:justify-end justify-center gap-2">
@@ -179,7 +165,7 @@ export default () => {
                     onClick={() => {
                       const formData = new FormData();
                       formData.append("intent", "delete");
-                      formData.append("settingId", row.original.id);
+                      formData.append("returnChangeId", row.original.id);
                       submit(formData, { method: "POST" });
                     }}
                   >
@@ -198,17 +184,25 @@ export default () => {
     <div className="w-full flex flex-col gap-5">
       <div className="flex items-center gap-3">
         <div className="rounded-md">
-          <Settings className="h-5 w-5" />
+          <RotateCcw className="h-5 w-5" />
         </div>
-        <h1 className="text-base font-semibold">Billing Settings</h1>
+        <h1 className="text-base font-semibold">RETURN CHANGES</h1>
       </div>
 
       <Card className="w-full p-5">
         <Form
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4"
-          id="search-billing-form"
+          id="search-return-changes-form"
           method="GET"
         >
+          <div className="space-y-1">
+            <Label>Name</Label>
+            <SearchInput
+              name="name"
+              type="text"
+              defaultValue={searchFilter.name}
+            />
+          </div>
           <div className="space-y-1">
             <Label>Conference Type</Label>
             <SelectBoxWithSearch
@@ -216,14 +210,6 @@ export default () => {
               name="conferenceType"
               options={conferenceTypeOptions}
               defaultValue={searchFilter.conferenceType}
-            />
-          </div>
-          <div className="space-y-1">
-            <Label>Fee Type</Label>
-            <SearchInput
-              name="feeType"
-              type="text"
-              defaultValue={searchFilter.feeType}
             />
           </div>
           <div className="col-span-1 sm:col-span-2 lg:col-span-4 flex flex-col sm:flex-row justify-start sm:justify-end items-start sm:items-center gap-2 pt-2">
@@ -235,9 +221,7 @@ export default () => {
               type="button"
               variant="view"
               className="border-none bg-[#213b36] text-white"
-              onClick={() => {
-                navigate("/utilities/billing-settings/");
-              }}
+              onClick={() => navigate("/finance/return-changes/")}
             >
               <RefreshCcw className="h-5 w-auto" />
             </Button>
@@ -246,14 +230,12 @@ export default () => {
       </Card>
 
       <div className="flex justify-end items-center">
-        <div className="flex gap-2">
-          <Link to="/utilities/billing-settings/add">
-            <Button className="bg-[#213b36]" variant="view">
-              <Plus />
-              Add Billing Setting
-            </Button>
-          </Link>
-        </div>
+        <Link to="/finance/return-changes/add">
+          <Button className="bg-[#213b36]" variant="view">
+            <Plus />
+            Add Return Change
+          </Button>
+        </Link>
       </div>
 
       <Card>

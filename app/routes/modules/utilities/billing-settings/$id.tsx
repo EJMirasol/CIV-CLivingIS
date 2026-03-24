@@ -24,7 +24,7 @@ export async function action({ request, params }: Route.ActionArgs) {
 
   if (intent === "delete") {
     await deleteBillingSetting(params.id);
-    return redirectWithSuccess("/utilities/billing-settings", "Billing setting deleted successfully!");
+    return redirectWithSuccess("/utilities/billing-settings", "Successfully deleted.");
   }
 
   const submission = parseWithZod(formData, { schema: BillingSettingFormSchema });
@@ -35,7 +35,7 @@ export async function action({ request, params }: Route.ActionArgs) {
 
   try {
     await updateBillingSetting(params.id, submission.value);
-    return redirectWithSuccess("/utilities/billing-settings", "Billing setting updated successfully!");
+    return redirectWithSuccess("/utilities/billing-settings", "Successfully updated.");
   } catch (error) {
     return submission.reply({
       formErrors: [error instanceof Error ? error.message : "Failed to update billing setting"],
@@ -52,6 +52,7 @@ export default function EditBillingSetting({ loaderData }: Route.ComponentProps)
         feeType: setting.feeType,
         conferenceType: setting.conferenceType,
         amount: setting.amount,
+        remarks: setting.remarks,
       }}
       isEdit={true}
       redirectPath="/utilities/billing-settings"
