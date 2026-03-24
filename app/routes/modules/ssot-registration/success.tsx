@@ -43,7 +43,7 @@ export default function SsotRegistrationSuccess() {
             <div className="bg-gray-50 rounded-lg p-4 mb-6 space-y-2">
               <div className="flex items-center justify-center gap-2 text-sm text-gray-600">
                 <CalendarDays className="w-4 h-4 text-gray-400" />
-                <span>May 5-10, 2026</span>
+                <span>May 5-8, 2026</span>
               </div>
               <div className="flex items-center justify-center gap-2 text-sm text-gray-600">
                 <MapPin className="w-4 h-4 text-gray-400" />
