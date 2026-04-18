@@ -4,11 +4,19 @@ import {
   getGroupById,
   getGroupsForDropdown,
   getAllRegistrationsWithGroupStatus,
+  getAllSsotRegistrationsWithGroupStatus,
   assignToGroup,
+  assignSsotToGroup,
   removeFromGroup,
+  removeSsotFromGroup,
+  getMemberTypeOptions,
 } from "~/lib/server/groups.server";
+import { getAllGradeLevels, getAllGenders } from "~/lib/server/registration.server";
+import { getSsotGradeLevels, getSsotGenders } from "~/lib/server/ssot-registration.server";
 import { auth } from "~/lib/auth.server";
 import { redirectWithSuccess } from "remix-toast";
+import { parseWithZod } from "@conform-to/zod";
+import { GroupAssignmentFormSchema } from "~/types/group.dto";
 import type { Route } from "./+types/$id";
 
 export async function loader({ request, params }: Route.LoaderArgs) {
@@ -24,16 +32,29 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   }
 
   try {
-    const [group, groupList, allRegistrations] = await Promise.all([
-      getGroupById(params.id),
+    const group = await getGroupById(params.id);
+
+    const [groupList, allRegistrations, allSsotRegistrations, gradeLevelList, ssotGradeLevelList, genderList, ssotGenderList, memberTypeList] = await Promise.all([
       getGroupsForDropdown(),
       getAllRegistrationsWithGroupStatus(params.id),
+      getAllSsotRegistrationsWithGroupStatus(params.id),
+      getAllGradeLevels(),
+      getSsotGradeLevels(),
+      getAllGenders(),
+      getSsotGenders(),
+      getMemberTypeOptions(),
     ]);
 
     return {
       group,
       groupList,
       allRegistrations,
+      allSsotRegistrations,
+      gradeLevelList,
+      ssotGradeLevelList,
+      genderList,
+      ssotGenderList,
+      memberTypeList,
     };
   } catch (error) {
     throw new Response(
@@ -56,27 +77,33 @@ export async function action({ request, params }: Route.ActionArgs) {
   }
 
   const formData = await request.formData();
-  const groupId = formData.get("groupId")?.toString() || params.id;
-  const memberIds = formData.getAll("memberIds").filter((id) => id.toString());
+  const submission = parseWithZod(formData, { schema: GroupAssignmentFormSchema });
 
-  const validMemberIds = memberIds.filter((id) => id.toString().trim() !== "");
+  if (submission.status !== "success") {
+    return submission.reply();
+  }
+
+  const { groupId, conferenceType, memberTypeIds, gradeLevelIds, genderIds, memberIds } = submission.value;
+  const isSsot = conferenceType === "CAMANAVA_SSOT";
+  const validMemberIds = memberIds.filter((id) => id.trim() !== "");
 
   try {
     const group = await getGroupById(params.id);
     const existingMemberIds = group.members.map((m) => m.id);
 
     const membersToRemove = existingMemberIds.filter(
-      (id) => !validMemberIds.includes(id as string)
-    );
-    const membersToAdd = validMemberIds.filter(
-      (id) => !existingMemberIds.includes(id as string)
+      (id) => !validMemberIds.includes(id)
     );
 
     const errors: string[] = [];
 
     for (const memberId of membersToRemove) {
       try {
-        await removeFromGroup(memberId);
+        if (isSsot) {
+          await removeSsotFromGroup(memberId);
+        } else {
+          await removeFromGroup(memberId);
+        }
       } catch (error) {
         if (error instanceof Error) {
           errors.push(error.message);
@@ -84,9 +111,16 @@ export async function action({ request, params }: Route.ActionArgs) {
       }
     }
 
-    for (const memberId of membersToAdd) {
+    for (let i = 0; i < memberIds.length; i++) {
+      const memberId = memberIds[i];
+      if (memberId.trim() === "") continue;
+      if (existingMemberIds.includes(memberId)) continue;
       try {
-        await assignToGroup(memberId as string, groupId);
+        if (isSsot) {
+          await assignSsotToGroup(memberId, groupId, gradeLevelIds[i], genderIds[i], memberTypeIds[i]);
+        } else {
+          await assignToGroup(memberId, groupId, memberTypeIds[i]);
+        }
       } catch (error) {
         if (error instanceof Error) {
           errors.push(error.message);
@@ -95,23 +129,22 @@ export async function action({ request, params }: Route.ActionArgs) {
     }
 
     if (errors.length > 0) {
-      return { error: errors.join("; ") };
+      return submission.reply({ formErrors: errors });
     }
 
     return redirectWithSuccess(
-      "/conference-meetings/ypcl/group-assignments",
+      "/conference-meetings/group-assignments",
       "Group assignment updated successfully."
     );
   } catch (error) {
-    return {
-      error:
-        error instanceof Error ? error.message : "Failed to update group assignment",
-    };
+    return submission.reply({
+      formErrors: [error instanceof Error ? error.message : "Failed to update group assignment."],
+    });
   }
 }
 
 export default function EditGroupAssignment({ loaderData }: Route.ComponentProps) {
-  const { group, groupList, allRegistrations } = loaderData;
+  const { group, groupList, allRegistrations, allSsotRegistrations, gradeLevelList, ssotGradeLevelList, genderList, ssotGenderList, memberTypeList } = loaderData;
 
   return (
     <GroupAssignmentForm
@@ -123,10 +156,17 @@ export default function EditGroupAssignment({ loaderData }: Route.ComponentProps
         description: group.description,
         maxMembers: group.maxMembers,
         currentMembers: group.currentMembers,
+        conferenceType: group.conferenceType,
       }}
       existingMembers={group.members}
       allRegistrations={allRegistrations}
-      redirectPath="/conference-meetings/ypcl/group-assignments"
+      allSsotRegistrations={allSsotRegistrations}
+      gradeLevelList={gradeLevelList}
+      ssotGradeLevelList={ssotGradeLevelList}
+      genderList={genderList}
+      ssotGenderList={ssotGenderList}
+      memberTypeList={memberTypeList}
+      redirectPath="/conference-meetings/group-assignments"
     />
   );
 }

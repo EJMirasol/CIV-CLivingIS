@@ -26,6 +26,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
         name: group.name,
         description: group.description || "",
         maxMembers: group.maxMembers || undefined,
+        conferenceType: group.conferenceType,
       }
     };
   } catch (error) {
@@ -60,6 +61,7 @@ export async function action({ request, params }: Route.ActionArgs) {
       name: submission.value.name,
       description: submission.value.description || undefined,
       maxMembers: parseInt(submission.value.maxMembers!, 10),
+      conferenceType: submission.value.conferenceType,
     };
 
     await updateGroup(params.id, groupData);

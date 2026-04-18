@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { FINANCE_CONFERENCE_TYPE_OPTIONS } from "~/types/finance-record.dto";
 
 export const GroupFormSchema = z.object({
   name: z
@@ -23,13 +24,21 @@ export const GroupFormSchema = z.object({
         message: "Maximum members must be a number between 1 and 1000",
       }
     ),
+  conferenceType: z.string().min(1, "This field is required."),
 });
 
 export type GroupFormDTO = z.infer<typeof GroupFormSchema>;
 
-export const GroupAssignmentSchema = z.object({
-  registrationId: z.string().min(1, "Registration ID is required"),
-  groupId: z.string().min(1, "Group ID is required"),
+export const GroupAssignmentFormSchema = z.object({
+  groupId: z.string().min(1, "This field is required."),
+  conferenceType: z.string().min(1, "This field is required."),
+  memberTypeIds: z.array(z.string()),
+  gradeLevelIds: z.array(z.string()),
+  genderIds: z.array(z.string()),
+  memberIds: z.array(z.string()),
+}).refine((data) => data.memberIds.some((id) => id.trim() !== ""), {
+  message: "Please click 'Add Row' and assign at least one member to the group.",
+  path: [],
 });
 
-export type GroupAssignmentDTO = z.infer<typeof GroupAssignmentSchema>;
+export type GroupAssignmentFormDTO = z.infer<typeof GroupAssignmentFormSchema>;

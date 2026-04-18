@@ -33,6 +33,8 @@ import {
 import { DataTable } from "~/components/data-tables/data-table";
 import { Button } from "~/components/ui/button";
 import { SearchInput } from "~/components/shared/SearchInput";
+import { SelectBoxWithSearch } from "~/components/selectbox/SelectBoxWithSearch";
+import { FINANCE_CONFERENCE_TYPE_OPTIONS } from "~/types/finance-record.dto";
 import type { Route } from "./+types/index";
 import {
   getGroups,
@@ -56,6 +58,7 @@ export async function loader({ request }: Route.LoaderArgs) {
   // Type-safe search parameters with defaults
   const args = {
     name: searchParams.name || "",
+    conferenceType: searchParams.conferenceType || "",
     pageNumber: parseInt(searchParams.pageNumber || "1"),
     pageSize: parseInt(searchParams.pageSize || "10"),
     sortBy: searchParams.sortBy,
@@ -68,6 +71,10 @@ export async function loader({ request }: Route.LoaderArgs) {
     data,
     pagination,
     searchFilter: args,
+    conferenceTypeOptions: FINANCE_CONFERENCE_TYPE_OPTIONS.map((o) => ({
+      id: o.value,
+      name: o.label,
+    })),
   };
 }
 
@@ -103,6 +110,7 @@ export default () => {
     data,
     pagination,
     searchFilter,
+    conferenceTypeOptions,
   } = useLoaderData<typeof loader>();
   const submit = useSubmit();
   const navigation = useNavigation();
@@ -147,6 +155,26 @@ export default () => {
           <div className="flex items-center gap-2 pl-2">
             <span className="text-sm text-muted-foreground max-w-xs truncate">
               {row.original.description || "No description"}
+            </span>
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "conferenceType",
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          className="pl-2"
+          title="Conference Type"
+          column={column}
+          columnKey="conferenceType"
+        />
+      ),
+      cell: ({ row }) => {
+        return (
+          <div className="flex items-center gap-2 pl-2">
+            <span className="text-sm font-medium">
+              {row.original.conferenceType}
             </span>
           </div>
         );
@@ -260,7 +288,7 @@ export default () => {
       
       <Card className="w-full p-5">
         <Form
-          className="grid grid-cols-3 gap-x-6 gap-y-4"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4"
           id="search-groups-form"
           method="GET"
         >
@@ -272,8 +300,17 @@ export default () => {
               defaultValue={searchFilter.name}
             />
           </div>
+          <div className="space-y-1">
+            <Label>Conference Type</Label>
+            <SelectBoxWithSearch
+              id="group-conferenceType"
+              name="conferenceType"
+              options={conferenceTypeOptions}
+              defaultValue={searchFilter.conferenceType}
+            />
+          </div>
 
-          <div className="col-start-3 row-start-1 flex justify-end items-end gap-2">
+          <div className="col-span-1 sm:col-span-2 lg:col-span-4 flex flex-col sm:flex-row justify-start sm:justify-end items-start sm:items-center gap-2 pt-2">
             <Button className="bg-[#213b36]" variant="view" type="submit">
               <Search />
               Search

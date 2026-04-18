@@ -46,6 +46,7 @@ model Registration {
   basicHealthInfoId       String?
   Group                   Group?                   @relation(fields: [groupId], references: [id])
   groupId                 String?
+  memberType              MemberType?
   isCheckedIn             Boolean                  @default(false)
   checkedInAt             DateTime?
   createdAt               DateTime                 @default(now())
@@ -56,10 +57,11 @@ model Registration {
 }
 
 model GradeLevel {
-  id               String            @id @default(uuid())
-  name             String
-  Registration     Registration[]
-  SsotRegistration SsotRegistration[]
+  id                  String               @id @default(uuid())
+  name                String
+  Registration        Registration[]
+  SsotRegistration    SsotRegistration[]
+  SsotGroupAssignment SsotGroupAssignment[]
 }
 
 model Hall {
@@ -109,7 +111,9 @@ model Group {
   isActive             Boolean        @default(true)
   isAssignmentActive   Boolean        @default(false)
   isAssignmentDeleted  Boolean        @default(false)
-  registrations        Registration[]
+  conferenceType       ConferenceType
+  registrations         Registration[]
+  ssotGroupAssignments  SsotGroupAssignment[]
 }
 
 model Room {
@@ -145,6 +149,13 @@ model AccommodationAssignment {
 enum Gender {
   Brother
   Sister
+}
+
+enum MemberType {
+  TEAM_LEADER
+  ASSISTANT_TEAM_LEADER
+  MEMBER
+  SERVING_ONE
 }
 
 enum Locality {
@@ -240,7 +251,24 @@ model SsotRegistration {
   BasicHealthInfo   BasicHealthInfo? @relation(fields: [basicHealthInfoId], references: [id])
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
-  financeRecords    FinanceRecord[]
+  financeRecords         FinanceRecord[]
+  ssotGroupAssignments   SsotGroupAssignment[]
+}
+
+model SsotGroupAssignment {
+  id                 String           @id @default(uuid())
+  ssotRegistrationId String
+  SsotRegistration   SsotRegistration @relation(fields: [ssotRegistrationId], references: [id])
+  groupId            String
+  Group              Group            @relation(fields: [groupId], references: [id])
+  gradeLevelId       String?
+  GradeLevel         GradeLevel?      @relation(fields: [gradeLevelId], references: [id])
+  gender             Gender?
+  memberType         MemberType?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  @@unique([ssotRegistrationId, groupId])
 }
 
 model BillingSetting {

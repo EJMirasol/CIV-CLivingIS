@@ -7,19 +7,31 @@ export interface GroupFormData {
   name: string;
   description?: string;
   maxMembers?: number;
+  conferenceType?: string;
 }
 
 export interface GroupSearch extends pagination {
   name?: string;
+  conferenceType?: string;
   isActive?: boolean;
   status?: "full" | "available";
   isAssignmentActive?: boolean;
   isAssignmentDeleted?: boolean;
 }
 
+export async function getMemberTypeOptions() {
+  return [
+    { label: "Team Leader", value: "TEAM_LEADER" },
+    { label: "Assistant Team Leader", value: "ASSISTANT_TEAM_LEADER" },
+    { label: "Member", value: "MEMBER" },
+    { label: "Serving One", value: "SERVING_ONE" },
+  ];
+}
+
 // Get all groups with pagination and filtering
 export async function getGroups({
   name,
+  conferenceType,
   isActive = true,
   status,
   isAssignmentActive,
@@ -64,6 +76,9 @@ export async function getGroups({
         mode: "insensitive",
       },
     }),
+    ...(conferenceType &&
+      conferenceType !== "" &&
+      conferenceType !== "none" && { conferenceType: conferenceType as any }),
   };
 
   const groups = await prisma.group.findMany({
@@ -80,24 +95,62 @@ export async function getGroups({
           },
         },
       },
+      ssotGroupAssignments: {
+        include: {
+          SsotRegistration: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              gender: true,
+            },
+          },
+        },
+      },
     },
     orderBy: orderByDir,
   });
 
-  let data = groups.map((group) => ({
-    id: group.id,
-    name: group.name,
-    description: group.description,
-    maxMembers: group.maxMembers,
-    currentMembers: group.registrations.length,
-    isActive: group.isActive,
-    createdAt: group.createdAt,
-    members: group.registrations.map((reg) => ({
+  let data = groups.map((group) => {
+    const ypclMembers = group.registrations.map((reg) => ({
       id: reg.id,
       name: `${reg.YoungPeople.firstName.toUpperCase()} ${reg.YoungPeople.lastName.toUpperCase()}`,
       gender: reg.YoungPeople.gender,
-    })),
-  }));
+      memberType: reg.memberType || null,
+    }));
+    const ssotMembers = group.ssotGroupAssignments.map((ga) => ({
+      id: ga.SsotRegistration.id,
+      name: `${ga.SsotRegistration.firstName.toUpperCase()} ${ga.SsotRegistration.lastName.toUpperCase()}`,
+      gender: ga.SsotRegistration.gender,
+      memberType: ga.memberType || null,
+    }));
+
+    const allMembers = [...ypclMembers, ...ssotMembers];
+
+    const memberTypeCounts: Record<string, number> = {};
+    for (const member of allMembers) {
+      if (member.memberType) {
+        memberTypeCounts[member.memberType] = (memberTypeCounts[member.memberType] || 0) + 1;
+      }
+    }
+    const memberTypes = Object.entries(memberTypeCounts).map(([type, count]) => ({
+      type: pluralizeMemberType(formatMemberType(type), count),
+      count,
+    }));
+
+    return {
+      id: group.id,
+      name: group.name,
+      description: group.description,
+      maxMembers: group.maxMembers,
+      currentMembers: allMembers.length,
+      conferenceType: formatConferenceType(group.conferenceType),
+      isActive: group.isActive,
+      createdAt: group.createdAt,
+      members: allMembers,
+      memberTypes,
+    };
+  });
 
   if (status === "full") {
     data = data.filter((group) => group.maxMembers && group.currentMembers >= group.maxMembers);
@@ -121,6 +174,37 @@ export async function getGroups({
   };
 }
 
+function formatConferenceType(type: string): string {
+  const typeMap: Record<string, string> = {
+    YP_CHURCH_LIVING: "YP Church Living",
+    CAMANAVA_SSOT: "CAMANAVA SSOT",
+  };
+  return typeMap[type] || type;
+}
+
+function formatMemberType(type: string): string {
+  const typeMap: Record<string, string> = {
+    TEAM_LEADER: "Team Leader",
+    ASSISTANT_TEAM_LEADER: "Assistant Team Leader",
+    MEMBER: "Member",
+    SERVING_ONE: "Serving One",
+  };
+  return typeMap[type] || type;
+}
+
+function pluralizeMemberType(type: string, count: number): string {
+  if (count !== 1) {
+    const pluralMap: Record<string, string> = {
+      "Team Leader": "Team Leaders",
+      "Assistant Team Leader": "Assistant Team Leaders",
+      "Member": "Members",
+      "Serving One": "Serving Ones",
+    };
+    return pluralMap[type] || type;
+  }
+  return type;
+}
+
 // Create a new group
 export async function createGroup(data: GroupFormData, createdBy?: string) {
   try {
@@ -129,6 +213,7 @@ export async function createGroup(data: GroupFormData, createdBy?: string) {
         name: data.name.trim(),
         description: data.description?.trim() || null,
         maxMembers: data.maxMembers || null,
+        conferenceType: data.conferenceType as any,
         createdBy: createdBy || null,
       },
     });
@@ -154,6 +239,7 @@ export async function updateGroup(groupId: string, data: GroupFormData) {
         name: data.name.trim(),
         description: data.description?.trim() || null,
         maxMembers: data.maxMembers || null,
+        conferenceType: data.conferenceType as any,
       },
     });
 
@@ -232,6 +318,25 @@ export async function getGroupById(groupId: string) {
             },
           },
         },
+        ssotGroupAssignments: {
+          include: {
+            SsotRegistration: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                gender: true,
+              },
+              include: {
+                GradeLevel: {
+                  select: {
+                    name: true,
+                  },
+                },
+              },
+            },
+          },
+        },
       },
     });
 
@@ -239,21 +344,34 @@ export async function getGroupById(groupId: string) {
       throw new Error("Group not found.");
     }
 
+    const ypclMembers = group.registrations.map((reg) => ({
+      id: reg.id,
+      name: `${reg.YoungPeople.firstName.toUpperCase()} ${reg.YoungPeople.lastName.toUpperCase()}`,
+      gender: reg.YoungPeople.gender,
+      gradeLevel: reg.GradeLevel.name,
+      classification: reg.Classification.name,
+      memberType: reg.memberType || null,
+    }));
+
+    const ssotMembers = group.ssotGroupAssignments.map((ga) => ({
+      id: ga.SsotRegistration.id,
+      name: `${ga.SsotRegistration.firstName.toUpperCase()} ${ga.SsotRegistration.lastName.toUpperCase()}`,
+      gender: ga.SsotRegistration.gender,
+      gradeLevel: ga.SsotRegistration.GradeLevel.name,
+      classification: null as string | null,
+      memberType: ga.memberType || null,
+    }));
+
     return {
       id: group.id,
       name: group.name,
       description: group.description,
       maxMembers: group.maxMembers,
-      currentMembers: group.registrations.length,
+      currentMembers: group.registrations.length + group.ssotGroupAssignments.length,
+      conferenceType: group.conferenceType,
       isActive: group.isActive,
       createdAt: group.createdAt,
-      members: group.registrations.map((reg) => ({
-        id: reg.id,
-        name: `${reg.YoungPeople.firstName.toUpperCase()} ${reg.YoungPeople.lastName.toUpperCase()}`,
-        gender: reg.YoungPeople.gender,
-        gradeLevel: reg.GradeLevel.name,
-        classification: reg.Classification.name,
-      })),
+      members: [...ypclMembers, ...ssotMembers],
     };
   } catch (error) {
     console.error("Error getting group:", error);
@@ -262,7 +380,7 @@ export async function getGroupById(groupId: string) {
 }
 
 // Assign registration to group
-export async function assignToGroup(registrationId: string, groupId: string) {
+export async function assignToGroup(registrationId: string, groupId: string, memberType?: string) {
   try {
     // Check if group exists and has capacity
     const group = await prisma.group.findUnique({
@@ -299,7 +417,7 @@ export async function assignToGroup(registrationId: string, groupId: string) {
     // Assign registration to group
     await prisma.registration.update({
       where: { id: registrationId },
-      data: { groupId },
+      data: { groupId, memberType: (memberType as any) || null },
     });
 
     return { success: true, message: "Successfully assigned to group." };
@@ -325,7 +443,7 @@ export async function removeFromGroup(registrationId: string) {
 
     await prisma.registration.update({
       where: { id: registrationId },
-      data: { groupId: null },
+      data: { groupId: null, memberType: null },
     });
 
     return { success: true, message: "Successfully removed from group." };
@@ -474,15 +592,19 @@ export async function getGroupStatistics() {
 }
 
 // Get groups for dropdown with additional info
-export async function getGroupsForDropdown() {
+export async function getGroupsForDropdown(conferenceType?: string) {
+  const where: Prisma.GroupWhereInput = {
+    isActive: true,
+    ...(conferenceType &&
+      conferenceType !== "" &&
+      conferenceType !== "none" && { conferenceType: conferenceType as any }),
+  };
+
   const groups = await prisma.group.findMany({
-    where: { 
-      isActive: true,
-      isAssignmentActive: false,
-      isAssignmentDeleted: false,
-    },
+    where,
     include: {
       registrations: true,
+      ssotGroupAssignments: true,
     },
     orderBy: { name: "asc" },
   });
@@ -492,7 +614,8 @@ export async function getGroupsForDropdown() {
     name: group.name,
     description: group.description,
     maxMembers: group.maxMembers,
-    currentMembers: group.registrations.length,
+    currentMembers: group.registrations.length + group.ssotGroupAssignments.length,
+    conferenceType: group.conferenceType,
   }));
 }
 
@@ -536,11 +659,13 @@ export async function getAllRegistrationsWithGroupStatus(excludeGroupId?: string
     name: `${reg.YoungPeople.firstName.toUpperCase()} ${reg.YoungPeople.lastName.toUpperCase()}`,
     gender: reg.YoungPeople.gender,
     gradeLevel: reg.GradeLevel.name,
+    gradeLevelId: reg.gradeLevelId,
     classification: reg.Classification.name,
     groupId: reg.groupId,
     groupName: reg.Group?.name || null,
     isAssigned: !!reg.groupId && reg.groupId !== excludeGroupId,
     isAssignedToCurrentGroup: reg.groupId === excludeGroupId,
+    memberType: reg.memberType || null,
   }));
 }
 
@@ -549,7 +674,7 @@ export async function activateGroupForAssignment(groupId: string) {
   try {
     const group = await prisma.group.update({
       where: { id: groupId },
-      data: { isAssignmentActive: true },
+      data: { isAssignmentActive: true, isAssignmentDeleted: false },
     });
     return { success: true, message: "Group activated for assignments.", group };
   } catch (error) {
@@ -570,4 +695,170 @@ export async function softDeleteGroupAssignment(groupId: string) {
     console.error("Error deleting group assignment:", error);
     throw new Error("Failed to delete group assignment.");
   }
+}
+
+export async function getAllSsotRegistrationsWithGroupStatus(excludeGroupId?: string) {
+  const ssotGroupAssignments = await prisma.ssotGroupAssignment.findMany({
+    include: {
+      Group: {
+        select: { id: true, name: true },
+      },
+    },
+  });
+
+  const assignmentMap = new Map<string, { groupId: string; groupName: string; memberType: string | null }>();
+  for (const assignment of ssotGroupAssignments) {
+    assignmentMap.set(assignment.ssotRegistrationId, {
+      groupId: assignment.groupId,
+      groupName: assignment.Group.name,
+      memberType: assignment.memberType || null,
+    });
+  }
+
+  const registrations = await prisma.ssotRegistration.findMany({
+    include: {
+      GradeLevel: {
+        select: { name: true },
+      },
+    },
+    orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
+  });
+
+  return registrations.map((reg) => {
+    const assignment = assignmentMap.get(reg.id);
+    const groupId = assignment?.groupId || null;
+    return {
+      id: reg.id,
+      name: `${reg.firstName.toUpperCase()} ${reg.lastName.toUpperCase()}`,
+      gender: reg.gender,
+      gradeLevel: reg.GradeLevel.name,
+      gradeLevelId: reg.gradeLevelId,
+      classification: null as string | null,
+      groupId,
+      groupName: assignment?.groupName || null,
+      isAssigned: !!groupId && groupId !== excludeGroupId,
+      isAssignedToCurrentGroup: groupId === excludeGroupId,
+      memberType: assignment?.memberType || null,
+    };
+  });
+}
+
+export async function assignSsotToGroup(ssotRegistrationId: string, groupId: string, gradeLevelId?: string, gender?: string, memberType?: string) {
+  try {
+    const group = await prisma.group.findUnique({
+      where: { id: groupId },
+      include: {
+        registrations: true,
+        ssotGroupAssignments: true,
+      },
+    });
+
+    if (!group) {
+      throw new Error("Group not found.");
+    }
+
+    if (!group.isActive) {
+      throw new Error("Cannot assign to inactive group.");
+    }
+
+    const totalMembers = group.registrations.length + group.ssotGroupAssignments.length;
+    if (group.maxMembers && totalMembers >= group.maxMembers) {
+      throw new Error("Group has reached maximum capacity.");
+    }
+
+    const ssotRegistration = await prisma.ssotRegistration.findUnique({
+      where: { id: ssotRegistrationId },
+    });
+
+    if (!ssotRegistration) {
+      throw new Error("SSOT registration not found.");
+    }
+
+    const existingAssignment = await prisma.ssotGroupAssignment.findUnique({
+      where: {
+        ssotRegistrationId_groupId: {
+          ssotRegistrationId,
+          groupId,
+        },
+      },
+    });
+
+    if (existingAssignment) {
+      throw new Error("SSOT registration is already assigned to this group.");
+    }
+
+    const anyAssignment = await prisma.ssotGroupAssignment.findFirst({
+      where: { ssotRegistrationId },
+    });
+
+    if (anyAssignment) {
+      throw new Error("SSOT registration is already assigned to a group.");
+    }
+
+    await prisma.ssotGroupAssignment.create({
+      data: {
+        ssotRegistrationId,
+        groupId,
+        gradeLevelId: gradeLevelId || null,
+        gender: (gender === "brother" ? "Brother" : gender === "sister" ? "Sister" : null) as any,
+        memberType: (memberType as any) || null,
+      },
+    });
+
+    return { success: true, message: "Successfully assigned to group." };
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
+    }
+    console.error("Error assigning SSOT to group:", error);
+    throw new Error("Failed to assign to group.");
+  }
+}
+
+export async function removeSsotFromGroup(ssotRegistrationId: string) {
+  try {
+    const assignment = await prisma.ssotGroupAssignment.findFirst({
+      where: { ssotRegistrationId },
+    });
+
+    if (!assignment) {
+      throw new Error("SSOT registration is not assigned to any group.");
+    }
+
+    await prisma.ssotGroupAssignment.delete({
+      where: { id: assignment.id },
+    });
+
+    return { success: true, message: "Successfully removed from group." };
+  } catch (error) {
+    console.error("Error removing SSOT from group:", error);
+    throw new Error("Failed to remove from group.");
+  }
+}
+
+export async function getSsotGroupMembers(groupId: string) {
+  const assignments = await prisma.ssotGroupAssignment.findMany({
+    where: { groupId },
+    include: {
+      SsotRegistration: {
+        include: {
+          GradeLevel: {
+            select: { name: true },
+          },
+        },
+      },
+    },
+    orderBy: {
+      SsotRegistration: { lastName: "asc" },
+    },
+  });
+
+  return assignments.map((assignment) => ({
+    id: assignment.SsotRegistration.id,
+    name: `${assignment.SsotRegistration.firstName.toUpperCase()} ${assignment.SsotRegistration.lastName.toUpperCase()}`,
+    gender: assignment.SsotRegistration.gender,
+    gradeLevel: assignment.SsotRegistration.GradeLevel.name,
+    classification: null as string | null,
+    memberType: assignment.memberType || null,
+  }));
 }

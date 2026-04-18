@@ -37,6 +37,7 @@ export async function action({ request }: Route.ActionArgs) {
       name: submission.value.name,
       description: submission.value.description || undefined,
       maxMembers: parseInt(submission.value.maxMembers!, 10),
+      conferenceType: submission.value.conferenceType,
     };
 
     await createGroup(groupData, session.user.id);

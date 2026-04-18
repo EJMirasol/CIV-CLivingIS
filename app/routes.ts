@@ -46,18 +46,6 @@ export default [
           "./routes/modules/conference-meetings/church-living/status/index.tsx"
         ),
         route(
-          "/group-assignments",
-          "./routes/modules/conference-meetings/church-living/group-assignments/index.tsx"
-        ),
-        route(
-          "/group-assignments/add",
-          "./routes/modules/conference-meetings/church-living/group-assignments/add.tsx"
-        ),
-        route(
-          "/group-assignments/:id",
-          "./routes/modules/conference-meetings/church-living/group-assignments/$id.tsx"
-        ),
-        route(
           "/accommodation",
           "./routes/modules/conference-meetings/church-living/accommodation/index.tsx"
         ),
@@ -70,6 +58,18 @@ export default [
           "./routes/modules/conference-meetings/church-living/accommodation/assignments/create.tsx"
         ),
       ]),
+      route(
+        "/group-assignments",
+        "./routes/modules/conference-meetings/church-living/group-assignments/index.tsx"
+      ),
+      route(
+        "/group-assignments/add",
+        "./routes/modules/conference-meetings/church-living/group-assignments/add.tsx"
+      ),
+      route(
+        "/group-assignments/:id",
+        "./routes/modules/conference-meetings/church-living/group-assignments/$id.tsx"
+      ),
       ...prefix("ssot", [
         route(
           "/dashboard",

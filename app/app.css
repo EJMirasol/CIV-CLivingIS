@@ -137,3 +137,9 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+[data-sonner-toast][data-styled='true'] [data-close-button] {
+  left: unset !important;
+  right: 0 !important;
+  transform: translate(35%, -35%) !important;
+}

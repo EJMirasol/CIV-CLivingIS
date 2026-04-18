@@ -8,10 +8,11 @@ import { Badge } from "~/components/ui/badge";
 import { DataTable } from "~/components/data-tables/data-table";
 import { DataTableColumnHeader } from "~/components/data-tables/header";
 import type { ColumnDef } from "@tanstack/react-table";
-import { getGroups, softDeleteGroupAssignment } from "~/lib/server/groups.server";
+import { getGroups, softDeleteGroupAssignment, getMemberTypeOptions } from "~/lib/server/groups.server";
 import { auth } from "~/lib/auth.server";
 import { Form } from "react-router";
 import { SelectBoxWithSearch } from "~/components/selectbox/SelectBoxWithSearch";
+import { FINANCE_CONFERENCE_TYPE_OPTIONS } from "~/types/finance-record.dto";
 import { FaEye } from "react-icons/fa";
 import { redirectWithSuccess } from "remix-toast";
 import {
@@ -39,6 +40,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   const args = {
     name: searchParams.name || "",
+    conferenceType: searchParams.conferenceType || "",
     status: searchParams.status as "full" | "available" | undefined,
     isAssignmentActive: true,
     isAssignmentDeleted: false,
@@ -54,6 +56,14 @@ export async function loader({ request }: Route.LoaderArgs) {
     data,
     pagination,
     searchFilter: args,
+    conferenceTypeOptions: FINANCE_CONFERENCE_TYPE_OPTIONS.map((o) => ({
+      id: o.value,
+      name: o.label,
+    })),
+    memberTypeOptions: (await getMemberTypeOptions()).map((o) => ({
+      id: o.value,
+      name: o.label,
+    })),
   };
 }
 
@@ -73,7 +83,7 @@ export async function action({ request }: Route.ActionArgs) {
     try {
       await softDeleteGroupAssignment(groupId.toString());
       return redirectWithSuccess(
-        "/conference-meetings/ypcl/group-assignments",
+        "/conference-meetings/group-assignments",
         "Group assignment deleted successfully!"
       );
     } catch (error) {
@@ -85,7 +95,7 @@ export async function action({ request }: Route.ActionArgs) {
 }
 
 export default function GroupAssignments() {
-  const { data, pagination, searchFilter } = useLoaderData<typeof loader>();
+  const { data, pagination, searchFilter, conferenceTypeOptions, memberTypeOptions } = useLoaderData<typeof loader>();
   const navigate = useNavigate();
   const submit = useSubmit();
 
@@ -100,7 +110,6 @@ export default function GroupAssignments() {
       accessorKey: "name",
       header: ({ column }) => (
         <DataTableColumnHeader
-          className="pl-2"
           title="Group Name"
           column={column}
           columnKey="name"
@@ -117,11 +126,52 @@ export default function GroupAssignments() {
       },
     },
     {
+      accessorKey: "conferenceType",
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          title="Conference Type"
+          column={column}
+          columnKey="conferenceType"
+        />
+      ),
+      cell: ({ row }) => (
+        <div className="flex items-center gap-2 pl-2">
+          <span className="text-sm font-medium">
+            {row.original.conferenceType}
+          </span>
+        </div>
+      ),
+    },
+    {
+      accessorKey: "memberTypes",
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          title="Composition"
+          column={column}
+          columnKey="memberTypes"
+        />
+      ),
+      cell: ({ row }) => {
+        const memberTypes = row.original.memberTypes;
+        if (!memberTypes || memberTypes.length === 0) {
+          return <span className="text-sm text-muted-foreground pl-2">—</span>;
+        }
+        return (
+          <div className="flex items-center gap-1 flex-wrap pl-2">
+            {memberTypes.map((mt) => (
+              <Badge key={mt.type} variant="secondary" className="text-xs">
+                {mt.type} ({mt.count})
+              </Badge>
+            ))}
+          </div>
+        );
+      },
+    },
+    {
       accessorKey: "currentMembers",
       header: ({ column }) => (
         <DataTableColumnHeader
-          className="pl-2"
-          title="Assigned Members"
+          title="Group Size"
           column={column}
           columnKey="currentMembers"
         />
@@ -144,7 +194,6 @@ export default function GroupAssignments() {
       accessorKey: "status",
       header: ({ column }) => (
         <DataTableColumnHeader
-          className="pl-2"
           title="Status"
           column={column}
           columnKey="status"
@@ -178,7 +227,7 @@ export default function GroupAssignments() {
       cell: ({ row }) => {
         return (
           <div className="flex gap-2 justify-center">
-            <Link to={`/conference-meetings/ypcl/group-assignments/${row.original.id}`}>
+            <Link to={`/conference-meetings/group-assignments/${row.original.id}`}>
               <Button
                 size="sm"
                 className="bg-[#213b36]"
@@ -255,6 +304,15 @@ export default function GroupAssignments() {
             />
           </div>
           <div className="space-y-1">
+            <Label>Conference Type</Label>
+            <SelectBoxWithSearch
+              id="conferenceType"
+              name="conferenceType"
+              options={conferenceTypeOptions}
+              defaultValue={searchFilter.conferenceType}
+            />
+          </div>
+          <div className="space-y-1">
             <Label>Status</Label>
             <SelectBoxWithSearch
               id="status"
@@ -264,7 +322,7 @@ export default function GroupAssignments() {
               placeholder="All"
             />
           </div>
-          <div className="col-start-4 flex items-end gap-2">
+          <div className="col-start-1 sm:col-start-4 flex items-end gap-2">
             <Button className="bg-[#213b36]" variant="view" type="submit">
               <Search />
               Search
@@ -274,7 +332,7 @@ export default function GroupAssignments() {
               variant="view"
               className="border-none bg-[#213b36] text-white"
               onClick={() => {
-                navigate("/conference-meetings/ypcl/group-assignments");
+                navigate("/conference-meetings/group-assignments");
               }}
             >
               <RefreshCcw className="h-5 w-auto" />
@@ -285,7 +343,7 @@ export default function GroupAssignments() {
 
       <div className="flex justify-end items-center">
         <div className="flex gap-2">
-          <Link to="/conference-meetings/ypcl/group-assignments/add">
+          <Link to="/conference-meetings/group-assignments/add">
             <Button className="bg-[#213b36]" variant="view">
               <Plus className="h-4 w-4" />
               Add Assignment
@@ -295,7 +353,7 @@ export default function GroupAssignments() {
       </div>
 
       <Card>
-        <CardContent className="p-0">
+        <CardContent>
           <DataTable
             columns={columns}
             data={data}

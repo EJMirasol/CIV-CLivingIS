@@ -35,7 +35,7 @@ export default function DashboardLayout() {
       label: "Meetings & Conferences",
       route: "",
       key: "conference-meetings",
-      subModules: [
+          subModules: [
         {
           icon: <BookHeart className="h-4 w-4" />,
           label: "YP Church Living",
@@ -50,11 +50,6 @@ export default function DashboardLayout() {
               icon: <UserPlus className="h-4 w-4" />,
               label: "Registration",
               route: "conference-meetings/ypcl/registration",
-            },
-            {
-              icon: <UserCheck className="h-4 w-4" />,
-              label: "Group Assignments",
-              route: "conference-meetings/ypcl/group-assignments",
             },
             {
               icon: <Home className="h-4 w-4" />,
@@ -79,6 +74,11 @@ export default function DashboardLayout() {
               route: "conference-meetings/ssot/registration",
             },
           ],
+        },
+        {
+          icon: <UserCheck className="h-4 w-4" />,
+          label: "Group Assignments",
+          route: "conference-meetings/group-assignments",
         },
       ],
     },
