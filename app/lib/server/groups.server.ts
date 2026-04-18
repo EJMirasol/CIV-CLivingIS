@@ -326,8 +326,6 @@ export async function getGroupById(groupId: string) {
                 firstName: true,
                 lastName: true,
                 gender: true,
-              },
-              include: {
                 GradeLevel: {
                   select: {
                     name: true,
@@ -683,14 +681,22 @@ export async function activateGroupForAssignment(groupId: string) {
   }
 }
 
-// Soft delete a group assignment
-export async function softDeleteGroupAssignment(groupId: string) {
+export async function deleteGroupAssignment(groupId: string) {
   try {
-    const group = await prisma.group.update({
-      where: { id: groupId },
-      data: { isAssignmentDeleted: true },
+    await prisma.registration.updateMany({
+      where: { groupId },
+      data: { groupId: null, memberType: null },
     });
-    return { success: true, message: "Group assignment deleted successfully.", group };
+
+    await prisma.ssotGroupAssignment.deleteMany({
+      where: { groupId },
+    });
+
+    await prisma.group.delete({
+      where: { id: groupId },
+    });
+
+    return { success: true, message: "Group assignment deleted successfully." };
   } catch (error) {
     console.error("Error deleting group assignment:", error);
     throw new Error("Failed to delete group assignment.");

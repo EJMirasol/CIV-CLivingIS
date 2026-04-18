@@ -12,6 +12,22 @@ export const SsotBasicHealthInformationSchema = z.object({
   isHealthCondition: stringToBoolean.optional(),
   healthConditionDescription: z.string().optional(),
   healthConditionMedicine: z.string().optional(),
+}).superRefine((data, ctx) => {
+  if (data.isAllergies === true && !data.allergyDescription?.trim()) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "This field is required.",
+      path: ["allergyDescription"],
+    });
+  }
+
+  if (data.isHealthCondition === true && !data.healthConditionDescription?.trim()) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "This field is required.",
+      path: ["healthConditionDescription"],
+    });
+  }
 });
 
 export const SsotRegistrationFormSchema = z.object({
@@ -19,7 +35,7 @@ export const SsotRegistrationFormSchema = z.object({
   lastName: z.string({ message: "This field is required." }),
   firstName: z.string({ message: "This field is required." }),
   middleName: z.string().optional(),
-  suffix: z.string().optional(),
+  suffix: z.string().max(3, "Maximum 3 characters.").optional(),
   locality: z.string({ message: "This field is required." }),
   gender: z.string({ message: "This field is required." }),
   gradeLevel: z.string({ message: "This field is required." }),

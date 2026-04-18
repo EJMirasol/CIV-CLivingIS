@@ -8,7 +8,7 @@ import { Badge } from "~/components/ui/badge";
 import { DataTable } from "~/components/data-tables/data-table";
 import { DataTableColumnHeader } from "~/components/data-tables/header";
 import type { ColumnDef } from "@tanstack/react-table";
-import { getGroups, softDeleteGroupAssignment, getMemberTypeOptions } from "~/lib/server/groups.server";
+import { getGroups, deleteGroupAssignment, getMemberTypeOptions } from "~/lib/server/groups.server";
 import { auth } from "~/lib/auth.server";
 import { Form } from "react-router";
 import { SelectBoxWithSearch } from "~/components/selectbox/SelectBoxWithSearch";
@@ -81,7 +81,7 @@ export async function action({ request }: Route.ActionArgs) {
 
   if (intent === "delete" && groupId) {
     try {
-      await softDeleteGroupAssignment(groupId.toString());
+      await deleteGroupAssignment(groupId.toString());
       return redirectWithSuccess(
         "/conference-meetings/group-assignments",
         "Group assignment deleted successfully!"

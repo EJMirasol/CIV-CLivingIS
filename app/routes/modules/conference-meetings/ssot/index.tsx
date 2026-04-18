@@ -12,6 +12,7 @@ import {
   ArrowDownToLine,
   CheckCircle,
   ClipboardList,
+  Plus,
   RefreshCcw,
   Search,
   Trash2,
@@ -475,6 +476,12 @@ export default () => {
               </>
             )}
           </Button>
+          <Link to="/ssot-registration" target="_blank">
+            <Button className="bg-[#213b36]" variant="view" type="button">
+              <Plus className="h-3.5 w-3.5 mr-1" />
+              Register
+            </Button>
+          </Link>
         </div>
       </div>
 

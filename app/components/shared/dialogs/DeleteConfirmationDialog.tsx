@@ -19,6 +19,7 @@ interface DeleteConfirmationDialogProps {
   description?: string;
   redirectPath: string;
   fullReload?: boolean;
+  disabled?: boolean;
 }
 
 export const DeleteConfirmationDialog = ({
@@ -27,6 +28,7 @@ export const DeleteConfirmationDialog = ({
   description = "Are you sure you want to delete this item?",
   redirectPath,
   fullReload = false,
+  disabled = false,
 }: DeleteConfirmationDialogProps) => {
   const navigate = useNavigate();
 
@@ -42,7 +44,7 @@ export const DeleteConfirmationDialog = ({
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="destructive" className="h-8 gap-1">
+        <Button variant="destructive" className="h-8 gap-1" disabled={disabled}>
           <FaTrash className="h-5 w-auto" /> {triggerText}
         </Button>
       </DialogTrigger>

@@ -89,6 +89,13 @@ export async function action({ request, params }: Route.ActionArgs) {
 
   try {
     const group = await getGroupById(params.id);
+
+    if (group.maxMembers && validMemberIds.length > group.maxMembers) {
+      return submission.reply({
+        formErrors: ["This group has reached maximum capacity. Remove a member before adding new ones."],
+      });
+    }
+
     const existingMemberIds = group.members.map((m) => m.id);
 
     const membersToRemove = existingMemberIds.filter(

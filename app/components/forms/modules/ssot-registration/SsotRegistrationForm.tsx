@@ -22,6 +22,7 @@ import { Separator } from "~/components/ui/separator";
 import { useState } from "react";
 import type { ChangeEvent } from "react";
 import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
+import { useIsPending } from "~/hooks/use-is-pending";
 
 interface SsotRegistrationFormProps {
   gradeLevelList: { value: string; label: string }[];
@@ -59,6 +60,7 @@ export function SsotRegistrationForm({
   isEdit = false,
   redirectPath,
 }: SsotRegistrationFormProps) {
+  const isSubmitting = useIsPending("POST");
   const [form, fields] = useForm({
     onValidate({ formData }) {
       return parseWithZod(formData, { schema: SsotRegistrationFormSchema });
@@ -89,16 +91,41 @@ export function SsotRegistrationForm({
   const basicHealthField = fields.basicHealthInformation || {};
   const basicHealthFieldList = basicHealthField.getFieldset();
 
-  const [isAllergies, setIsAllergies] = useState(
-    basicHealthFieldList.isAllergies.value === undefined
-      ? undefined
-      : String(basicHealthFieldList.isAllergies.value)
+  const [isAllergies, setIsAllergies] = useState<string>(
+    defaultValues?.basicHealthInformation?.isAllergies !== undefined
+      ? String(defaultValues.basicHealthInformation.isAllergies)
+      : ""
   );
-  const [isHealthCondition, setIsHealthCondition] = useState(
-    basicHealthFieldList.isHealthCondition.value === undefined
-      ? undefined
-      : String(basicHealthFieldList.isHealthCondition.value)
+  const [isHealthCondition, setIsHealthCondition] = useState<string>(
+    defaultValues?.basicHealthInformation?.isHealthCondition !== undefined
+      ? String(defaultValues.basicHealthInformation.isHealthCondition)
+      : ""
   );
+
+  const clearConformField = (fieldId: string) => {
+    const el = document.getElementById(fieldId) as HTMLInputElement;
+    if (el) {
+      const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")?.set;
+      if (setter) {
+        setter.call(el, "");
+        el.dispatchEvent(new Event("input", { bubbles: true }));
+      }
+    }
+  };
+
+  const handleAllergyChange = (value: string) => {
+    if (value !== "true") {
+      clearConformField(basicHealthFieldList.allergyDescription.id);
+    }
+    setIsAllergies(value);
+  };
+
+  const handleHealthConditionChange = (value: string) => {
+    if (value !== "true") {
+      clearConformField(basicHealthFieldList.healthConditionDescription.id);
+    }
+    setIsHealthCondition(value);
+  };
 
   const transformToUppercase = (e: ChangeEvent<HTMLInputElement>) => {
     e.target.value = e.target.value.toUpperCase();
@@ -106,7 +133,7 @@ export function SsotRegistrationForm({
 
   if (isPublic) {
     return (
-      <div className="bg-white">
+      <div>
         <div className="w-full flex flex-col">
           <Form
             className="space-y-5 w-full"
@@ -124,7 +151,7 @@ export function SsotRegistrationForm({
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <DeleteConfirmationDialog redirectPath="/ssot-registration" fullReload />
+                  <DeleteConfirmationDialog redirectPath="/ssot-registration" fullReload disabled={isSubmitting} />
                   <SubmitButton formId={form.id} />
                 </div>
               </div>
@@ -188,7 +215,7 @@ export function SsotRegistrationForm({
                       <Input
                         className="max-w-full xl:max-w-[100px]"
                         {...getInputProps(fields.suffix, { type: "text" })}
-                        maxLength={20}
+                        maxLength={3}
                         onInput={transformToUppercase}
                       />
                     </div>
@@ -291,12 +318,9 @@ export function SsotRegistrationForm({
                             With Allergy?
                           </Label>
                           <RadioGroup
-                            name={basicHealthFieldList.isAllergies.name}
                             className="flex flex-row gap-5"
-                            defaultValue={String(
-                              basicHealthFieldList.isAllergies.value ?? ""
-                            )}
-                            onValueChange={(value) => setIsAllergies(value)}
+                            value={isAllergies || ""}
+                            onValueChange={handleAllergyChange}
                           >
                             <div className="flex items-center space-x-2">
                               <RadioGroupItem
@@ -321,13 +345,20 @@ export function SsotRegistrationForm({
                               </Label>
                             </div>
                           </RadioGroup>
+                          <Input type="hidden" name={basicHealthFieldList.isAllergies.name} value={isAllergies || ""} />
                         </div>
-                        <div className="col-span-3 space-y-1">
-                          <Label
-                            htmlFor={basicHealthFieldList.allergyDescription.id}
-                          >
-                            If yes, please specify:
-                          </Label>
+                        <div className="col-span-3 space-y-1" key={`allergy-desc-${isAllergies}`}>
+                          {isAllergies === "true" ? (
+                            <LabelNoGapRequired htmlFor={basicHealthFieldList.allergyDescription.id}>
+                              If yes, please specify:
+                            </LabelNoGapRequired>
+                          ) : (
+                            <Label
+                              htmlFor={basicHealthFieldList.allergyDescription.id}
+                            >
+                              If yes, please specify:
+                            </Label>
+                          )}
                           <Input
                             {...getInputProps(
                               basicHealthFieldList.allergyDescription,
@@ -340,7 +371,7 @@ export function SsotRegistrationForm({
                             {basicHealthFieldList.allergyDescription.errors}
                           </span>
                         </div>
-                        <div className="space-y-1">
+                        <div className="space-y-1" key={`allergy-med-${isAllergies}`}>
                           <Label htmlFor={basicHealthFieldList.allergyMedicine.id}>
                             Medicine
                           </Label>
@@ -371,12 +402,9 @@ export function SsotRegistrationForm({
                             With Health Condition?
                           </Label>
                           <RadioGroup
-                            name={basicHealthFieldList.isHealthCondition.name}
                             className="flex flex-row gap-5"
-                            defaultValue={String(
-                              basicHealthFieldList.isHealthCondition.value ?? ""
-                            )}
-                            onValueChange={(value) => setIsHealthCondition(value)}
+                            value={isHealthCondition || ""}
+                            onValueChange={handleHealthConditionChange}
                           >
                             <div className="flex items-center space-x-2">
                               <RadioGroupItem
@@ -401,15 +429,26 @@ export function SsotRegistrationForm({
                               </Label>
                             </div>
                           </RadioGroup>
+                          <Input type="hidden" name={basicHealthFieldList.isHealthCondition.name} value={isHealthCondition || ""} />
                         </div>
-                        <div className="col-span-3 space-y-1">
-                          <Label
-                            htmlFor={
-                              basicHealthFieldList.healthConditionDescription.id
-                            }
-                          >
-                            If yes, please specify:
-                          </Label>
+                        <div className="col-span-3 space-y-1" key={`health-desc-${isHealthCondition}`}>
+                          {isHealthCondition === "true" ? (
+                            <LabelNoGapRequired
+                              htmlFor={
+                                basicHealthFieldList.healthConditionDescription.id
+                              }
+                            >
+                              If yes, please specify:
+                            </LabelNoGapRequired>
+                          ) : (
+                            <Label
+                              htmlFor={
+                                basicHealthFieldList.healthConditionDescription.id
+                              }
+                            >
+                              If yes, please specify:
+                            </Label>
+                          )}
                           <Input
                             {...getInputProps(
                               basicHealthFieldList.healthConditionDescription,
@@ -422,7 +461,7 @@ export function SsotRegistrationForm({
                             {basicHealthFieldList.healthConditionDescription.errors}
                           </span>
                         </div>
-                        <div className="space-y-1">
+                        <div className="space-y-1" key={`health-med-${isHealthCondition}`}>
                           <Label
                             htmlFor={basicHealthFieldList.healthConditionMedicine.id}
                           >
@@ -542,7 +581,7 @@ export function SsotRegistrationForm({
                     <Input
                       className="max-w-full xl:max-w-[100px]"
                       {...getInputProps(fields.suffix, { type: "text" })}
-                      maxLength={20}
+                      maxLength={3}
                       onInput={transformToUppercase}
                     />
                   </div>
@@ -645,12 +684,9 @@ export function SsotRegistrationForm({
                           With Allergy?
                         </Label>
                         <RadioGroup
-                          name={basicHealthFieldList.isAllergies.name}
                           className="flex flex-row gap-5"
-                          defaultValue={String(
-                            basicHealthFieldList.isAllergies.value ?? ""
-                          )}
-                          onValueChange={(value) => setIsAllergies(value)}
+                          value={isAllergies || ""}
+                          onValueChange={handleAllergyChange}
                         >
                           <div className="flex items-center space-x-2">
                             <RadioGroupItem
@@ -675,123 +711,138 @@ export function SsotRegistrationForm({
                             </Label>
                           </div>
                         </RadioGroup>
+                        <Input type="hidden" name={basicHealthFieldList.isAllergies.name} value={isAllergies || ""} />
                       </div>
-                      <div className="col-span-3 space-y-1">
-                        <Label
-                          htmlFor={basicHealthFieldList.allergyDescription.id}
-                        >
-                          If yes, please specify:
-                        </Label>
-                        <Input
-                          {...getInputProps(
-                            basicHealthFieldList.allergyDescription,
-                            { type: "text" }
+                      <div className="col-span-3 space-y-1" key={`allergy-desc-${isAllergies}`}>
+                          {isAllergies === "true" ? (
+                            <LabelNoGapRequired htmlFor={basicHealthFieldList.allergyDescription.id}>
+                              If yes, please specify:
+                            </LabelNoGapRequired>
+                          ) : (
+                            <Label
+                              htmlFor={basicHealthFieldList.allergyDescription.id}
+                            >
+                              If yes, please specify:
+                            </Label>
                           )}
-                          disabled={isAllergies !== "true"}
-                          onInput={transformToUppercase}
-                        />
-                        <span className="text-red-500 text-xs">
-                          {basicHealthFieldList.allergyDescription.errors}
-                        </span>
-                      </div>
-                      <div className="space-y-1">
-                        <Label htmlFor={basicHealthFieldList.allergyMedicine.id}>
-                          Medicine
-                        </Label>
-                        <Input
-                          {...getInputProps(
-                            basicHealthFieldList.allergyMedicine,
-                            { type: "text" }
-                          )}
-                          disabled={isAllergies !== "true"}
-                          onInput={transformToUppercase}
-                        />
-                        <span className="text-red-500 text-xs">
-                          {basicHealthFieldList.allergyMedicine.errors}
-                        </span>
+                          <Input
+                            {...getInputProps(
+                              basicHealthFieldList.allergyDescription,
+                              { type: "text" }
+                            )}
+                            disabled={isAllergies !== "true"}
+                            onInput={transformToUppercase}
+                          />
+                          <span className="text-red-500 text-xs">
+                            {basicHealthFieldList.allergyDescription.errors}
+                          </span>
+                        </div>
+                        <div className="space-y-1" key={`allergy-med-${isAllergies}`}>
+                          <Label htmlFor={basicHealthFieldList.allergyMedicine.id}>
+                            Medicine
+                          </Label>
+                          <Input
+                            {...getInputProps(
+                              basicHealthFieldList.allergyMedicine,
+                              { type: "text" }
+                            )}
+                            disabled={isAllergies !== "true"}
+                            onInput={transformToUppercase}
+                          />
+                          <span className="text-red-500 text-xs">
+                            {basicHealthFieldList.allergyMedicine.errors}
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="xl:col-span-3">
-                    <p className="text-gray-400 font-semibold">
-                      Health Conditions
-                    </p>
-                    <div className="grid grid-cols-2 xl:grid-cols-5 col-span-2 gap-5">
-                      <div className="space-y-1">
-                        <Label
-                          htmlFor={basicHealthFieldList.isHealthCondition.id}
-                        >
-                          With Health Condition?
-                        </Label>
-                        <RadioGroup
-                          name={basicHealthFieldList.isHealthCondition.name}
-                          className="flex flex-row gap-5"
-                          defaultValue={String(
-                            basicHealthFieldList.isHealthCondition.value ?? ""
-                          )}
-                          onValueChange={(value) => setIsHealthCondition(value)}
-                        >
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem
-                              value="true"
-                              id={`${basicHealthFieldList.isHealthCondition.id}-yes`}
-                            />
-                            <Label
-                              htmlFor={`${basicHealthFieldList.isHealthCondition.id}-yes`}
+                    <div className="xl:col-span-3">
+                      <p className="text-gray-400 font-semibold">
+                        Health Conditions
+                      </p>
+                      <div className="grid grid-cols-2 xl:grid-cols-5 col-span-2 gap-5">
+                        <div className="space-y-1">
+                          <Label
+                            htmlFor={basicHealthFieldList.isHealthCondition.id}
+                          >
+                            With Health Condition?
+                          </Label>
+                          <RadioGroup
+                            className="flex flex-row gap-5"
+                            value={isHealthCondition || ""}
+                            onValueChange={handleHealthConditionChange}
+                          >
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem
+                                value="true"
+                                id={`${basicHealthFieldList.isHealthCondition.id}-yes`}
+                              />
+                              <Label
+                                htmlFor={`${basicHealthFieldList.isHealthCondition.id}-yes`}
+                              >
+                                Yes
+                              </Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem
+                                value="false"
+                                id={`${basicHealthFieldList.isHealthCondition.id}-no`}
+                              />
+                              <Label
+                                htmlFor={`${basicHealthFieldList.isHealthCondition.id}-no`}
+                              >
+                                No
+                              </Label>
+                            </div>
+                          </RadioGroup>
+                          <Input type="hidden" name={basicHealthFieldList.isHealthCondition.name} value={isHealthCondition || ""} />
+                        </div>
+                        <div className="col-span-3 space-y-1" key={`health-desc-${isHealthCondition}`}>
+                          {isHealthCondition === "true" ? (
+                            <LabelNoGapRequired
+                              htmlFor={
+                                basicHealthFieldList.healthConditionDescription.id
+                              }
                             >
-                              Yes
-                            </Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem
-                              value="false"
-                              id={`${basicHealthFieldList.isHealthCondition.id}-no`}
-                            />
+                              If yes, please specify:
+                            </LabelNoGapRequired>
+                          ) : (
                             <Label
-                              htmlFor={`${basicHealthFieldList.isHealthCondition.id}-no`}
+                              htmlFor={
+                                basicHealthFieldList.healthConditionDescription.id
+                              }
                             >
-                              No
+                              If yes, please specify:
                             </Label>
-                          </div>
-                        </RadioGroup>
-                      </div>
-                      <div className="col-span-3 space-y-1">
-                        <Label
-                          htmlFor={
-                            basicHealthFieldList.healthConditionDescription.id
-                          }
-                        >
-                          If yes, please specify:
-                        </Label>
-                        <Input
-                          {...getInputProps(
-                            basicHealthFieldList.healthConditionDescription,
-                            { type: "text" }
                           )}
-                          disabled={isHealthCondition !== "true"}
-                          onInput={transformToUppercase}
-                        />
-                        <span className="text-red-500 text-xs">
-                          {basicHealthFieldList.healthConditionDescription.errors}
-                        </span>
-                      </div>
-                      <div className="space-y-1">
-                        <Label
-                          htmlFor={basicHealthFieldList.healthConditionMedicine.id}
-                        >
-                          Medicine
-                        </Label>
-                        <Input
-                          {...getInputProps(
-                            basicHealthFieldList.healthConditionMedicine,
-                            { type: "text" }
-                          )}
-                          disabled={isHealthCondition !== "true"}
-                          onInput={transformToUppercase}
-                        />
-                        <span className="text-red-500 text-xs">
-                          {basicHealthFieldList.healthConditionMedicine.errors}
+                          <Input
+                            {...getInputProps(
+                              basicHealthFieldList.healthConditionDescription,
+                              { type: "text" }
+                            )}
+                            disabled={isHealthCondition !== "true"}
+                            onInput={transformToUppercase}
+                          />
+                          <span className="text-red-500 text-xs">
+                            {basicHealthFieldList.healthConditionDescription.errors}
+                          </span>
+                        </div>
+                        <div className="space-y-1" key={`health-med-${isHealthCondition}`}>
+                          <Label
+                            htmlFor={basicHealthFieldList.healthConditionMedicine.id}
+                          >
+                            Medicine
+                          </Label>
+                          <Input
+                            {...getInputProps(
+                              basicHealthFieldList.healthConditionMedicine,
+                              { type: "text" }
+                            )}
+                            disabled={isHealthCondition !== "true"}
+                            onInput={transformToUppercase}
+                          />
+                          <span className="text-red-500 text-xs">
+                            {basicHealthFieldList.healthConditionMedicine.errors}
                         </span>
                       </div>
                     </div>

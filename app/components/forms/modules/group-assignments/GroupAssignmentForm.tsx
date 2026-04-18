@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { Form } from "react-router";
 import { Plus, Trash2, Users } from "lucide-react";
-import { getFormProps, useForm } from "@conform-to/react";
+import { FaPrint } from "react-icons/fa";
+import { toast } from "sonner";
+import { FormProvider, FormStateInput, getFormProps, useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
@@ -134,14 +136,18 @@ export function GroupAssignmentForm({
       filtered = filtered.filter((reg) => reg.gender === genderLabel);
     }
 
+    const selectedInOtherRows = new Set(
+      memberRows.filter((r) => r.rowId !== row.rowId && r.memberId).map((r) => r.memberId)
+    );
+
     return filtered.map((reg) => ({
       id: reg.id,
-      name: reg.isAssignedToCurrentGroup
-        ? `${reg.name} (Already in this group)`
-        : reg.isAssigned
+      name: reg.isAssigned && !reg.isAssignedToCurrentGroup
         ? `${reg.name} (Assigned to: ${reg.groupName})`
+        : selectedInOtherRows.has(reg.id)
+        ? `${reg.name} (Already selected)`
         : reg.name,
-      disabled: reg.isAssigned && !reg.isAssignedToCurrentGroup,
+      disabled: (reg.isAssigned && !reg.isAssignedToCurrentGroup) || selectedInOtherRows.has(reg.id),
     }));
   };
 
@@ -243,8 +249,110 @@ export function GroupAssignmentForm({
     );
   };
 
+  const conformProps = getFormProps(form);
+  const conformOnSubmit = conformProps.onSubmit;
+
+  const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const filledRows = memberRows.filter((r) => r.memberId);
+
+    if (filledRows.length === 0) {
+      e.preventDefault();
+      toast.error("Please click 'Add Row' and assign at least one member to the group.");
+      return;
+    }
+
+    if (selectedGroup?.maxMembers) {
+      const existingIds = new Set(existingMembers.map((m) => m.id));
+      const currentFilledIds = new Set(filledRows.map((r) => r.memberId));
+      const keptExistingCount = existingIds.size > 0
+        ? [...existingIds].filter(id => currentFilledIds.has(id)).length
+        : 0;
+      const newCount = filledRows.filter((r) => !existingIds.has(r.memberId)).length;
+      const totalAfterSave = keptExistingCount + newCount;
+      if (totalAfterSave > selectedGroup.maxMembers) {
+        e.preventDefault();
+        const availableSlots = selectedGroup.maxMembers - keptExistingCount;
+        toast.error(
+          availableSlots > 0
+            ? `Only ${availableSlots} slot(s) available. Cannot add ${newCount} new member(s).`
+            : "This group is full. No available slots."
+        );
+        return;
+      }
+    }
+
+    conformOnSubmit?.(e);
+  };
+
+  const handlePrint = () => {
+    const printWindow = window.open("about:blank", "_blank", "width=800,height=600");
+    if (!printWindow) return;
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Group Assignment - ${selectedGroup?.name}</title>
+          <link rel="preconnect" href="https://fonts.googleapis.com">
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+          <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+          <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body { font-family: 'Inter', sans-serif; padding: 40px 48px; color: #1a1a1a; }
+            .print-header { text-align: center; margin-bottom: 8px; }
+            .print-header-title { font-size: 24px; font-weight: 700; text-transform: uppercase; letter-spacing: 3px; color: #213b36; }
+            .print-header-subtitle { font-size: 14px; letter-spacing: 0.5px; margin-top: 2px; color: #333; }
+            .print-header-year { font-size: 14px; color: #666; margin-top: 2px; }
+            .print-divider { width: 60px; height: 2px; background: #213b36; margin: 16px auto 20px; }
+            .print-group-name { text-align: center; font-size: 18px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 24px; padding-bottom: 10px; border-bottom: 1px solid #e5e5e5; }
+            table { width: 100%; border-collapse: collapse; }
+            thead th { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; color: #555; padding: 10px 14px; text-align: left; border-bottom: 2px solid #213b36; }
+            tbody td { font-size: 12px; padding: 9px 14px; text-transform: uppercase; letter-spacing: 0.3px; border-bottom: 1px solid #e5e5e5; }
+            tbody tr:nth-child(even) { background-color: #f9fafb; }
+            @media print {
+              body { padding: 20px; }
+              .print-header-title { font-size: 22px; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="print-header">
+            <div class="print-header-title">CAMANAVA</div>
+            <div class="print-header-subtitle">Summer School of Truth</div>
+            <div class="print-header-year">${new Date().getFullYear()}</div>
+          </div>
+          <div class="print-divider"></div>
+          <div class="print-group-name">${selectedGroup?.name?.toUpperCase() || ""}</div>
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 25%;">Member Type</th>
+                <th style="width: 15%;">Gender</th>
+                <th style="width: 60%;">Name</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${memberRows.filter((r) => r.memberId).map((row) => {
+                const memberTypeLabel = memberTypeList.find((m) => m.value === row.memberTypeId)?.label || "";
+                const genderLabel = activeGenderList.find((g) => g.value === row.genderId)?.label || "";
+                const memberName = activeRegistrations.find((r) => r.id === row.memberId)?.name || "";
+                return `<tr>
+                  <td>${memberTypeLabel === "Member" ? "" : memberTypeLabel.toUpperCase()}</td>
+                  <td>${genderLabel.toUpperCase()}</td>
+                  <td>${memberName.toUpperCase()}</td>
+                </tr>`;
+              }).join("")}
+            </tbody>
+          </table>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+    setTimeout(() => printWindow?.print(), 250);
+  };
+
   const isEdit = mode === "edit";
   const title = isEdit ? "EDIT GROUP ASSIGNMENT" : "ADD GROUP ASSIGNMENT";
+
+  const allErrors: Record<string, string[] | undefined> = (form.allErrors as Record<string, string[]>) ?? {};
 
   const conferenceTypeOptions = FINANCE_CONFERENCE_TYPE_OPTIONS.map((opt) => ({
     id: opt.value,
@@ -268,6 +376,12 @@ export function GroupAssignmentForm({
             <BackButton />
           </div>
           <div className="flex items-center gap-2">
+            {isEdit && (
+              <Button type="button" variant="outline" size="sm" onClick={handlePrint}>
+                <FaPrint className="h-4 w-4 mr-1" />
+                Print
+              </Button>
+            )}
             <SaveButton formId={form.id} />
             <DeleteConfirmationDialog
               redirectPath={redirectPath}
@@ -285,12 +399,16 @@ export function GroupAssignmentForm({
           </div>
         )}
 
+        <FormProvider context={form.context}>
         <Form
           className="space-y-5 w-full"
           method="post"
-          {...getFormProps(form)}
+          {...conformProps}
+          onSubmit={handleFormSubmit}
         >
+          <FormStateInput />
           <input type="hidden" name="groupId" value={selectedGroupId} />
+          {isEdit && <input type="hidden" name="conferenceType" value={selectedConferenceType} />}
           <input type="hidden" name="hasMemberRows" value={hasMemberRows.toString()} />
 
           <Card className="px-5 flex flex-col w-full">
@@ -300,7 +418,7 @@ export function GroupAssignmentForm({
                   <div>
                     <div className="space-y-1">
                       <Label>Conference Type</Label>
-                      <Input value={formatConferenceType(selectedGroup?.conferenceType || "")} disabled />
+                      <Input value={selectedConferenceType} disabled />
                     </div>
                   </div>
                 ) : (
@@ -422,18 +540,18 @@ export function GroupAssignmentForm({
                           <LabelNoGapRequired htmlFor={`memberTypeIds-${index}`}>Member Type</LabelNoGapRequired>
                           <SelectBoxWithSearch
                             id={`memberTypeIds-${index}`}
-                            name="memberTypeIds[]"
+                            name={`memberTypeIds[${index}]`}
                             options={memberTypeOptions}
                             defaultValue={row.memberTypeId}
                             onSelectValue={(oldVal, newVal) =>
                               handleMemberTypeChange(row.rowId, newVal)
                             }
                             placeholder="Select type..."
-                            error={!!(fields.memberTypeIds as any)?.[index]?.errors}
+                            error={!!allErrors[`memberTypeIds[${index}]`]}
                           />
-                          {(fields.memberTypeIds as any)?.[index]?.errors && (
+                          {allErrors[`memberTypeIds[${index}]`] && (
                             <div className="text-red-500 text-xs mt-[1px]">
-                              {(fields.memberTypeIds as any)[index].errors.map((e: string) => e === "Required" ? "This field is required." : e)}
+                              {allErrors[`memberTypeIds[${index}]`]!.map((e: string) => e)}
                             </div>
                           )}
                         </div>
@@ -441,18 +559,18 @@ export function GroupAssignmentForm({
                           <LabelNoGapRequired htmlFor={`gradeLevelIds-${index}`}>Incoming Grade Level</LabelNoGapRequired>
                           <SelectBoxWithSearch
                             id={`gradeLevelIds-${index}`}
-                            name="gradeLevelIds[]"
+                            name={`gradeLevelIds[${index}]`}
                             options={gradeLevelOptions}
                             defaultValue={row.gradeLevelId}
                             onSelectValue={(oldVal, newVal) =>
                               handleGradeLevelChange(row.rowId, newVal)
                             }
                             placeholder="Select grade level..."
-                            error={!!(fields.gradeLevelIds as any)?.[index]?.errors}
+                            error={!!allErrors[`gradeLevelIds[${index}]`]}
                           />
-                          {(fields.gradeLevelIds as any)?.[index]?.errors && (
+                          {allErrors[`gradeLevelIds[${index}]`] && (
                             <div className="text-red-500 text-xs mt-[1px]">
-                              {(fields.gradeLevelIds as any)[index].errors.map((e: string) => e === "Required" ? "This field is required." : e)}
+                              {allErrors[`gradeLevelIds[${index}]`]!.map((e: string) => e)}
                             </div>
                           )}
                         </div>
@@ -460,18 +578,18 @@ export function GroupAssignmentForm({
                           <LabelNoGapRequired htmlFor={`genderIds-${index}`}>Gender</LabelNoGapRequired>
                           <SelectBoxWithSearch
                             id={`genderIds-${index}`}
-                            name="genderIds[]"
+                            name={`genderIds[${index}]`}
                             options={genderOptions}
                             defaultValue={row.genderId}
                             onSelectValue={(oldVal, newVal) =>
                               handleGenderChange(row.rowId, newVal)
                             }
                             placeholder="Select gender..."
-                            error={!!(fields.genderIds as any)?.[index]?.errors}
+                            error={!!allErrors[`genderIds[${index}]`]}
                           />
-                          {(fields.genderIds as any)?.[index]?.errors && (
+                          {allErrors[`genderIds[${index}]`] && (
                             <div className="text-red-500 text-xs mt-[1px]">
-                              {(fields.genderIds as any)[index].errors.map((e: string) => e === "Required" ? "This field is required." : e)}
+                              {allErrors[`genderIds[${index}]`]!.map((e: string) => e)}
                             </div>
                           )}
                         </div>
@@ -479,19 +597,19 @@ export function GroupAssignmentForm({
                           <LabelNoGapRequired htmlFor={`memberIds-${index}`}>Name</LabelNoGapRequired>
                           <SelectBoxWithSearch
                             id={`memberIds-${index}`}
-                            name="memberIds[]"
+                            name={`memberIds[${index}]`}
                             options={getMemberOptionsForRow(row)}
                             defaultValue={row.memberId}
                             onSelectValue={(oldVal, newVal) =>
                               handleMemberChange(row.rowId, newVal)
                             }
                             placeholder={!row.gradeLevelId || !row.genderId ? "Select grade level and gender first..." : "Select member..."}
-                            error={!!(fields.memberIds as any)?.[index]?.errors}
+                            error={!!allErrors[`memberIds[${index}]`] && !!row.gradeLevelId && !!row.genderId}
                             disabled={!row.gradeLevelId || !row.genderId}
                           />
-                          {(fields.memberIds as any)?.[index]?.errors && (
+                          {allErrors[`memberIds[${index}]`] && !!row.gradeLevelId && !!row.genderId && (
                             <div className="text-red-500 text-xs mt-[1px]">
-                              {(fields.memberIds as any)[index].errors.map((e: string) => e === "Required" ? "This field is required." : e)}
+                              {allErrors[`memberIds[${index}]`]!.map((e: string) => e)}
                             </div>
                           )}
                         </div>
@@ -511,7 +629,10 @@ export function GroupAssignmentForm({
               )}
             </CardContent>
           </Card>
+
+
         </Form>
+        </FormProvider>
       </div>
     </div>
   );

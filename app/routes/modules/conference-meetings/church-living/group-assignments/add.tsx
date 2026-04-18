@@ -1,6 +1,7 @@
 import { redirect } from "react-router";
 import { GroupAssignmentForm } from "~/components/forms/modules/group-assignments/GroupAssignmentForm";
 import {
+  getGroupById,
   getGroupsForDropdown,
   getAllRegistrationsWithGroupStatus,
   getAllSsotRegistrationsWithGroupStatus,
@@ -67,7 +68,20 @@ export async function action({ request }: Route.ActionArgs) {
     return submission.reply({ formErrors: ["Please add at least one member."] });
   }
 
+  const validMembersCount = memberIds.filter((id) => id.trim() !== "").length;
+
   try {
+    const group = await getGroupById(groupId);
+
+    if (group.maxMembers && group.currentMembers + validMembersCount > group.maxMembers) {
+      const availableSlots = group.maxMembers - group.currentMembers;
+      return submission.reply({
+        formErrors: availableSlots > 0
+          ? [`Only ${availableSlots} slot(s) available. Cannot add ${validMembersCount} member(s).`]
+          : ["This group is full. No available slots."],
+      });
+    }
+
     await activateGroupForAssignment(groupId);
 
     const errors: string[] = [];

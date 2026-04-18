@@ -298,18 +298,34 @@ export async function deleteSsotRegistration(id: string) {
   return { success: true, message: "Registration deleted successfully." };
 }
 
+const SSOT_GRADE_LEVEL_ORDER = [
+  "Grade 7",
+  "Grade 8",
+  "Grade 9",
+  "Grade 10",
+  "Grade 11",
+  "Grade 12",
+  "1st Year College",
+  "2nd Year College",
+  "3rd Year College",
+  "4th Year College",
+  "Serving One",
+];
+
 export async function getSsotGradeLevels() {
   const gradeLevels = await prisma.gradeLevel.findMany({
     where: {
       NOT: { name: "Graduate" },
     },
-    orderBy: { name: "asc" },
   });
 
-  return gradeLevels.map((level) => ({
-    label: level.name,
-    value: level.id,
-  }));
+  return gradeLevels
+    .filter((level) => SSOT_GRADE_LEVEL_ORDER.includes(level.name))
+    .sort((a, b) => SSOT_GRADE_LEVEL_ORDER.indexOf(a.name) - SSOT_GRADE_LEVEL_ORDER.indexOf(b.name))
+    .map((level) => ({
+      label: level.name,
+      value: level.id,
+    }));
 }
 
 export async function getLocalities() {
