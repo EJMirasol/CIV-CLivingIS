@@ -1,6 +1,6 @@
-# Church Living Information System (CIV-CLivingIS)
+# REKLAMO System
 
-A comprehensive event management system for Young People's Christian Living (YPCL) conferences and Summer School of Truth (SSOT), built with React Router v7, Prisma, and Better Auth. This full-stack application streamlines participant registration, accommodation management, group assignments, finance tracking, and event administration.
+A comprehensive event management system for Church meetings and conferences, built with React Router v7, Prisma, and Better Auth. This full-stack application streamlines participant registration, accommodation management, group assignments, finance tracking, and event administration.
 
 ## 🌟 Features
 
@@ -76,7 +76,7 @@ A comprehensive event management system for Young People's Christian Living (YPC
    
    Update the `.env` file with your database configuration:
    ```env
-   DATABASE_URL="postgresql://postgres:postgres@localhost:5432/CLIS-db-dev?schema=public"
+    DATABASE_URL="postgresql://postgres:postgres@localhost:5432/reklamo-db-dev?schema=public"
    BETTER_AUTH_SECRET=your-secret-here
    ```
 
@@ -238,4 +238,4 @@ This project is licensed under the ISC License - see the [LICENSE](LICENSE) file
 
 ---
 
-**CIV-CLivingIS** - Streamlining conference management for Young People's Christian Living events.
+**REKLAMO System** - Streamlining church meetings and conferences management.

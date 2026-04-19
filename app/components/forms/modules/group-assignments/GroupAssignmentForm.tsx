@@ -366,7 +366,7 @@ export function GroupAssignmentForm({
   return (
     <div className="bg-gray-50">
       <div className="w-full flex flex-col">
-        <div className="ml-4 py-5 flex justify-between flex-row items-center">
+        <div className="ml-4 py-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div className="flex items-center">
             <div className="rounded-md">
               <Users className="h-5 w-5" />
@@ -533,7 +533,7 @@ export function GroupAssignmentForm({
                   {memberRows.map((row, index) => (
                     <div
                       key={row.rowId}
-                      className="flex items-center gap-3 p-3 border rounded-lg"
+                      className="flex flex-col md:flex-row md:items-center gap-3 p-3 border rounded-lg"
                     >
                       <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-3">
                         <div className="space-y-1">

@@ -47,7 +47,7 @@ export function BillingSettingForm({
   return (
     <div className="bg-gray-50">
       <div className="w-full flex flex-col">
-        <div className="ml-4 py-5 flex justify-between flex-row items-center">
+        <div className="ml-4 py-5 flex flex-col sm:flex-row justify-between sm:items-center gap-3">
           <div className="flex items-center">
             <div className="rounded-md">
               <Settings className="h-5 w-5" />
@@ -58,7 +58,7 @@ export function BillingSettingForm({
             <Separator orientation="vertical" className="mx-2 h-6" />
             <BackButton />
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <SaveButton formId={form.id} />
             {redirectPath && (
               <DeleteConfirmationDialog
@@ -84,7 +84,7 @@ export function BillingSettingForm({
 
             <CardContent className="px-0 pt-6">
               <div className="mt-5">
-                <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
                   <div>
                     <div className="space-y-1">
                       <LabelNoGapRequired htmlFor={fields.feeType.id}>

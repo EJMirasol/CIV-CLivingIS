@@ -182,7 +182,7 @@ export default function SignIn() {
               />
             </div>
             <h1 className="text-slate-700 text-lg font-semibold uppercase text-center mb-2">
-              CIV INFORMATION SYSTEM
+              REKLAMO SYSTEM
             </h1>
             <a
               className="text-green-300 font-bold hover:text-green-700 transition-colors"

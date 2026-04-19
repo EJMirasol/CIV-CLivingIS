@@ -216,7 +216,7 @@ export default () => {
       cell: ({ row }) => {
         return (
           <>
-            <div className="flex gap-2 justify-center">
+            <div className="flex flex-wrap gap-2 justify-center">
               <Link to={`${row.original.id}`}>
                 <Button
                   size="sm"

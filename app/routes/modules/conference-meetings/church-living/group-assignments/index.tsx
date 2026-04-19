@@ -226,7 +226,7 @@ export default function GroupAssignments() {
       ),
       cell: ({ row }) => {
         return (
-          <div className="flex gap-2 justify-center">
+          <div className="flex gap-2 justify-center flex-wrap">
             <Link to={`/conference-meetings/group-assignments/${row.original.id}`}>
               <Button
                 size="sm"
@@ -290,7 +290,7 @@ export default function GroupAssignments() {
 
       <Card className="w-full p-5">
         <Form
-          className="grid grid-cols-4 gap-x-6 gap-y-4"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4"
           id="search-assignments-form"
           method="GET"
         >
@@ -322,7 +322,7 @@ export default function GroupAssignments() {
               placeholder="All"
             />
           </div>
-          <div className="col-start-1 sm:col-start-4 flex items-end gap-2">
+          <div className="col-span-1 sm:col-span-2 lg:col-span-4 flex flex-col sm:flex-row justify-start sm:justify-end items-start sm:items-center gap-2">
             <Button className="bg-[#213b36]" variant="view" type="submit">
               <Search />
               Search
@@ -354,6 +354,7 @@ export default function GroupAssignments() {
 
       <Card>
         <CardContent>
+          <div className="overflow-x-auto">
           <DataTable
             columns={columns}
             data={data}
@@ -362,6 +363,7 @@ export default function GroupAssignments() {
             sortBy={searchFilter.sortBy}
             sortOrder={searchFilter.sortOrder}
           />
+          </div>
         </CardContent>
       </Card>
     </div>

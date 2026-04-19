@@ -82,9 +82,9 @@ export function Header({ sidebarItems, user, setOpen }: HeaderProps) {
 
           <h1 className="text-sm lg:text-lg font-semibold text-white truncate">
             <span className="hidden sm:inline">
-              THE CHURCH IN VALENZUELA CITY
+              R. E. K. L. A. M. O.
             </span>
-            <span className="sm:hidden">CIV</span>
+            <span className="sm:hidden">REKLAMO</span>
           </h1>
         </div>
         <div className="flex items-center space-x-2 text-xs lg:text-sm text-gray-600 relative">

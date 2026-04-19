@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Church Living Information System (CIV-CLivingIS) is a full-stack React Router v7 application for managing conference meetings, registrations, accommodations, and group assignments for young people's events. Built with React Router SSR, Prisma (PostgreSQL), Better Auth, and shadcn/ui components.
+REKLAMO System is a full-stack React Router v7 application for managing conference meetings, registrations, accommodations, and group assignments for young people's events. Built with React Router SSR, Prisma (PostgreSQL), Better Auth, and shadcn/ui components.
 
 ## Common Development Commands
 
@@ -89,7 +89,7 @@ app/
 ### Environment Setup
 - Copy `.env.example` to `.env`
 - Configure `DATABASE_URL` for PostgreSQL connection
-- Default: `postgresql://postgres:postgres@localhost:5432/CLIS-db-dev?schema=public`
+- Default: `postgresql://postgres:postgres@localhost:5432/reklamo-db-dev?schema=public`
 
 ### Component Patterns
 - Use shadcn/ui components from `~/components/ui`

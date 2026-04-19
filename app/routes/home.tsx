@@ -3,7 +3,7 @@ import type { Route } from "./+types/home";
 import Login from "./modules/auth/sign-in";
 
 export function meta({}: Route.MetaArgs) {
-  return [{ title: "CIV-IS" }];
+  return [{ title: "REKLAMO" }];
 }
 export async function loader() {
   return redirect("/sign-in");
