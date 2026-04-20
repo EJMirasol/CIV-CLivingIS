@@ -174,7 +174,7 @@ export function SsotDashboardStats({ statistics }: SsotDashboardStatsProps) {
             <CardTitle className="flex items-center gap-2 text-slate-900 text-sm font-medium">
               <GraduationCap className="h-4 w-4 text-slate-500" />
               <MapPin className="h-4 w-4 text-slate-500" />
-              Distributions
+              Registration Overview
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
@@ -194,7 +194,7 @@ export function SsotDashboardStats({ statistics }: SsotDashboardStatsProps) {
                   key={level.name}
                   className="grid grid-cols-[1fr_auto] py-2 border-b border-slate-100 last:border-0"
                 >
-                  <span className="text-sm text-slate-700">{level.name}</span>
+                  <span className="text-sm text-slate-700">{level.name === "Serving One" && level.count > 1 ? "Serving Ones" : level.name}</span>
                   <span className="text-sm font-medium text-slate-900 text-right pr-2">{level.count}</span>
                 </div>
               ))}
@@ -216,21 +216,7 @@ export function SsotDashboardStats({ statistics }: SsotDashboardStatsProps) {
               ))}
             </div>
 
-            {/* Gender Section */}
-            <div>
-              <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
-                Gender
-              </h3>
-              {genderDistribution.map((g) => (
-                <div
-                  key={g.gender}
-                  className="grid grid-cols-[1fr_auto] py-2 border-b border-slate-100 last:border-0"
-                >
-                  <span className="text-sm text-slate-700">{g.gender}</span>
-                  <span className="text-sm font-medium text-slate-900 text-right pr-2">{g.count}</span>
-                </div>
-              ))}
-            </div>
+
           </CardContent>
         </Card>
 

@@ -442,6 +442,8 @@ export async function getSsotStatistics() {
     })
   );
 
+  gradeLevelData.sort((a, b) => SSOT_GRADE_LEVEL_ORDER.indexOf(a.name) - SSOT_GRADE_LEVEL_ORDER.indexOf(b.name));
+
   return {
     totalRegistrations,
     localityDistribution: localityStats.map((stat) => ({
@@ -489,6 +491,8 @@ export async function getSsotDashboardStatistics() {
       };
     })
   );
+
+  gradeLevelData.sort((a, b) => SSOT_GRADE_LEVEL_ORDER.indexOf(a.name) - SSOT_GRADE_LEVEL_ORDER.indexOf(b.name));
 
   const juniorYpGrades = ["Grade 7", "Grade 8", "Grade 9", "Grade 10"];
   const seniorYpGrades = ["Grade 11", "Grade 12"];

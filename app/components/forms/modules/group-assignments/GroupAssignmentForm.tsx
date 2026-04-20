@@ -244,7 +244,7 @@ export function GroupAssignmentForm({
         const autoGenderId = activeGenderList.find(
           (g) => g.label === reg?.gender
         )?.value || "";
-        return { ...row, memberId, memberTypeId: row.memberTypeId || "MEMBER", gradeLevelId: autoGradeLevelId, genderId: autoGenderId };
+        return { ...row, memberId, memberTypeId: row.memberTypeId, gradeLevelId: autoGradeLevelId, genderId: autoGenderId };
       })
     );
   };
@@ -253,15 +253,14 @@ export function GroupAssignmentForm({
   const conformOnSubmit = conformProps.onSubmit;
 
   const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    const filledRows = memberRows.filter((r) => r.memberId);
-
-    if (filledRows.length === 0) {
+    if (memberRows.length === 0 && selectedGroupId && selectedConferenceType) {
       e.preventDefault();
       toast.error("Please click 'Add Row' and assign at least one member to the group.");
       return;
     }
 
     if (selectedGroup?.maxMembers) {
+      const filledRows = memberRows.filter((r) => r.memberId);
       const existingIds = new Set(existingMembers.map((m) => m.id));
       const currentFilledIds = new Set(filledRows.map((r) => r.memberId));
       const keptExistingCount = existingIds.size > 0

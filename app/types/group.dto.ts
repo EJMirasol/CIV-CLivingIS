@@ -32,13 +32,10 @@ export type GroupFormDTO = z.infer<typeof GroupFormSchema>;
 export const GroupAssignmentFormSchema = z.object({
   groupId: z.string().min(1, "This field is required."),
   conferenceType: z.string().min(1, "This field is required."),
-  memberTypeIds: z.array(z.string()),
-  gradeLevelIds: z.array(z.string()),
-  genderIds: z.array(z.string()),
-  memberIds: z.array(z.string()),
-}).refine((data) => data.memberIds.some((id) => id.trim() !== ""), {
-  message: "Please click 'Add Row' and assign at least one member to the group.",
-  path: [],
+  memberTypeIds: z.array(z.string({ required_error: "This field is required." }).min(1, "This field is required.")),
+  gradeLevelIds: z.array(z.string({ required_error: "This field is required." }).min(1, "This field is required.")),
+  genderIds: z.array(z.string({ required_error: "This field is required." }).min(1, "This field is required.")),
+  memberIds: z.array(z.string({ required_error: "This field is required." }).min(1, "This field is required.")),
 });
 
 export type GroupAssignmentFormDTO = z.infer<typeof GroupAssignmentFormSchema>;

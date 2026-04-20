@@ -692,8 +692,9 @@ export async function deleteGroupAssignment(groupId: string) {
       where: { groupId },
     });
 
-    await prisma.group.delete({
+    await prisma.group.update({
       where: { id: groupId },
+      data: { isAssignmentActive: false, isAssignmentDeleted: true },
     });
 
     return { success: true, message: "Group assignment deleted successfully." };
