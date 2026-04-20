@@ -16,6 +16,7 @@ import { useEffect } from "react";
 import { toast as notify, Toaster } from "sonner";
 
 export const links: Route.LinksFunction = () => [
+  { rel: "icon", type: "image/png", href: "/assets/CIV.png" },
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
   {
     rel: "preconnect",
