@@ -1,4 +1,4 @@
-import { ClipboardList, Bed, Users, DollarSign, CalendarDays, ShieldCheck } from "lucide-react";
+import { ClipboardList, Bed, Users, PhilippinePeso, CalendarDays, ShieldCheck } from "lucide-react";
 import { Card, CardContent } from "~/components/ui/card";
 import { auth } from "~/lib/auth.server";
 import { redirect } from "react-router";
@@ -17,7 +17,7 @@ const features = [
   { icon: ClipboardList, label: "Registration", desc: "Participant enrollment & check-in" },
   { icon: Bed, label: "Accommodation", desc: "Room & bed assignments" },
   { icon: Users, label: "Group Assignments", desc: "Team grouping & coordination" },
-  { icon: DollarSign, label: "Finance Tracking", desc: "Billing, expenses & returns" },
+  { icon: PhilippinePeso, label: "Finance Tracking", desc: "Billing, expenses & returns" },
   { icon: CalendarDays, label: "Event Administration", desc: "Conference scheduling" },
   { icon: ShieldCheck, label: "Access Control", desc: "Authentication & roles" },
 ];

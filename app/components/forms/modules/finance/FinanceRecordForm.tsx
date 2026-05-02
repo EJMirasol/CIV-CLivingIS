@@ -1,4 +1,4 @@
-import { DollarSign } from "lucide-react";
+import { PhilippinePeso } from "lucide-react";
 import { Form } from "react-router";
 import {
   getFormProps,
@@ -128,7 +128,7 @@ export function FinanceRecordForm({ billingSettings, localityList, redirectPath 
         <div className="ml-4 py-5 flex justify-between flex-row items-center">
           <div className="flex items-center">
             <div className="rounded-md">
-              <DollarSign className="h-5 w-5" />
+              <PhilippinePeso className="h-5 w-5" />
             </div>
             <span className="text-[#15313F] font-[500]">
               ADD FINANCE RECORD

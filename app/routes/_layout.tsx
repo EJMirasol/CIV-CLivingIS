@@ -1,5 +1,5 @@
 import type { Route } from "./+types/_layout";
-import { BookHeart, Handshake, BarChart3, Users, UserCheck, UserPlus, Home, Building, Settings, DollarSign, FileText, ClipboardList, Receipt, RotateCcw } from "lucide-react";
+import { BookHeart, Handshake, BarChart3, Users, UserCheck, UserPlus, Home, Building, Settings, PhilippinePeso, FileText, ClipboardList, Receipt, RotateCcw } from "lucide-react";
 import { MdSpaceDashboard } from "react-icons/md";
 import { useState, useMemo } from "react";
 import { Header } from "~/components/layouts/Header";
@@ -83,7 +83,7 @@ export default function DashboardLayout() {
       ],
     },
     {
-      icon: <DollarSign className="h-4 w-4" />,
+      icon: <PhilippinePeso className="h-4 w-4" />,
       label: "Finance",
       route: "",
       key: "finance",
@@ -127,7 +127,7 @@ export default function DashboardLayout() {
           route: "utilities/rooms",
         },
         {
-          icon: <DollarSign className="h-4 w-4" />,
+          icon: <PhilippinePeso className="h-4 w-4" />,
           label: "Billing Settings",
           route: "utilities/billing-settings",
         },

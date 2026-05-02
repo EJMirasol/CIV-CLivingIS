@@ -7,7 +7,7 @@ import {
   markAsUnpaid,
   deleteFinanceRecord,
 } from "~/lib/server/finance.server";
-import { DollarSign, Plus, Trash2, Search, RefreshCcw } from "lucide-react";
+import { PhilippinePeso, Plus, Trash2, Search, RefreshCcw } from "lucide-react";
 import { Link, useLoaderData, useSubmit, useNavigate } from "react-router";
 import { DataTable } from "~/components/data-tables/data-table";
 import { Button } from "~/components/ui/button";
@@ -232,7 +232,7 @@ export default function FinanceRegistration() {
     <div className="w-full flex flex-col gap-5">
       <div className="flex items-center gap-3">
         <div className="rounded-md">
-          <DollarSign className="h-5 w-5" />
+          <PhilippinePeso className="h-5 w-5" />
         </div>
         <h1 className="text-base font-semibold">
           FINANCE - REGISTRATION

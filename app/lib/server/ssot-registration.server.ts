@@ -291,6 +291,14 @@ export async function deleteSsotRegistration(id: string) {
     });
   }
 
+  await prisma.ssotGroupAssignment.deleteMany({
+    where: { ssotRegistrationId: id },
+  });
+
+  await prisma.financeRecord.deleteMany({
+    where: { ssotRegistrationId: id },
+  });
+
   await prisma.ssotRegistration.delete({
     where: { id },
   });
